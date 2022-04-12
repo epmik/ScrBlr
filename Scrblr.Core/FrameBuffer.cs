@@ -7,16 +7,16 @@ using System.Linq;
 
 namespace Scrblr.Core
 {
-    [Flags]
-    public enum FrameBufferAttachments
-    {
-        None = 0,
-        Color = 1,
-        Depth = 2,
-        //Stencil = 4,
-    }
+    //[Flags]
+    //public enum FrameBufferAttachments
+    //{
+    //    None = 0,
+    //    Color = 1,
+    //    Depth = 2,
+    //    Stencil = 4,
+    //}
 
-    public class FrameBuffer : IDisposable
+    public class FrameBuffer : GraphicsSettings, IDisposable
     {
         #region Fields and Properties
 
@@ -26,59 +26,40 @@ namespace Scrblr.Core
         private int _depthAttachmentHandle;
         private int _stencilAttachmentHandle;
 
-        public FrameBufferAttachments Attachments { get; private set; }
-
-        public int Width { get; private set; }
-
-        public int Height { get; private set; }
-
-        public int Samples { get; private set; }
-
+        //public FrameBufferAttachments Attachments { get; private set; }
 
         private FramebufferTarget _framebufferTarget = FramebufferTarget.Framebuffer;
-
-        //public int TotalBytes { get; private set; }
-
-        //public int UsedBytes { get; private set; }
-
-        //public VertexBufferUsage VertexBufferUsage { get; private set; }
-
-        //public VertexBufferLayout Layout { get; private set; }
 
         #endregion Fields and Properties
 
         #region Constructors
 
         public FrameBuffer(
-            FrameBufferAttachments attachments,
-            int width, int height, int samples)
+            int width, 
+            int height,
+            int? colorBits = GraphicsContext.DefaultColorBits,
+            int? depthBits = GraphicsContext.DefaultDepthBits,
+            int? stencilBits = GraphicsContext.DefaultStencilBits,
+            int? samples = GraphicsContext.DefaultSamples)
+            : base(width, height, colorBits, depthBits, stencilBits, samples)
         {
-            Attachments = attachments;
-            Width = width;
-            Height = height;
-
-            // todo fix multisampling for framebuffers
-            // see https://stackoverflow.com/a/42882506/527843
-            //Samples = 1; 
-            Samples = samples;
-
             Handle = GL.GenFramebuffer();
 
             GL.BindFramebuffer(_framebufferTarget, Handle);
 
-            if (Attachments.HasFlag(FrameBufferAttachments.Color))
+            if (ColorBits != null && ColorBits > 0)
             {
                 _colorAttachmentHandle = GL.GenTexture();
 
                 GL.BindTexture(OpenGlTextureTarget(), _colorAttachmentHandle);
 
-                if (Samples == 1)
+                if (Samples == null || Samples <= 1)
                 {
                     GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, Width, Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
                 }
                 else
                 {
-                    GL.TexImage2DMultisample(TextureTargetMultisample.Texture2DMultisample, Samples, PixelInternalFormat.Rgba8, Width, Height, false);
+                    GL.TexImage2DMultisample(TextureTargetMultisample.Texture2DMultisample, Samples.Value, PixelInternalFormat.Rgba8, Width, Height, false);
                 }
 
                 GL.TexParameter(OpenGlTextureTarget(), TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
@@ -90,24 +71,38 @@ namespace Scrblr.Core
                 GL.BindTexture(OpenGlTextureTarget(), 0);
 
                 GL.FramebufferTexture2D(_framebufferTarget, FramebufferAttachment.ColorAttachment0, OpenGlTextureTarget(), _colorAttachmentHandle, 0);
-                // or
-                //GL.FramebufferTexture(_framebufferTarget, FramebufferAttachment.ColorAttachment0, _colorAttachmentHandle, 0);
             }
 
-            if (Attachments.HasFlag(FrameBufferAttachments.Depth))
+            if (DepthBits != null && DepthBits > 0)
             {
-                // todo fix this for multisampled depth buffer?
-                // does it need fixing?
-
                 _depthAttachmentHandle = GL.GenRenderbuffer();
 
-                GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _depthAttachmentHandle);
+                GL.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, _depthAttachmentHandle);
 
-                GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.Depth24Stencil8, Width, Height);
+                if (Samples == null || Samples <= 1)
+                {
+                    GL.RenderbufferStorage(RenderbufferTarget.RenderbufferExt, RenderbufferStorageDepthComponent(), Width, Height);
+                }
+                else
+                {
+                    GL.RenderbufferStorageMultisample(RenderbufferTarget.RenderbufferExt, Samples.Value, RenderbufferStorageDepthComponent(), Width, Height);
+                }
+            }
 
-                GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
+            if (StencilBits != null && StencilBits > 0)
+            {
+                _stencilAttachmentHandle = GL.GenRenderbuffer();
 
-                GL.FramebufferRenderbuffer(_framebufferTarget, FramebufferAttachment.StencilAttachment, RenderbufferTarget.Renderbuffer, _depthAttachmentHandle);
+                GL.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, _stencilAttachmentHandle);
+
+                if (Samples == null || Samples <= 1)
+                {
+                    GL.RenderbufferStorage(RenderbufferTarget.RenderbufferExt, RenderbufferStorageStencil(), Width, Height);
+                }
+                else
+                {
+                    GL.RenderbufferStorageMultisample(RenderbufferTarget.RenderbufferExt, Samples.Value, RenderbufferStorageStencil(), Width, Height);
+                }
             }
 
             GL.BindFramebuffer(_framebufferTarget, 0);
@@ -115,16 +110,44 @@ namespace Scrblr.Core
 
         #endregion Constructors
 
+        private RenderbufferStorage RenderbufferStorageDepthComponent()
+        {
+            switch(DepthBits)
+            {
+                case 16:
+                    return RenderbufferStorage.DepthComponent16;
+                case 24:
+                    return RenderbufferStorage.DepthComponent24;
+                case 32:
+                    return RenderbufferStorage.DepthComponent32;
+                default:
+                    throw new NotImplementedException($"RenderbufferStorageDepthComponent() failed. found unknown DepthBits: {DepthBits}");
+            }
+        }
+
+        private RenderbufferStorage RenderbufferStorageStencil()
+        {
+            switch (StencilBits)
+            {
+                case 24:
+                    return RenderbufferStorage.Depth24Stencil8;
+                case 32:
+                    return RenderbufferStorage.Depth32fStencil8;
+                default:
+                    throw new NotImplementedException($"RenderbufferStorageStencil() failed. found unknown StencilBits: {StencilBits}");
+            }
+        }
+
         private TextureTarget OpenGlTextureTarget()
         {
             return Samples < 2 ? TextureTarget.Texture2D : TextureTarget.Texture2DMultisample;
         }
 
-        public bool CheckStatus()
+        public FramebufferErrorCode Status()
         {
             GL.BindFramebuffer(_framebufferTarget, Handle);
 
-            var status = GL.CheckFramebufferStatus(_framebufferTarget) == FramebufferErrorCode.FramebufferComplete;
+            var status = GL.CheckFramebufferStatus(_framebufferTarget);
 
             GL.BindFramebuffer(_framebufferTarget, 0);
             
@@ -132,12 +155,12 @@ namespace Scrblr.Core
         }
 
 
-        public void Clear()
-        {
-            GL.BindFramebuffer(_framebufferTarget, 0);
+        //public void Clear()
+        //{
+        //    GL.BindFramebuffer(_framebufferTarget, 0);
 
-            //GL.InvalidateFramebuffer(FramebufferTarget.Framebuffer,);
-        }
+        //    //GL.InvalidateFramebuffer(FramebufferTarget.Framebuffer,);
+        //}
 
         public void Bind()
         {
@@ -154,6 +177,22 @@ namespace Scrblr.Core
         public void Dispose()
         {
             UnBind();
+
+            if (_colorAttachmentHandle != 0)
+            {
+                GL.DeleteTexture(_colorAttachmentHandle);
+            }
+
+            if (_depthAttachmentHandle != 0)
+            {
+                GL.DeleteRenderbuffer(_depthAttachmentHandle);
+            }
+
+            if (_stencilAttachmentHandle != 0)
+            {
+                GL.DeleteRenderbuffer(_stencilAttachmentHandle);
+            }
+
             GL.DeleteFramebuffer(Handle);
         }
     }

@@ -30,6 +30,50 @@ namespace Scrblr.Core
         public float Height { get; private set; } = DefaultHeight;
         public Dimensions Dimension { get; private set; } = Dimensions.Two;
 
+        private int _depthBits = 32;
+
+        /// <summary>
+        /// default == 32
+        /// </summary>
+        public int DepthBits
+        {
+            get { return _depthBits; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be less then 0.");
+                }
+                else if (value > 32)
+                {
+                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be greater then 32.");
+                }
+                _depthBits = value;
+            }
+        }
+
+        private int _stencilBits = 24;
+
+        /// <summary>
+        /// default == 24
+        /// </summary>
+        public int StencilBits
+        {
+            get { return _stencilBits; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be less then 0.");
+                }
+                else if (value > 32)
+                {
+                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be greater then 32.");
+                }
+                _stencilBits = value;
+            }
+        }
+
         private int _samples = 8;
 
         /// <summary>
@@ -60,8 +104,15 @@ namespace Scrblr.Core
         public event Action UnLoadAction;
         public event Action RenderAction;
         public event Action UpdateAction;
-        public event Action<Vector2i> ResizeAction;
-        public event Action<Vector2> MouseWheelAction;
+        public event Action<ResizeEventArgs> ResizeAction;
+        public event Action<MouseWheelEventArgs> MouseWheelAction;
+        public event Action<MouseButtonEventArgs> MouseUpAction;
+        public event Action<MouseButtonEventArgs> MouseDownAction;
+        public event Action<MouseMoveEventArgs> MouseMoveAction;
+        public event Action MouseLeaveAction;
+        public event Action MouseEnterAction;
+        public event Action<KeyboardKeyEventArgs> KeyDownAction;
+        public event Action<KeyboardKeyEventArgs> KeyUpAction;
 
         /// <summary>
         /// default == Color4.White
@@ -70,7 +121,7 @@ namespace Scrblr.Core
 
         //protected VertexBuffer PositionColorVertexBuffer { get; private set; }
 
-        public bool _saveFrame { get; set; }
+        public bool _saveNextFrame { get; set; }
 
         /// <summary>
         /// default key to close the application. Set to null if you want to dissable this.
@@ -120,7 +171,73 @@ namespace Scrblr.Core
         {
             if (MouseWheelAction != null)
             {
-                MouseWheelAction(a.Offset);
+                MouseWheelAction(a);
+            }
+        }
+
+        private void MouseDownInternal(MouseButtonEventArgs a)
+        {
+            if (MouseDownAction != null)
+            {
+                MouseDownAction(a);
+            }
+        }
+
+        private void MouseUpInternal(MouseButtonEventArgs a)
+        {
+            if (MouseUpAction != null)
+            {
+                MouseUpAction(a);
+            }
+        }
+
+        private void MouseMoveInternal(MouseMoveEventArgs a)
+        {
+            if (MouseMoveAction != null)
+            {
+                MouseMoveAction(a);
+            }
+        }
+
+        private void MouseLeaveInternal()
+        {
+            if (MouseLeaveAction != null)
+            {
+                MouseLeaveAction();
+            }
+        }
+
+        private void MouseEnterInternal()
+        {
+            if (MouseEnterAction != null)
+            {
+                MouseEnterAction();
+            }
+        }
+
+        private void KeyDownInternal(KeyboardKeyEventArgs a)
+        {
+            if (KeyDownAction != null)
+            {
+                KeyDownAction(a);
+            }
+        }
+
+        private void KeyUpInternal(KeyboardKeyEventArgs a)
+        {
+            if (a.Key == CloseKey)
+            {
+                _internalWindow.Close();
+            }
+
+            if (a.Key == SaveFrameKey)
+            {
+                _saveNextFrame = true;
+            }
+
+            if (KeyUpAction != null)
+            {
+                KeyUpAction(a);
             }
         }
 
@@ -198,7 +315,26 @@ namespace Scrblr.Core
                 Title = title,
                 Flags = ContextFlags.ForwardCompatible, // This is needed to run on macos
                 NumberOfSamples = Samples,
+                DepthBits = DepthBits,
+                StencilBits = StencilBits,
             };
+
+            _internalWindow = new GameWindow(GameWindowSettings.Default, nativeWindowSettings);
+
+            _internalWindow.Load += LoadInternal;
+            _internalWindow.Unload += UnLoadInternal;
+            _internalWindow.UpdateFrame += UpdateFrameInternal;
+            _internalWindow.RenderFrame += RenderFrameInternal;
+            _internalWindow.Resize += ResizeInternal;
+
+            _internalWindow.MouseWheel += MouseWheelInternal;
+            _internalWindow.MouseDown += MouseDownInternal;
+            _internalWindow.MouseUp += MouseUpInternal;
+            _internalWindow.MouseEnter += MouseEnterInternal;
+            _internalWindow.MouseLeave += MouseLeaveInternal;
+
+            _internalWindow.KeyDown += KeyDownInternal;
+            _internalWindow.KeyUp += KeyUpInternal;
 
             Camera = new NearFarScrollCamera
             {
@@ -210,17 +346,9 @@ namespace Scrblr.Core
                 Position = new Vector3(0, 0, 2),
             };
 
-            _graphics = new GraphicsContext2d();
+            _graphics = new GraphicsContext2d(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
+
             _graphics.CurrentCamera = Camera;
-
-            _internalWindow = new GameWindow(GameWindowSettings.Default, nativeWindowSettings);
-
-            _internalWindow.Load += LoadInternal;
-            _internalWindow.Unload += UnLoadInternal;
-            _internalWindow.UpdateFrame += UpdateFrameInternal;
-            _internalWindow.RenderFrame += RenderFrameInternal;
-            _internalWindow.Resize += ResizeInternal;
-            _internalWindow.MouseWheel += MouseWheelInternal;
         }
 
         private void LoadInternal()
@@ -251,16 +379,6 @@ namespace Scrblr.Core
 
             ClearStatesAndCounters();
 
-            if (CloseKey != null && _internalWindow.KeyboardState.IsKeyDown(CloseKey.Value))
-            {
-                _internalWindow.Close();
-            }
-
-            if (SaveFrameKey != null && _internalWindow.KeyboardState.IsKeyDown(SaveFrameKey.Value))
-            {
-                _saveFrame = true;
-            }
-
             if (_internalWindow.MouseState.Scroll != _internalWindow.MouseState.PreviousScroll)
             {
                 Camera.Scroll(_internalWindow.MouseState.ScrollDelta.Y, e.Time);
@@ -284,24 +402,29 @@ namespace Scrblr.Core
 
             Graphics.Flush();
 
-            _internalWindow.SwapBuffers();
-
             RenderFramePostInternal(e);
         }
 
         private void RenderFramePreInternal(FrameEventArgs e)
         {
-            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, PositionColorVertexBuffer.Handle);
+            if(_saveNextFrame)
+            {
+
+            }
         }
 
         private void RenderFramePostInternal(FrameEventArgs e)
         {
-            if(_saveFrame)
+            if(_saveNextFrame)
             {
-                _saveFrame = false;
-
                 SaveFrame(Graphics);
+
+                _saveNextFrame = false;
+
+                return;
             }
+
+            _internalWindow.SwapBuffers();
         }
 
         private void UnLoadInternal()
@@ -311,34 +434,40 @@ namespace Scrblr.Core
             UnLoadAction();
         }
 
-        private void ResizeInternal(ResizeEventArgs e)
+        private void ResizeInternal(ResizeEventArgs a)
         {
             GL.Viewport(0, 0, _internalWindow.Size.X, _internalWindow.Size.Y);
 
             if (ResizeAction != null)
             {
-                ResizeAction(_internalWindow.Size);
+                ResizeAction(a);
             }
         }
 
         private void SaveFrame(GraphicsContext2d graphics)
         {
-            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferHandle);
+            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-            //GL.Flush();
+            GL.Flush();
 
-            //// see https://gist.github.com/WernerWenz/67d6f3ebd0309498ed89bcff6c1889a7
+            // see https://gist.github.com/WernerWenz/67d6f3ebd0309498ed89bcff6c1889a7
 
-            //using (var bmp = new Bitmap((int)SketchWidth, (int)SketchHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-            //{
-            //    var name = GetSketchName() + DateTime.Now.ToString(".yyyyMMdd.HHmmss.ffff") + ".png";
+            using (var bitmap = new Bitmap((int)WindowWidth, (int)WindowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            {
+                var name = GetSketchName() + DateTime.Now.ToString(".yyyyMMdd.HHmmss.ffff") + ".png";
 
-            //    var mem = bmp.LockBits(new System.Drawing.Rectangle(0, 0, (int)SketchWidth, (int)SketchHeight), ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            //    GL.PixelStore(PixelStoreParameter.PackRowLength, mem.Stride / 4);
-            //    GL.ReadPixels(0, 0, (int)SketchWidth, (int)SketchHeight, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, mem.Scan0);
-            //    bmp.UnlockBits(mem);
-            //    bmp.Save(@"saves/" + name, ImageFormat.Png);
-            //}
+                var data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, (int)WindowWidth, (int)WindowHeight), ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                
+                GL.PixelStore(PixelStoreParameter.PackRowLength, data.Stride / 4);
+                
+                GL.ReadPixels(0, 0, (int)WindowWidth, (int)WindowHeight, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                
+                bitmap.UnlockBits(data);
+
+                bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
+
+                bitmap.Save(@"saves/" + name, ImageFormat.Png);
+            }
 
             //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }

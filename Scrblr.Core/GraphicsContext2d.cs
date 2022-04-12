@@ -14,7 +14,7 @@ using System.Text;
 
 namespace Scrblr.Core
 {
-    public class GraphicsContext2d : IDisposable
+    public class GraphicsContext2d : GraphicsContext
     {
         #region Shader Sources
 
@@ -75,8 +75,14 @@ void main()
 
         public ICamera CurrentCamera{ get { return _currentCamera; } set { _currentCamera = value; } }
 
-
-        public GraphicsContext2d()
+        public GraphicsContext2d(
+            int width,
+            int height,
+            int? colorBits = GraphicsContext.DefaultColorBits,
+            int? depthBits = GraphicsContext.DefaultDepthBits,
+            int? stencilBits = GraphicsContext.DefaultStencilBits,
+            int? samples = GraphicsContext.DefaultSamples)
+            : base(width, height, colorBits, depthBits, stencilBits, samples)
         {
             CurrentModelMatrix = Matrix4.Identity;
         }

@@ -12,7 +12,6 @@ namespace Scrblr.Leaning
     public class Learn011 : AbstractSketch20220406
     {
         private FrameBuffer _frameBuffer;
-        private FrameBufferAttachments _frameBufferAttachments = FrameBufferAttachments.Color; // | FrameBufferAttachments.Depth;
 
         public Learn011()
             : base(600, 600)
@@ -65,10 +64,9 @@ void main()
 
             QueryGraphicsCardCapabilities();
 
-            _frameBufferAttachments = FrameBufferAttachments.Color;// | FrameBufferAttachments.Depth;
-            _frameBuffer = new FrameBuffer(_frameBufferAttachments, WindowWidth, WindowHeight, Samples);
+            _frameBuffer = new FrameBuffer(WindowWidth, WindowHeight, samples: Samples);
 
-            Debug.WriteLine($"_frameBuffer.CheckStatus(): {_frameBuffer.CheckStatus()}");
+            Debug.WriteLine($"_frameBuffer.CheckStatus(): {_frameBuffer.Status()}");
         }
 
         public void UnLoad()
