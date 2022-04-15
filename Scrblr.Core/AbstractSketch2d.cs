@@ -498,7 +498,7 @@ namespace Scrblr.Core
                 Graphics.Samples);
 
             _saveFrameGraphicsContext.ActiveCamera = Graphics.ActiveCamera;
-            _saveFrameGraphicsContext.ModelMatrix = Graphics.ModelMatrix;
+            _saveFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
         }
 
         private void DisposeSaveFrameGraphicsContext()

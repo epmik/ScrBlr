@@ -222,7 +222,7 @@ void main()
             int samples = GraphicsSettings.DefaultSamples)
             : base(width, height, colorBits, depthBits, stencilBits, samples)
         {
-            ModelMatrix = Matrix4.Identity;
+            _modelMatrixStack[_modelMatrixStackIndex] = Matrix4.Identity;
 
             GraphicsContextCount++;
 
@@ -258,16 +258,16 @@ void main()
 
         private Matrix4[] _modelMatrixStack = new Matrix4[_modelMatrixStackSize];
 
-        public Matrix4 ModelMatrix
+        public Matrix4 ModelMatrix()
         {
-            get
-            {
-                return _modelMatrixStack[_modelMatrixStackIndex];
-            }
-            set
-            {
-                _modelMatrixStack[_modelMatrixStackIndex] = value;
-            }
+            return _modelMatrixStack[_modelMatrixStackIndex];
+        }
+
+        public Matrix4 ModelMatrix(Matrix4 modelMatrix)
+        {
+            _modelMatrixStack[_modelMatrixStackIndex] = modelMatrix;
+
+            return ModelMatrix();
         }
 
         public void ClearMatrixStack()
@@ -304,12 +304,29 @@ void main()
             Translate(x, y, 0f);
         }
 
+        public void Translate(ref Vector2 vector)
+        {
+            // assume 2d translation along the x-axis and y-axis
+            Translate(vector.X, vector.Y, 0f);
+        }
+
         public void Translate(float x, float y, float z)
         {
             // todo test this out
             //Matrix4.Mult(_modelMatrixStack[_currentModelMatrixStackIndex], Matrix4.CreateTranslation(x, y, z), out _modelMatrixStack[_currentModelMatrixStackIndex]);
 
-            ModelMatrix = ModelMatrix * Matrix4.CreateTranslation(x, y, z);
+            _modelMatrixStack[_modelMatrixStackIndex] = _modelMatrixStack[_modelMatrixStackIndex] * Matrix4.CreateTranslation(x, y, z);
+        }
+
+        public void Translate(ref Vector3 vector)
+        {
+            // assume 2d translation along the x-axis and y-axis
+            Translate(vector.X, vector.Y, vector.Z);
+        }
+
+        public void Scale(float scale)
+        {
+            Scale(scale, scale, scale);
         }
 
         public void Scale(float x, float y)
@@ -323,7 +340,17 @@ void main()
             // todo test this out
             //Matrix4.Mult(_modelMatrixStack[_currentModelMatrixStackIndex], Matrix4.CreateScale(x, y, z), out _modelMatrixStack[_currentModelMatrixStackIndex]);
 
-            ModelMatrix = ModelMatrix * Matrix4.CreateScale(x, y, z);
+            _modelMatrixStack[_modelMatrixStackIndex] = _modelMatrixStack[_modelMatrixStackIndex] * Matrix4.CreateScale(x, y, z);
+        }
+
+        public void Scale(ref Vector3 v)
+        {
+            Scale(v.X, v.Y, v.Z);
+        }
+
+        public void Scale(ref Vector2 v)
+        {
+            Scale(v.X, v.Y, 1f);
         }
 
         public void Rotate(float degrees, Vector3 axis)
@@ -331,22 +358,22 @@ void main()
             // todo test this out
             //Matrix4.Mult(_modelMatrixStack[_currentModelMatrixStackIndex], Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(degrees)), out _modelMatrixStack[_currentModelMatrixStackIndex]);
 
-            ModelMatrix = ModelMatrix * Matrix4.CreateFromAxisAngle(axis, MathHelper.DegreesToRadians(degrees));
+            _modelMatrixStack[_modelMatrixStackIndex] = _modelMatrixStack[_modelMatrixStackIndex] * Matrix4.CreateFromAxisAngle(axis, MathHelper.DegreesToRadians(degrees));
         }
 
         /// <summary>
         /// default == PrimitiveType.Triangles
         /// </summary>
-        public PrimitiveType ActivePrimitiveType { get; set; } = PrimitiveType.Triangles;
+        public PrimitiveType ActiveRenderPrimitiveType { get; set; } = PrimitiveType.Triangles;
 
         public void Render()
         {
-            Render(ActivePrimitiveType, 0, VertexBuffer.TotelElements());
+            Render(ActiveRenderPrimitiveType, 0, VertexBuffer.TotelElements());
         }
 
         public void Render(int index, int count)
         {
-            Render(ActivePrimitiveType, index, count);
+            Render(ActiveRenderPrimitiveType, index, count);
         }
 
         public void Render(PrimitiveType primitiveType, int index, int count)
@@ -856,7 +883,7 @@ void main()
 
         public Geometry.QuadGeometry Quad()
         {
-            var g = new Geometry.QuadGeometry(ActiveShader(), ModelMatrix);
+            var g = new Geometry.QuadGeometry(ActiveShader(), ModelMatrix());
 
             AddGeometry(g);
 
@@ -865,7 +892,7 @@ void main()
 
         public Geometry CreateGeometry(GeometryType geometryType)
         {
-            return CreateGeometry(geometryType, ActiveShader(), ModelMatrix);
+            return CreateGeometry(geometryType, ActiveShader(), ModelMatrix());
         }
 
         public Geometry CreateGeometry(GeometryType geometryType, Shader shader, Matrix4 modelMatrix)
