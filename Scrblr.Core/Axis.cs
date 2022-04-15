@@ -13,4 +13,16 @@ namespace Scrblr.Core
         Y,
         Z,
     }
+
+    public static class AxisExentions
+    {
+        public static Vector3 ToVector(this Axis axis)
+        {
+            return axis == Axis.X
+                    ? Vector3.UnitX
+                    : axis == Axis.Y
+                        ? Vector3.UnitY
+                        : Vector3.UnitZ;
+        }
+    }
 }

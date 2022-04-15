@@ -24,10 +24,10 @@ namespace Scrblr.Leaning
         //private int _vertexArrayObject;
         //private int _texture0;
         //private int _texture1;
-        private Shader _shader;
-        private VertexBuffer _vertexBuffer;
-        private Texture _texture0;
-        private Texture _texture1;
+        private Shader20220413 _shader;
+        private VertexBuffer20220413 _vertexBuffer;
+        private Texture20220413 _texture0;
+        private Texture20220413 _texture1;
         private float _angle;
 
         const string vertexShaderSource = @"
@@ -84,12 +84,12 @@ void main()
         {
             ClearColor(255, 255, 255);
 
-            _vertexBuffer = new VertexBuffer(
+            _vertexBuffer = new VertexBuffer20220413(
              12,
              new[] {
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Position1, Type = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Color1, Type = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Uv1, Type = VertexBufferLayout.ElementType.Single, Count = 2 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Position0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 3 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Color0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 3 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Uv0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 2 },
              },
              VertexBufferUsage.StaticDraw);
 
@@ -98,16 +98,16 @@ void main()
             _vertexBuffer.Write(ref _positionColor);
 
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
 
-            _texture0 = new Texture("resources/textures/orange-transparent-1024x1024.png");
+            _texture0 = new Texture20220413("resources/textures/orange-transparent-1024x1024.png");
             //_texture0 = new Texture("resources/textures/orange-transparent-2048x2048.png");
             //_texture0 = new Texture("resources/textures/orange-white-2048x2048.jpg");
             //_texture0 = new Texture("resources/textures/orange-transparent-2048x2048.png");
 
             //_texture1 = new Texture("resources/textures/smiley-1024x1024.jpg");
-            _texture1 = new Texture("resources/textures/smiley-transparent-1024x1024.png");
+            _texture1 = new Texture20220413("resources/textures/smiley-transparent-1024x1024.png");
 
             //Camera.Position.Y = 200;
         }
@@ -120,7 +120,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             _shader.Use();
 

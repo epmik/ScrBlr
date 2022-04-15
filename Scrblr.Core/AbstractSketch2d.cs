@@ -6,99 +6,45 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
 namespace Scrblr.Core
 {
-    public abstract class AbstractSketch2d : ISketch
+    public abstract class AbstractSketch2d : GraphicsSettings, ISketch
     {
         #region Fields and Properties
 
         private GameWindow _internalWindow;
 
-        private GraphicsContext2d _graphics;
+        private GraphicsContext _graphics;
 
-        public GraphicsContext2d Graphics => _graphics;
+        public GraphicsContext Graphics => _graphics;
 
-        private const float DefaultWidth = 2f;
-        private const float DefaultHeight = 2f;
-        public float Width { get; private set; } = DefaultWidth;
-        public float Height { get; private set; } = DefaultHeight;
+        private const float DefaultFrustumWidth = 2f;
+        private const float DefaultFrustumHeight = 2f;
+        public float FrustumWidth { get; private set; } = DefaultFrustumWidth;
+        public float FrustumHeight { get; private set; } = DefaultFrustumHeight;
         public Dimensions Dimension { get; private set; } = Dimensions.Two;
-
-        private int _depthBits = 32;
-
-        /// <summary>
-        /// default == 32
-        /// </summary>
-        public int DepthBits
-        {
-            get { return _depthBits; }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be less then 0.");
-                }
-                else if (value > 32)
-                {
-                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be greater then 32.");
-                }
-                _depthBits = value;
-            }
-        }
-
-        private int _stencilBits = 24;
-
-        /// <summary>
-        /// default == 24
-        /// </summary>
-        public int StencilBits
-        {
-            get { return _stencilBits; }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be less then 0.");
-                }
-                else if (value > 32)
-                {
-                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be greater then 32.");
-                }
-                _stencilBits = value;
-            }
-        }
-
-        private int _samples = 8;
-
-        /// <summary>
-        /// default == 8
-        /// </summary>
-        public int Samples 
-        { 
-            get { return _samples; } 
-            set 
-            {
-                if(value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("Samples failed. Samples cannot be less then 0.");
-                }
-                _samples = value; 
-            } 
-        }
 
         protected NearFarScrollCamera Camera;
 
-        public int WindowWidth { get { return _internalWindow != null ? _internalWindow.Size.X : 0; } }
+        public int WindowWidth { get { return Width; } }
 
-        public int WindowHeight { get { return _internalWindow != null ? _internalWindow.Size.Y : 0; } }
+        public int WindowHeight { get { return Height; } }
+        protected KeyboardState KeyboardState { get { return _internalWindow.KeyboardState; } }
+        protected MouseState MouseState { get { return _internalWindow.MouseState; } }
 
         public int FrameCount { get; private set; }
+        
+        public double ElapsedTime { get; private set; }
+
+        public int FramesPerSecond { get; private set; }
+
+        private long LastFramesPerSecondTimeStamp { get; set; }
+
+        #region Action Handlers
 
         public event Action LoadAction;
         public event Action UnLoadAction;
@@ -114,14 +60,42 @@ namespace Scrblr.Core
         public event Action<KeyboardKeyEventArgs> KeyDownAction;
         public event Action<KeyboardKeyEventArgs> KeyUpAction;
 
+        #endregion Action Handlers
+
+        #region Save Frame Fields and Properties
+
+        private bool _saveNextFrame { get; set; }
+
+        private GraphicsContext _saveFrameGraphicsContext;
+
         /// <summary>
-        /// default == Color4.White
+        /// A scale applied to the saved image. default == 4f
+        /// <para>
+        /// i.e. if the window is 600 x 800 pixels
+        /// a scale will of 1 will result in a 600 x 800 pixels image
+        /// a scale will of 2 will result in a 1200 x 1600 pixels image
+        /// a scale will of 0.25 will result in a 150 x 200 pixels image
+        /// </para>
+        /// <para>
+        /// Irrespective of the scale, the dimensions of the image can never be less then 1 and never be greater then the texture size limit defined by OpenGl and your graphics device.
+        /// And will also be limited by the <see cref="SaveFrameMaxWidth"/> and <see cref="SaveFrameMaxHeight"/> properties.
+        /// </para>
         /// </summary>
-        protected Color4 _clearColor = Color4.White;
+        public float SaveFrameScale = 12f;
 
-        //protected VertexBuffer PositionColorVertexBuffer { get; private set; }
+        /// <summary>
+        /// default == 4096
+        /// </summary>
+        public int SaveFrameMaxWidth = 1024 * 4;
 
-        public bool _saveNextFrame { get; set; }
+        /// <summary>
+        /// default == 4096
+        /// </summary>
+        public int SaveFrameMaxHeight = 1024 * 4;
+
+        #endregion Save Frame Fields and Properties
+
+        #region Keypress/board Fields and Properties
 
         /// <summary>
         /// default key to close the application. Set to null if you want to dissable this.
@@ -133,12 +107,16 @@ namespace Scrblr.Core
         /// </summary>
         protected Keys? SaveFrameKey = Keys.F5;
 
+        #endregion Keypress/board Fields and Properties
+
+        private readonly Stopwatch _timeStopWatch = new Stopwatch();
+
         #endregion Fields and Properties
 
         #region Constructors
 
         public AbstractSketch2d()
-            : this(DefaultWidth, DefaultHeight)
+            : this(DefaultFrustumWidth, DefaultFrustumHeight)
         {
 
         }
@@ -150,9 +128,10 @@ namespace Scrblr.Core
         /// <param name="width"></param>
         /// <param name="height"></param>
         public AbstractSketch2d(float width, float height)
+            : base(0, 0)
         {
-            Width = width;
-            Height = height;
+            FrustumWidth = width;
+            FrustumHeight = height;
         }
 
         #endregion Constructors
@@ -161,66 +140,57 @@ namespace Scrblr.Core
         {
             GL.GetInteger(GetPName.MajorVersion, out int majorVersion);
             GL.GetInteger(GetPName.MinorVersion, out int minorVersion);
-            Debug.WriteLine($"OpenGL version: {majorVersion}.{minorVersion}");
+            Diagnostics.Log($"OpenGL version: {majorVersion}.{minorVersion}");
 
             GL.GetInteger(GetPName.MaxVertexAttribs, out int maxAttributeCount);
-            Debug.WriteLine($"Maximum number of vertex attributes supported: {maxAttributeCount}");
+            Diagnostics.Log($"Maximum number of vertex attributes supported: {maxAttributeCount}");
+
+            GL.GetInteger(GetPName.MaxTextureUnits, out int maxTextureUnits);
+            Diagnostics.Log($"Maximum number of texture units supported: {maxTextureUnits}");
+
+            GL.GetInteger(GetPName.MaxTextureSize, out int maxTextureSize);
+            Diagnostics.Log($"Maximum texture size supported: {maxTextureSize}");
+
+            GL.GetInteger(GetPName.MaxClipDistances, out int maxClipDistances);
+            Diagnostics.Log($"Maximum clip distance: {maxClipDistances}");
+
+            GL.GetInteger(GetPName.MaxSamples, out int maxSamples);
+            Diagnostics.Log($"Maximum samples: {maxSamples}");
         }
 
         private void MouseWheelInternal(MouseWheelEventArgs a)
         {
-            if (MouseWheelAction != null)
-            {
-                MouseWheelAction(a);
-            }
+            MouseWheelAction?.Invoke(a);
         }
 
         private void MouseDownInternal(MouseButtonEventArgs a)
         {
-            if (MouseDownAction != null)
-            {
-                MouseDownAction(a);
-            }
+            MouseDownAction?.Invoke(a);
         }
 
         private void MouseUpInternal(MouseButtonEventArgs a)
         {
-            if (MouseUpAction != null)
-            {
-                MouseUpAction(a);
-            }
+            MouseUpAction?.Invoke(a);
         }
 
         private void MouseMoveInternal(MouseMoveEventArgs a)
         {
-            if (MouseMoveAction != null)
-            {
-                MouseMoveAction(a);
-            }
+            MouseMoveAction?.Invoke(a);
         }
 
         private void MouseLeaveInternal()
         {
-            if (MouseLeaveAction != null)
-            {
-                MouseLeaveAction();
-            }
+            MouseLeaveAction?.Invoke();
         }
 
         private void MouseEnterInternal()
         {
-            if (MouseEnterAction != null)
-            {
-                MouseEnterAction();
-            }
+            MouseEnterAction?.Invoke();
         }
 
         private void KeyDownInternal(KeyboardKeyEventArgs a)
         {
-            if (KeyDownAction != null)
-            {
-                KeyDownAction(a);
-            }
+            KeyDownAction?.Invoke(a);
         }
 
         private void KeyUpInternal(KeyboardKeyEventArgs a)
@@ -235,57 +205,25 @@ namespace Scrblr.Core
                 _saveNextFrame = true;
             }
 
-            if (KeyUpAction != null)
-            {
-                KeyUpAction(a);
-            }
+            KeyUpAction?.Invoke(a);
         }
 
-        private readonly int[] AvailableSizes = { 3000, 2400, 2000, 1600, 1200, 1000, 800, 640, 480 };
+        private readonly int[] AvailableSizes = { 3600, 3000, 2400, 2000, 1600, 1200, 1000, 800, 640, 480 };
 
-        private Vector2i CalculateWindowSize(float sketchWidth, float sketchHeight)
+        private Vector2i CalculateWindowSize(float frustumWidth, float frustumHeight)
         {
             var primaryMonitor = Monitors.GetPrimaryMonitor();
 
             var targetWindowWidth = AvailableSizes.First(o => o < primaryMonitor.HorizontalResolution);
             var targetWindowHeight = AvailableSizes.First(o => o < primaryMonitor.VerticalResolution);
 
-            if(sketchWidth <= targetWindowWidth && sketchHeight <= targetWindowHeight)
+            var windowWidth = (int)(targetWindowHeight * frustumWidth / frustumHeight);
+            var windowHeight = targetWindowHeight;
+
+            if(windowWidth > targetWindowWidth || windowHeight > targetWindowWidth)
             {
-                return new Vector2i((int)sketchWidth, (int)sketchHeight);
-            }
-
-            var heightFactor = sketchHeight / sketchWidth;
-            var widthFactor = sketchWidth / sketchHeight;
-
-
-
-            var windowWidth = 0;
-            var windowHeight = 0;
-
-            if (heightFactor < 1f)
-            {
-                // sketch width is greater then height
                 windowWidth = targetWindowWidth;
-                windowHeight = (int)(targetWindowWidth * heightFactor);
-
-                if(windowHeight > targetWindowHeight)
-                {
-                    windowWidth = (int)(targetWindowHeight * widthFactor);
-                    windowHeight = targetWindowHeight;
-                }
-            }
-            else
-            {
-                // sketch width is less or equal to height
-                windowWidth = (int)(targetWindowHeight * widthFactor);
-                windowHeight = targetWindowHeight;
-
-                if (windowWidth > targetWindowWidth)
-                {
-                    windowWidth = targetWindowWidth;
-                    windowHeight = (int)(targetWindowWidth * heightFactor);
-                }
+                windowHeight = (int)(targetWindowWidth * frustumHeight / frustumWidth);
             }
 
             return new Vector2i(windowWidth, windowHeight);
@@ -293,9 +231,22 @@ namespace Scrblr.Core
 
         public void Run()
         {
+            _timeStopWatch.Start();
+
             Initialize();
 
+            Diagnostics.Log($"Initialize time: {_timeStopWatch.ElapsedMilliseconds} ms.");
+
             _internalWindow.Run();
+
+            _timeStopWatch.Stop();
+
+            Diagnostics.Log($"Close time: {_timeStopWatch.ElapsedMilliseconds} ms.");
+        }
+
+        public long CurrentTimeStamp() 
+        { 
+            return _timeStopWatch.ElapsedMilliseconds; 
         }
 
         private void Initialize()
@@ -307,7 +258,10 @@ namespace Scrblr.Core
 
             var title = GetSketchName();
 
-            var windowSize = CalculateWindowSize(Width, Height);
+            var windowSize = CalculateWindowSize(FrustumWidth, FrustumHeight);
+
+            Width = windowSize.X;
+            Height = windowSize.Y;
 
             var nativeWindowSettings = new NativeWindowSettings
             {
@@ -332,23 +286,24 @@ namespace Scrblr.Core
             _internalWindow.MouseUp += MouseUpInternal;
             _internalWindow.MouseEnter += MouseEnterInternal;
             _internalWindow.MouseLeave += MouseLeaveInternal;
+            _internalWindow.MouseMove += MouseMoveInternal;
 
             _internalWindow.KeyDown += KeyDownInternal;
             _internalWindow.KeyUp += KeyUpInternal;
 
             Camera = new NearFarScrollCamera
             {
-                Width = Width,
-                Height = Height,
+                Width = FrustumWidth,
+                Height = FrustumHeight,
                 Near = 1f,
                 Far = 100f,
                 Fov = 45f,
                 Position = new Vector3(0, 0, 2),
             };
 
-            _graphics = new GraphicsContext2d(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
+            _graphics = new GraphicsContext(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
 
-            _graphics.CurrentCamera = Camera;
+            _graphics.ActiveCamera = Camera;
         }
 
         private void LoadInternal()
@@ -357,7 +312,7 @@ namespace Scrblr.Core
 
             EnableDefaultOpenGlStates();
 
-            LoadAction();
+            LoadAction?.Invoke();
         }
 
         private void EnableDefaultOpenGlStates()
@@ -370,56 +325,90 @@ namespace Scrblr.Core
             {
                 GL.Enable(EnableCap.DepthTest);
             }
+
             GL.Enable(EnableCap.Multisample);
         }
 
         private void UpdateFrameInternal(FrameEventArgs e)
         {
-            FrameCount++;
-
-            ClearStatesAndCounters();
+            PreUpdateFrameInternal(e);
 
             if (_internalWindow.MouseState.Scroll != _internalWindow.MouseState.PreviousScroll)
             {
                 Camera.Scroll(_internalWindow.MouseState.ScrollDelta.Y, e.Time);
             }
 
-            _graphics.ClearMatrixStack();
+            UpdateAction?.Invoke();
 
-            UpdateAction();
+            PostUpdateFrameInternal(e);
         }
 
-        private void ClearStatesAndCounters()
+        private void PreUpdateFrameInternal(FrameEventArgs e)
         {
-            Graphics.Clear();
+            FrameCount++;
+            FramesPerSecond++;
+
+            ElapsedTime = e.Time;
+
+            var currentTimeStamp = CurrentTimeStamp();
+
+            if (LastFramesPerSecondTimeStamp + 2000 <= currentTimeStamp)
+            {
+                Diagnostics.Log($"FPS: {FramesPerSecond}");
+
+                LastFramesPerSecondTimeStamp = currentTimeStamp;
+                FramesPerSecond = 0;
+            }            
+
+            ResetStatesAndCounters();
+
+            _graphics.ClearMatrixStack();
+        }
+
+        private void PostUpdateFrameInternal(FrameEventArgs e)
+        {
+        }
+
+        private void ResetStatesAndCounters()
+        {
+            Graphics.Reset();
         }
 
         private void RenderFrameInternal(FrameEventArgs e)
         {
-            RenderFramePreInternal(e);
+            PreRenderFrameInternal(e);
 
             RenderAction();
 
             Graphics.Flush();
 
-            RenderFramePostInternal(e);
+            PostRenderFrameInternal(e);
         }
 
-        private void RenderFramePreInternal(FrameEventArgs e)
+        private void PreRenderFrameInternal(FrameEventArgs e)
         {
             if(_saveNextFrame)
             {
+                if(_saveFrameGraphicsContext == null)
+                {
+                    CreateSaveFrameGraphicsContext();
 
+                    _saveFrameGraphicsContext.Bind();
+                }
             }
         }
 
-        private void RenderFramePostInternal(FrameEventArgs e)
+        private void PostRenderFrameInternal(FrameEventArgs e)
         {
             if(_saveNextFrame)
             {
-                SaveFrame(Graphics);
-
                 _saveNextFrame = false;
+
+                SaveFrame(_saveFrameGraphicsContext);
+
+                DisposeSaveFrameGraphicsContext();
+
+                Graphics.Bind();
 
                 return;
             }
@@ -429,86 +418,99 @@ namespace Scrblr.Core
 
         private void UnLoadInternal()
         {
+            _saveFrameGraphicsContext?.Dispose();
+            _saveFrameGraphicsContext = null;
+
             Graphics.Dispose();
 
-            UnLoadAction();
+            UnLoadAction?.Invoke();
         }
 
         private void ResizeInternal(ResizeEventArgs a)
         {
             GL.Viewport(0, 0, _internalWindow.Size.X, _internalWindow.Size.Y);
 
-            if (ResizeAction != null)
-            {
-                ResizeAction(a);
-            }
+            ResizeAction?.Invoke(a);
         }
 
-        private void SaveFrame(GraphicsContext2d graphics)
+        private void SaveFrame(GraphicsContext graphics)
         {
-            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            graphics.Bind();
 
             GL.Flush();
 
-            // see https://gist.github.com/WernerWenz/67d6f3ebd0309498ed89bcff6c1889a7
-
-            using (var bitmap = new Bitmap((int)WindowWidth, (int)WindowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            using (var bitmap = new System.Drawing.Bitmap(graphics.Width, graphics.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
             {
                 var name = GetSketchName() + DateTime.Now.ToString(".yyyyMMdd.HHmmss.ffff") + ".png";
 
-                var data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, (int)WindowWidth, (int)WindowHeight), ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                var data = bitmap.LockBits(new System.Drawing.Rectangle(
+                    0, 0,
+                    graphics.Width, graphics.Height), 
+                    System.Drawing.Imaging.ImageLockMode.WriteOnly, 
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 
                 GL.PixelStore(PixelStoreParameter.PackRowLength, data.Stride / 4);
                 
-                GL.ReadPixels(0, 0, (int)WindowWidth, (int)WindowHeight, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                GL.ReadPixels(
+                    0, 0,
+                    graphics.Width, graphics.Height, 
+                    PixelFormat.Bgra, 
+                    PixelType.UnsignedByte, 
+                    data.Scan0);
                 
                 bitmap.UnlockBits(data);
 
                 bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
 
-                bitmap.Save(@"saves/" + name, ImageFormat.Png);
+                bitmap.Save(@"saves/" + name, System.Drawing.Imaging.ImageFormat.Png);
             }
-
-            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
-        protected void Clear(ClearFlag clearFlag)
+        private void CreateSaveFrameGraphicsContext()
         {
-            switch(clearFlag)
+            var width = (int)(WindowWidth * SaveFrameScale);
+            var height = (int)(WindowHeight * SaveFrameScale);
+
+            var max = GL.GetInteger(GetPName.MaxTextureSize);
+            var maxwidth = Math.Min(max, SaveFrameMaxWidth);
+            var maxheight = Math.Min(max, SaveFrameMaxHeight);
+
+            if (width > maxwidth)
             {
-                case ClearFlag.None:
-                    break;
-                case ClearFlag.Color:
-                    GL.Clear(ClearBufferMask.ColorBufferBit);
-                    break;
-                default:
-                    throw new NotImplementedException("Clear(ClearFlag) failed: found an unhandled ClearFlag.");
+                var factor = (float)maxwidth / (float)width;
+                width = (int)(width * factor);
+                height = (int)(height * factor);
             }
+
+            if (height > maxheight)
+            {
+                var factor = (float)maxheight / (float)height;
+                width = (int)(width * factor);
+                height = (int)(height * factor);
+            }
+
+            _saveFrameGraphicsContext = new GraphicsContext(
+                width,
+                height,
+                Graphics.ColorBits,
+                Graphics.DepthBits,
+                Graphics.StencilBits,
+                Graphics.Samples);
+
+            _saveFrameGraphicsContext.ActiveCamera = Graphics.ActiveCamera;
+            _saveFrameGraphicsContext.ModelMatrix = Graphics.ModelMatrix;
         }
 
-        protected void ClearColor(float r, float g, float b, float a = 1f)
+        private void DisposeSaveFrameGraphicsContext()
         {
-            _clearColor.R = r;
-            _clearColor.G = g;
-            _clearColor.B = b;
-            _clearColor.A = a;
+            GraphicsContext.Default.Bind();
 
-            GL.ClearColor(_clearColor);
-        }
+            if (_saveFrameGraphicsContext != null)
+            {
+                _saveFrameGraphicsContext.Dispose();
 
-        protected void ClearColor(int r, int g, int b, int a = 255)
-        {
-            ClearColor(Utility.ToUnitSingle(r), Utility.ToUnitSingle(g), Utility.ToUnitSingle(b), Utility.ToUnitSingle(a));
-        }
-
-        protected void Translate(float x, float y)
-        {
-            Graphics.CurrentModelMatrix = Graphics.CurrentModelMatrix * Matrix4.CreateTranslation(x, y, 0f);
-        }
-
-        protected void Rotate(float degrees)
-        {
-            Graphics.CurrentModelMatrix = Graphics.CurrentModelMatrix * Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(degrees));
+                _saveFrameGraphicsContext = null;
+            }
         }
 
         private string GetSketchName()

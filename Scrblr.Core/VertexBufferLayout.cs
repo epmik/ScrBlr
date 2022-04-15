@@ -9,6 +9,8 @@ namespace Scrblr.Core
 {
     public class VertexBufferLayout
     {
+        #region Fields and Properties
+
         public enum ElementType
         {
             None,
@@ -16,46 +18,17 @@ namespace Scrblr.Core
             Single = VertexAttribPointerType.Float,
         }
 
-        public enum PartIdentifier
-        {
-            None,
-            Position1,
-            Position2,
-            Position3,
-            Position4,
-            Position5,
-            Position6,
-            Position7,
-            Position8,
-            Color1,
-            Color2,
-            Color3,
-            Color4,
-            Color5,
-            Color6,
-            Color7,
-            Color8,
-            Uv1,
-            Uv2,
-            Uv3,
-            Uv4,
-            Uv5,
-            Uv6,
-            Uv7,
-            Uv8,
-        }
-
         public class Part
         {
             /// <summary>
             /// default == ElementIdentifier.None
             /// </summary>
-            public PartIdentifier Identifier = PartIdentifier.None;
+            public VertexFlag VertexFlag = VertexFlag.None;
 
             /// <summary>
             /// default == ElementType.None
             /// </summary>
-            public ElementType Type = ElementType.None;
+            public ElementType ElementType = ElementType.None;
 
             /// <summary>
             /// default == 0
@@ -65,16 +38,19 @@ namespace Scrblr.Core
             /// <summary>
             /// default == true
             /// </summary>
+            // todo is this needed, not set anywhere, use VertexFlag and VertexFlags properties?
             public bool Enabled = true;
 
-            public int ShaderLocation;
+            //public int ShaderLocation;
+
+            public string ShaderInputName;
 
             /// <summary>
             /// stride of this element in bytes
             /// </summary>
             public int Stride
             {
-                get { return Count * Size(Type); }
+                get { return Count * Size(ElementType); }
             }
 
             public static int Size(ElementType elementType)
@@ -91,26 +67,31 @@ namespace Scrblr.Core
             }
         }
 
-
         public Part[] Parts;
 
         public int Handle;
+
+        #endregion Fields and Properties
+
+        #region Constructors
 
         public VertexBufferLayout(IEnumerable<Part> parts)
         {
             Parts = parts.ToArray();
 
-            ValidateAndSetShaderLocations();
+            ValidateAndSetShaderInputNames();
         }
 
-        private void ValidateAndSetShaderLocations()
+        #endregion Constructors
+
+        private void ValidateAndSetShaderInputNames()
         {
-            if (Parts.Any(o => o.Identifier == PartIdentifier.None))
+            if (Parts.Any(o => o.VertexFlag == VertexFlag.None))
             {
                 throw new InvalidOperationException("VertexBufferLayout() constructor failed. Element.Identifier cannot be ElementIdentifier.None.");
             }
 
-            if (Parts.Any(o => o.Type == ElementType.None))
+            if (Parts.Any(o => o.ElementType == ElementType.None))
             {
                 throw new InvalidOperationException("VertexBufferLayout() constructor failed. Element.Type cannot be ElementType.None.");
             }
@@ -120,17 +101,32 @@ namespace Scrblr.Core
                 throw new InvalidOperationException("VertexBufferLayout() constructor failed. Element.Count cannot be 0.");
             }
 
-            if (Parts.All(o => o.ShaderLocation == 0))
+            foreach(var part in Parts)
             {
-                for(var i = 0; i < Parts.Length; i++)
+                if(!string.IsNullOrEmpty(part.ShaderInputName))
                 {
-                    Parts[i].ShaderLocation = i;
+                    continue;
                 }
+
+                part.ShaderInputName = part.VertexFlag.ShaderInputName();
             }
-            else if (Parts.Any(o => o.ShaderLocation == 0))
+
+            if (Parts.Any(o => string.IsNullOrEmpty(o.ShaderInputName)))
             {
-                throw new InvalidOperationException("VertexBufferLayout() constructor failed. Element.ShaderLocation cannot be 0 unless they're all 0.");
+                throw new InvalidOperationException("VertexBufferLayout() constructor failed. Element.ShaderVariableName cannot be null or empty.");
             }
+
+            //if (Parts.All(o => o.ShaderLocation == 0))
+            //{
+            //    for(var i = 0; i < Parts.Length; i++)
+            //    {
+            //        Parts[i].ShaderLocation = i;
+            //    }
+            //}
+            //else if (Parts.Any(o => o.ShaderLocation == 0))
+            //{
+            //    throw new InvalidOperationException("VertexBufferLayout() constructor failed. Element.ShaderLocation cannot be 0 unless they're all 0.");
+            //}
         }
 
         /// <summary>
@@ -141,13 +137,13 @@ namespace Scrblr.Core
             get { return Parts.Sum(o => o.Stride); }
         }
 
-        /// <summary>
-        /// stride of all the elements that make up this vertex buffer lay-out
-        /// </summary>
-        public int ElementCount
-        {
-            get { return Parts.Sum(o => o.Count); }
-        }
+        ///// <summary>
+        ///// stride of all the elements that make up this vertex buffer lay-out
+        ///// </summary>
+        //public int ElementCount
+        //{
+        //    get { return Parts.Sum(o => o.Count); }
+        //}
 
     }
 }

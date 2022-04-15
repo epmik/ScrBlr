@@ -5,7 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Old\20220413 - Copy\**" />
+    <EmbeddedResource Remove="Old\20220413 - Copy\**" />
+    <None Remove="Old\20220413 - Copy\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Frustum.cs" />
+    <Compile Remove="RenderFlag.cs" />
+    <Compile Remove="Shapes.cs" />
+    <Compile Remove="Tesselator.cs" />
     <Compile Remove="VertexBufferContext.cs" />
     <Compile Remove="Window.cs" />
   </ItemGroup>

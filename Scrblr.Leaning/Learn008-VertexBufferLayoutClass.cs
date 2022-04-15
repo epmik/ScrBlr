@@ -20,8 +20,8 @@ namespace Scrblr.Leaning
             UpdateAction += Update;
         }
 
-        private VertexBuffer _vertexBuffer;
-        private Shader _shader;
+        private VertexBuffer20220413 _vertexBuffer;
+        private Shader20220413 _shader;
 
         private float[] _positionColor1 =
         {
@@ -52,11 +52,11 @@ namespace Scrblr.Leaning
             ClearColor(255, 255, 255, 255);
             ClearColor(255, 255, 255);
 
-            _vertexBuffer = new VertexBuffer(
+            _vertexBuffer = new VertexBuffer20220413(
                 12,
                 new[] {
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Position1, Type = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Color1, Type = VertexBufferLayout.ElementType.Single, Count = 4 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Position0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 3 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Color0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 4 },
                 },
                 VertexBufferUsage.StaticDraw);
 
@@ -102,7 +102,7 @@ void main()
     oColor = ioColor;
 }";
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             QueryGraphicsCardCapabilities();
         }
@@ -114,7 +114,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             _shader.Use();
 

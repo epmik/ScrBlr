@@ -8,10 +8,16 @@ namespace Scrblr.Core
 {
     public class Shader
     {
+        #region Fields and Properties
+
         public readonly int Handle;
 
         private readonly Dictionary<string, int> _uniformLocations;
         private readonly Dictionary<string, int> _attributeLocations;
+
+        #endregion Fields and Properties
+
+        #region Constructors
 
         // This is how you create a simple shader.
         // Shaders are written in GLSL, which is a language very similar to C in its semantics.
@@ -108,6 +114,8 @@ namespace Scrblr.Core
             }
         }
 
+        #endregion Constructors
+
         private static void Compile(int shader)
         {
             // Try to compile the shader
@@ -148,6 +156,26 @@ namespace Scrblr.Core
         public int AttributeLocation(string name)
         {
             return _attributeLocations[name];
+
+            // return GL.GetAttribLocation(Handle, name);
+        }
+
+        // The shader sources provided with this project use hardcoded layout(location)-s. If you want to do it dynamically,
+        // you can omit the layout(location=X) lines in the vertex shader, and use this in VertexAttribPointer instead of the hardcoded values.
+        public bool TryAttributeLocation(string name, out int location)
+        {
+            try
+            {
+                location = _attributeLocations[name];
+
+                return true;
+            }
+            catch
+            {
+                location = -1;
+            }
+
+            return false;
 
             // return GL.GetAttribLocation(Handle, name);
         }

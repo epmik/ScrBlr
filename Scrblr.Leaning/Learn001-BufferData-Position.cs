@@ -22,7 +22,7 @@ namespace Scrblr.Leaning
 
         private int _vertexBufferObject;
         private int _vertexArrayObject;
-        private Shader _shader;
+        private Shader20220413 _shader;
 
         // Create the vertices for our triangle. These are listed in normalized device coordinates (NDC)
         // In NDC, (0, 0) is the center of the screen.
@@ -123,7 +123,7 @@ namespace Scrblr.Leaning
             // OpenGL at minimum supports 16 vertex attributes. This only needs to be called 
             // when your intensive attribute work and need to know exactly how many are available to you.
             GL.GetInteger(GetPName.MaxVertexAttribs, out int maxAttributeCount);
-            Debug.WriteLine($"Maximum number of vertex attributes supported: {maxAttributeCount}");
+            Diagnostics.Log($"Maximum number of vertex attributes supported: {maxAttributeCount}");
 
             const string vertexShaderSource = @"
 #version 330 core
@@ -158,7 +158,7 @@ void main()
     oColor = vec4(1.0, 1.0, 0.0, 1.0);
 }";
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
         }
 
         public void UnLoad()
@@ -168,7 +168,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             //PushTransform();
 

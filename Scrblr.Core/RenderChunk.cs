@@ -29,24 +29,15 @@ namespace Scrblr.Core
         public int ElementIndex;
 
         public int ElementCount;
-    }
-    public class RenderChunk20220410
-    {
-        /// <summary>
-        /// default == false
-        /// </summary>
-        public bool Enabled;
 
-        public Shader Shader;
+        public Texture Texture0;
 
-        public VertexBuffer VertexBuffer;
+        public Texture Texture1;
 
-        public Matrix4 ModelMatrix;
+        public Texture Texture2;
 
-        public GeometryType GeometryType;
+        public Texture Texture3;
 
-        public int ElementIndex;
-
-        public int ElementCount;
+        public VertexFlag VertexFlag;
     }
 }

@@ -23,7 +23,7 @@ namespace Scrblr.Leaning
         private VertexBuffer20220316<float> _vertexBuffer;
         //private int _vertexBufferObject;
         //private int _vertexArrayObject;
-        private Shader _shader;
+        private Shader20220413 _shader;
 
         private float[] _positionColor1 =
         {
@@ -115,7 +115,7 @@ void main()
     oColor = ioColor;
 }";
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             //var iPositionLocation = _shader.AttributeLocation("iPosition");
             //var iColorLocation = _shader.AttributeLocation("iColor");
@@ -134,7 +134,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             _shader.Use();
 

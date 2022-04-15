@@ -22,7 +22,7 @@ namespace Scrblr.Leaning
 
         private int _vertexBufferObject;
         private int _vertexArrayObject;
-        private Shader _shader;
+        private Shader20220413 _shader;
 
         private readonly float[] _positionColor1 =
         {
@@ -96,7 +96,7 @@ void main()
     oColor = ioColor;
 }";
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             // instead of using hardcoded values
             // GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
@@ -123,7 +123,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             _shader.Use();
 

@@ -2,22 +2,22 @@
 
 namespace Scrblr.Core
 {
-    public class Tessalator
+    public class Tesselator20220413
     {
-        private static Tessalator Default = new Tessalator();
+        private static Tesselator20220413 Default = new Tesselator20220413();
 
-        public Tessalator()
+        public Tesselator20220413()
         {
 
         }
 
-        public static void Tessalate(Geometry geometry)
+        public static void Tessalate(Geometry20220413 geometry)
         {
             switch(geometry.GeometryType)
             {
-                case GeometryType.Lines:
-                case GeometryType.LineStrip:
-                case GeometryType.LineLoop:
+                case GeometryType20220413.Lines:
+                case GeometryType20220413.LineStrip:
+                case GeometryType20220413.LineLoop:
                     TessalateLines(geometry);
                     break;
                 default:
@@ -25,7 +25,7 @@ namespace Scrblr.Core
             }
         }
 
-        private static void TessalateLines(Geometry geometry)
+        private static void TessalateLines(Geometry20220413 geometry)
         {
 
 

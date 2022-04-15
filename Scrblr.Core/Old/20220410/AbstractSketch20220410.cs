@@ -57,7 +57,7 @@ namespace Scrblr.Core
         private int _currentModelMatrixStackIndex = 0;
         private Matrix4?[] ModelMatrixStack = new Matrix4?[_maxModelMatrixStackCount];
 
-        protected Shader Shader { get; set; }
+        protected Shader20220413 Shader { get; set; }
 
         /// <summary>
         /// default == Color4.White
@@ -121,7 +121,7 @@ namespace Scrblr.Core
         protected KeyboardState KeyboardState { get { return _internalWindow.KeyboardState; } }
         protected MouseState MouseState { get { return _internalWindow.MouseState; } }
 
-        protected VertexBuffer PositionColorVertexBuffer { get; private set; }
+        protected VertexBuffer20220413 PositionColorVertexBuffer { get; private set; }
 
         public bool _saveFrame { get; set; }
 
@@ -337,10 +337,10 @@ namespace Scrblr.Core
         {
             GL.GetInteger(GetPName.MajorVersion, out int majorVersion);
             GL.GetInteger(GetPName.MinorVersion, out int minorVersion);
-            Debug.WriteLine($"OpenGL version: {majorVersion}.{minorVersion}");
+            Diagnostics.Log($"OpenGL version: {majorVersion}.{minorVersion}");
 
             GL.GetInteger(GetPName.MaxVertexAttribs, out int maxAttributeCount);
-            Debug.WriteLine($"Maximum number of vertex attributes supported: {maxAttributeCount}");
+            Diagnostics.Log($"Maximum number of vertex attributes supported: {maxAttributeCount}");
         }
 
         private void MouseWheelInternal(MouseWheelEventArgs a)
@@ -355,49 +355,20 @@ namespace Scrblr.Core
 
         private readonly int[] AvailableSizes = { 3000, 2400, 2000, 1600, 1200, 1000, 800, 640, 480 };
 
-        private Vector2i CalculateWindowSize(float sketchWidth, float sketchHeight)
+        private Vector2i CalculateWindowSize(float frustumWidth, float frustumHeight)
         {
             var primaryMonitor = Monitors.GetPrimaryMonitor();
 
             var targetWindowWidth = AvailableSizes.First(o => o < primaryMonitor.HorizontalResolution);
             var targetWindowHeight = AvailableSizes.First(o => o < primaryMonitor.VerticalResolution);
 
-            if(sketchWidth <= targetWindowWidth && sketchHeight <= targetWindowHeight)
+            var windowWidth = (int)(targetWindowHeight * frustumWidth / frustumHeight);
+            var windowHeight = targetWindowHeight;
+
+            if (windowWidth > targetWindowWidth || windowHeight > targetWindowWidth)
             {
-                return new Vector2i((int)sketchWidth, (int)sketchHeight);
-            }
-
-            var heightFactor = sketchHeight / sketchWidth;
-            var widthFactor = sketchWidth / sketchHeight;
-
-
-
-            var windowWidth = 0;
-            var windowHeight = 0;
-
-            if (heightFactor < 1f)
-            {
-                // sketch width is greater then height
                 windowWidth = targetWindowWidth;
-                windowHeight = (int)(targetWindowWidth * heightFactor);
-
-                if(windowHeight > targetWindowHeight)
-                {
-                    windowWidth = (int)(targetWindowHeight * widthFactor);
-                    windowHeight = targetWindowHeight;
-                }
-            }
-            else
-            {
-                // sketch width is less or equal to height
-                windowWidth = (int)(targetWindowHeight * widthFactor);
-                windowHeight = targetWindowHeight;
-
-                if (windowWidth > targetWindowWidth)
-                {
-                    windowWidth = targetWindowWidth;
-                    windowHeight = (int)(targetWindowWidth * heightFactor);
-                }
+                windowHeight = (int)(targetWindowWidth * frustumHeight / frustumWidth);
             }
 
             return new Vector2i(windowWidth, windowHeight);
@@ -428,11 +399,11 @@ namespace Scrblr.Core
 
             ProjectionMatrix = CreateProjectionMatrix();
 
-            PositionColorVertexBuffer = new VertexBuffer(
+            PositionColorVertexBuffer = new VertexBuffer20220413(
                 1024 * 1024,
                 new[] {
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Position1, Type = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Color1, Type = VertexBufferLayout.ElementType.Single, Count = 4 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Position0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 3 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Color0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 4 },
                 },
                 VertexBufferUsage.DynamicDraw);
 
@@ -600,7 +571,7 @@ namespace Scrblr.Core
             {
                 case ClearFlag.None:
                     break;
-                case ClearFlag.Color:
+                case ClearFlag.ColorBuffer:
                     GL.Clear(ClearBufferMask.ColorBufferBit);
                     break;
                 default:
@@ -625,7 +596,7 @@ namespace Scrblr.Core
 
         protected void Rectangle(float x, float y, float width, float height)
         {
-            InsertRenderChunk(Shader, PositionColorVertexBuffer, ModelMatrix, GeometryType.TriangleStrip, PositionColorVertexBuffer.UsedElements(), 4);
+            InsertRenderChunk(Shader, PositionColorVertexBuffer, ModelMatrix, GeometryType20220413.TriangleStrip, PositionColorVertexBuffer.UsedElements(), 4);
 
             PositionColorVertexBuffer.Bind();
 
@@ -650,7 +621,7 @@ namespace Scrblr.Core
 
         protected void Quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
         {
-            InsertRenderChunk(Shader, PositionColorVertexBuffer, ModelMatrix, GeometryType.TriangleStrip, PositionColorVertexBuffer.UsedElements(), 4);
+            InsertRenderChunk(Shader, PositionColorVertexBuffer, ModelMatrix, GeometryType20220413.TriangleStrip, PositionColorVertexBuffer.UsedElements(), 4);
 
             PositionColorVertexBuffer.Bind();
 
@@ -703,7 +674,7 @@ namespace Scrblr.Core
             return GetType().Name;
         }
 
-        private void InsertRenderChunk(Shader shader, VertexBuffer vertexBuffer, Matrix4 modelMatrix, GeometryType geometryType, int elementIndex, int elementCount)
+        private void InsertRenderChunk(Shader20220413 shader, VertexBuffer20220413 vertexBuffer, Matrix4 modelMatrix, GeometryType20220413 geometryType, int elementIndex, int elementCount)
         {
             if(_renderChunkCount + 1 >= _maxRenderChunks)
             {

@@ -23,7 +23,7 @@ namespace Scrblr.Leaning
         private int _vertexBufferObject;
         private int _vertexArrayObject;
         private int _texture0;
-        private Shader _shader;
+        private Shader20220413 _shader;
 
         const string vertexShaderSource = @"
 #version 330 core
@@ -96,7 +96,7 @@ void main()
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
             GL.EnableVertexAttribArray(2);
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             _texture0 = GL.GenTexture();
 
@@ -143,7 +143,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             _shader.Use();
 

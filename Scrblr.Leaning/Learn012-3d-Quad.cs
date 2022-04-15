@@ -68,7 +68,7 @@ void main()
         private int _indexBufferObject;
         private int _texture1;
         private int _texture2;
-        private Shader _shader;
+        private Shader20220413 _shader;
 
         public Learn012()
             : base(600, 600)
@@ -112,7 +112,7 @@ void main()
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
             GL.EnableVertexAttribArray(2);
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             _texture1 = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, _texture1);
@@ -186,7 +186,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             GL.Enable(EnableCap.Texture2D);
 

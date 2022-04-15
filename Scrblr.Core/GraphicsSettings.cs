@@ -16,27 +16,33 @@ namespace Scrblr.Core
 {
     public class GraphicsSettings
     {
+        #region Fields and Properties
+
         public const int DefaultColorBits = 32;
         public const int DefaultDepthBits = 32;
-        public const int DefaultStencilBits = 24;
+        public const int DefaultStencilBits = 0;
         public const int DefaultSamples = 8;
 
         /// <summary>
         /// default == 0
         /// </summary
-        public int Width { get; private set; }
+        public int Width { get; set; }
 
         /// <summary>
         /// default == 0
         /// </summary>
-        public int Height { get; private set; }
+        public int Height { get; set; }
 
-        private int? _colorBits = GraphicsContext.DefaultColorBits;
+        private int _colorBits = GraphicsSettings.DefaultColorBits;
 
         /// <summary>
         /// default == 32
         /// </summary>
-        public int? ColorBits
+        /// set to 0 to disable depth buffer creation
+        /// <para>
+        /// possible values are 32
+        /// </para>
+        public int ColorBits
         {
             get { return _colorBits; }
             set
@@ -53,12 +59,16 @@ namespace Scrblr.Core
             }
         }
 
-        private int? _depthBits = GraphicsContext.DefaultDepthBits;
+        private int _depthBits = GraphicsSettings.DefaultDepthBits;
 
         /// <summary>
         /// default == 32
+        /// set to 0 to disable depth buffer creation
+        /// <para>
+        /// possible values are 16, 24 or 32
+        /// </para>
         /// </summary>
-        public int? DepthBits
+        public int DepthBits
         {
             get { return _depthBits; }
             set
@@ -75,12 +85,16 @@ namespace Scrblr.Core
             }
         }
 
-        private int? _stencilBits = GraphicsContext.DefaultStencilBits;
+        private int _stencilBits = GraphicsSettings.DefaultStencilBits;
 
         /// <summary>
         /// default == 24
+        /// set to 0 to disable stencil buffer creation
+        /// <para>
+        /// possible values are 16 or 24
+        /// </para>
         /// </summary>
-        public int? StencilBits
+        public int StencilBits
         {
             get { return _stencilBits; }
             set
@@ -97,12 +111,13 @@ namespace Scrblr.Core
             }
         }
 
-        private int? _samples = GraphicsContext.DefaultSamples;
+        private int _samples = GraphicsSettings.DefaultSamples;
 
         /// <summary>
         /// default == 8
+        /// set to 0 or 1 to disable sampling
         /// </summary>
-        public int? Samples
+        public int Samples
         {
             get { return _samples; }
             set
@@ -115,13 +130,17 @@ namespace Scrblr.Core
             }
         }
 
+        #endregion Fields and Properties
+
+        #region Constructors
+
         public GraphicsSettings(
             int width, 
             int height, 
-            int? colorBits = GraphicsContext.DefaultColorBits,
-            int? depthBits = GraphicsContext.DefaultDepthBits,
-            int? stencilBits = GraphicsContext.DefaultStencilBits,
-            int? samples = GraphicsContext.DefaultSamples)
+            int colorBits = GraphicsSettings.DefaultColorBits,
+            int depthBits = GraphicsSettings.DefaultDepthBits,
+            int stencilBits = GraphicsSettings.DefaultStencilBits,
+            int samples = GraphicsSettings.DefaultSamples)
         {
             Width = width;
             Height = height;
@@ -130,5 +149,19 @@ namespace Scrblr.Core
             StencilBits = stencilBits;
             Samples = samples;
         }
+
+        public GraphicsSettings(GraphicsSettings graphicsSettings)
+            : this(
+                  graphicsSettings.Width,
+                  graphicsSettings.Height,
+                  graphicsSettings.ColorBits,
+                  graphicsSettings.DepthBits,
+                  graphicsSettings.StencilBits,
+                  graphicsSettings.Samples)
+        {
+        }
+
+        #endregion Constructors
+
     }
 }

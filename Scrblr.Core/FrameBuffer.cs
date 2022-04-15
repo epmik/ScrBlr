@@ -26,10 +26,6 @@ namespace Scrblr.Core
         private int _depthAttachmentHandle;
         private int _stencilAttachmentHandle;
 
-        //public FrameBufferAttachments Attachments { get; private set; }
-
-        private FramebufferTarget _framebufferTarget = FramebufferTarget.Framebuffer;
-
         #endregion Fields and Properties
 
         #region Constructors
@@ -37,15 +33,15 @@ namespace Scrblr.Core
         public FrameBuffer(
             int width, 
             int height,
-            int? colorBits = GraphicsContext.DefaultColorBits,
-            int? depthBits = GraphicsContext.DefaultDepthBits,
-            int? stencilBits = GraphicsContext.DefaultStencilBits,
-            int? samples = GraphicsContext.DefaultSamples)
+            int colorBits = GraphicsSettings.DefaultColorBits,
+            int depthBits = GraphicsSettings.DefaultDepthBits,
+            int stencilBits = GraphicsSettings.DefaultStencilBits,
+            int samples = GraphicsSettings.DefaultSamples)
             : base(width, height, colorBits, depthBits, stencilBits, samples)
         {
             Handle = GL.GenFramebuffer();
 
-            GL.BindFramebuffer(_framebufferTarget, Handle);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
 
             if (ColorBits != null && ColorBits > 0)
             {
@@ -59,7 +55,7 @@ namespace Scrblr.Core
                 }
                 else
                 {
-                    GL.TexImage2DMultisample(TextureTargetMultisample.Texture2DMultisample, Samples.Value, PixelInternalFormat.Rgba8, Width, Height, false);
+                    GL.TexImage2DMultisample(TextureTargetMultisample.Texture2DMultisample, Samples, PixelInternalFormat.Rgba8, Width, Height, false);
                 }
 
                 GL.TexParameter(OpenGlTextureTarget(), TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
@@ -70,7 +66,7 @@ namespace Scrblr.Core
 
                 GL.BindTexture(OpenGlTextureTarget(), 0);
 
-                GL.FramebufferTexture2D(_framebufferTarget, FramebufferAttachment.ColorAttachment0, OpenGlTextureTarget(), _colorAttachmentHandle, 0);
+                GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, OpenGlTextureTarget(), _colorAttachmentHandle, 0);
             }
 
             if (DepthBits != null && DepthBits > 0)
@@ -85,7 +81,7 @@ namespace Scrblr.Core
                 }
                 else
                 {
-                    GL.RenderbufferStorageMultisample(RenderbufferTarget.RenderbufferExt, Samples.Value, RenderbufferStorageDepthComponent(), Width, Height);
+                    GL.RenderbufferStorageMultisample(RenderbufferTarget.RenderbufferExt, Samples, RenderbufferStorageDepthComponent(), Width, Height);
                 }
             }
 
@@ -101,11 +97,11 @@ namespace Scrblr.Core
                 }
                 else
                 {
-                    GL.RenderbufferStorageMultisample(RenderbufferTarget.RenderbufferExt, Samples.Value, RenderbufferStorageStencil(), Width, Height);
+                    GL.RenderbufferStorageMultisample(RenderbufferTarget.RenderbufferExt, Samples, RenderbufferStorageStencil(), Width, Height);
                 }
             }
 
-            GL.BindFramebuffer(_framebufferTarget, 0);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
         #endregion Constructors
@@ -145,11 +141,11 @@ namespace Scrblr.Core
 
         public FramebufferErrorCode Status()
         {
-            GL.BindFramebuffer(_framebufferTarget, Handle);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
 
-            var status = GL.CheckFramebufferStatus(_framebufferTarget);
+            var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
 
-            GL.BindFramebuffer(_framebufferTarget, 0);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             
             return status;
         }
@@ -164,18 +160,19 @@ namespace Scrblr.Core
 
         public void Bind()
         {
-            GL.BindFramebuffer(_framebufferTarget, Handle);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
 
             GL.Viewport(0, 0, Width, Height);
         }
 
         public void UnBind()
         {
-            GL.BindFramebuffer(_framebufferTarget, 0);
         }
 
         public void Dispose()
         {
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
             UnBind();
 
             if (_colorAttachmentHandle != 0)

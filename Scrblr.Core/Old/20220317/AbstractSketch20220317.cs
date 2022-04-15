@@ -71,10 +71,10 @@ namespace Scrblr.Core
         {
             GL.GetInteger(GetPName.MajorVersion, out int majorVersion);
             GL.GetInteger(GetPName.MinorVersion, out int minorVersion);
-            Debug.WriteLine($"OpenGL version: {majorVersion}.{minorVersion}");
+            Diagnostics.Log($"OpenGL version: {majorVersion}.{minorVersion}");
 
             GL.GetInteger(GetPName.MaxVertexAttribs, out int maxAttributeCount);
-            Debug.WriteLine($"Maximum number of vertex attributes supported: {maxAttributeCount}");
+            Diagnostics.Log($"Maximum number of vertex attributes supported: {maxAttributeCount}");
         }
 
         private void InternalMouseWheel(MouseWheelEventArgs a)
@@ -213,7 +213,7 @@ namespace Scrblr.Core
             {
                 case ClearFlag.None:
                     break;
-                case ClearFlag.Color:
+                case ClearFlag.ColorBuffer:
                     // This clears the image, using what you set as GL.ClearColor earlier.
                     // OpenGL provides several different types of data that can be rendered.
                     // You can clear multiple buffers by using multiple bit flags.

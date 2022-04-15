@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace Scrblr.Core
 {
-    // take from https://stackoverflow.com/a/42437504/527843
+    // taken from https://stackoverflow.com/a/42437504/527843
     public static class TypeSize<T>
     {
         public readonly static int Size;

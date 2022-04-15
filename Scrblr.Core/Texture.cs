@@ -7,17 +7,6 @@ using System.Linq;
 
 namespace Scrblr.Core
 {
-    public enum TextureWrap
-    {
-        Repeat = TextureWrapMode.Repeat,
-        Clamp = TextureWrapMode.ClampToEdge,
-    }
-
-    public enum TextureFilter
-    {
-        Nearest = TextureMagFilter.Nearest,
-        Linear = TextureMagFilter.Linear,
-    }
 
     public class Texture : IDisposable
     {
@@ -40,6 +29,10 @@ namespace Scrblr.Core
 
         #region Constructors
 
+        /// <summary>
+        /// Creates and load a new texture. The created texture isn't active when this call returns
+        /// </summary>
+        /// <param name="path"></param>
         public Texture(string path)
         {
             Handle = GL.GenTexture();
@@ -87,16 +80,18 @@ namespace Scrblr.Core
 
                 bitmap.UnlockBits(bits);
             }
+
+            GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
         #endregion Constructors
 
-        public void Clear()
-        {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
+        //public void Clear()
+        //{
+        //    GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
 
-            GL.InvalidateBufferData(Handle);
-        }
+        //    GL.InvalidateBufferData(Handle);
+        //}
 
         public void Unit(TextureUnit unit)
         {

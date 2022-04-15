@@ -11,7 +11,7 @@ namespace Scrblr.Leaning
     [Sketch(Name = "Learn011-FrameBuffer-Class")]
     public class Learn011 : AbstractSketch20220406
     {
-        private FrameBuffer _frameBuffer;
+        private FrameBuffer20220413 _frameBuffer;
 
         public Learn011()
             : base(600, 600)
@@ -60,13 +60,13 @@ void main()
     oColor = ioColor;
 }";
 
-            Shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            Shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             QueryGraphicsCardCapabilities();
 
-            _frameBuffer = new FrameBuffer(WindowWidth, WindowHeight, samples: Samples);
+            _frameBuffer = new FrameBuffer20220413(WindowWidth, WindowHeight, samples: Samples);
 
-            Debug.WriteLine($"_frameBuffer.CheckStatus(): {_frameBuffer.Status()}");
+            Diagnostics.Log($"_frameBuffer.CheckStatus(): {_frameBuffer.Status()}");
         }
 
         public void UnLoad()
@@ -76,7 +76,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             //GL.Enable(EnableCap.CullFace);
             //GL.CullFace(CullFaceMode.Back);

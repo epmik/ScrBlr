@@ -9,7 +9,7 @@ using System.Text;
 namespace Scrblr.Leaning
 {
     [Sketch(Name = "Learn020-Rectangle-Quad-Rotation")]
-    public class Learn020 : AbstractSketch2d
+    public class Learn020 : AbstractSketch2d20220413
     {
         public Learn020()
             : base(600, 600)
@@ -20,11 +20,7 @@ namespace Scrblr.Leaning
             UpdateAction += Update;
         }
 
-        public void Load()
-        {
-            ClearColor(255, 255, 255);
-
-            const string vertexShaderSource = @"
+        const string vertexShaderSource = @"
 #version 330 core
 
 in vec3 iPosition;  
@@ -43,7 +39,7 @@ void main(void)
 	ioColor = iColor;
 }";
 
-            const string fragmentShaderSource = @"
+        const string fragmentShaderSource = @"
 #version 330 core
 
 in vec4 ioColor;
@@ -55,7 +51,11 @@ void main()
     oColor = ioColor;
 }";
 
-            Graphics.CurrentShader = new Shader(vertexShaderSource, fragmentShaderSource);
+        public void Load()
+        {
+            Graphics.ClearColor(255, 255, 255);
+
+            Graphics.CurrentShader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             QueryGraphicsCardCapabilities();
         }
@@ -67,7 +67,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Graphics.ClearBuffers(ClearFlag.ColorBuffer);
 
             Graphics.PushMatrix();
             {
@@ -146,7 +146,7 @@ void main()
                     Translate(0, -150);
 
                     {
-                        var shape = Graphics.CreateGeometry(GeometryType.Lines);
+                        var shape = Graphics.CreateGeometry(GeometryType20220413.Lines);
 
                         shape.Vertex(50, -50).Color(Color4.Blue).Weight(20);
 

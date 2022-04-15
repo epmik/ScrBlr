@@ -9,7 +9,7 @@ using System.Text;
 namespace Scrblr.Leaning
 {
     [Sketch(Name = "Learn021-FrameBufferClass-MultiSamples")]
-    public class Learn021 : AbstractSketch2d
+    public class Learn021 : AbstractSketch2d20220413
     {
         const string vertexShaderSource = @"
 #version 330 core
@@ -42,7 +42,7 @@ void main()
     oColor = ioColor;
 }";
 
-        private FrameBuffer _frameBuffer;
+        private FrameBuffer20220413 _frameBuffer;
 
         public Learn021()
             : base(600, 600)
@@ -59,20 +59,20 @@ void main()
 
         public void Load()
         {
-            ClearColor(255, 255, 255);
+            Graphics.ClearColor(255, 255, 255);
 
-            Graphics.CurrentShader = new Shader(vertexShaderSource, fragmentShaderSource);
+            Graphics.CurrentShader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             QueryGraphicsCardCapabilities();
 
-            _frameBuffer = new FrameBuffer(
+            _frameBuffer = new FrameBuffer20220413(
                 WindowWidth,
                 WindowHeight,
                 depthBits: DepthBits, 
                 stencilBits: StencilBits,
                 samples: Samples);
 
-            Debug.WriteLine($"_frameBuffer.Status(): {_frameBuffer.Status()}");
+            Diagnostics.Log($"_frameBuffer.Status(): {_frameBuffer.Status()}");
         }
 
         public void UnLoad()
@@ -82,7 +82,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Graphics.ClearBuffers(ClearFlag.ColorBuffer);
 
             Graphics.PushMatrix();
             {
@@ -161,7 +161,7 @@ void main()
                     Translate(0, -150);
 
                     {
-                        var shape = Graphics.CreateGeometry(GeometryType.Lines);
+                        var shape = Graphics.CreateGeometry(GeometryType20220413.Lines);
 
                         shape.Vertex(50, -50).Color(Color4.Blue).Weight(20);
 

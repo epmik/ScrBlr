@@ -87,11 +87,11 @@ void main()
 
         private int _vertexArrayObject;
 
-        private Shader _shader;
+        private Shader20220413 _shader;
 
-        private Texture _texture;
+        private Texture20220413 _texture;
 
-        private Texture _texture2;
+        private Texture20220413 _texture2;
 
         private Camera _camera;
 
@@ -99,7 +99,7 @@ void main()
 
         private Vector2 _lastPos;
 
-        private VertexBuffer _vertexBuffer;
+        private VertexBuffer20220413 _vertexBuffer;
 
         private Random _random = new Random(0);
 
@@ -134,12 +134,12 @@ void main()
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
-            _vertexBuffer = new VertexBuffer(
+            _vertexBuffer = new VertexBuffer20220413(
              12,
              new[] {
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Position1, Type = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Color1, Type = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    new VertexBufferLayout.Part { Identifier = VertexBufferLayout.PartIdentifier.Uv1, Type = VertexBufferLayout.ElementType.Single, Count = 2 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Position0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 3 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Color0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 3 },
+                    new VertexBufferLayout20220413.Part { Identifier = VertexBufferLayout20220413.PartIdentifier.Uv0, Type = VertexBufferLayout20220413.ElementType.Single, Count = 2 },
              },
              VertexBufferUsage.StaticDraw);
 
@@ -153,7 +153,7 @@ void main()
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
 
-            _shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            _shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
             _shader.Use();
 
             var vertexLocation = _shader.AttributeLocation("iPosition");
@@ -168,10 +168,10 @@ void main()
             GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
 
-            _texture = new Texture("resources/textures/orange-transparent-1024x1024.png");
+            _texture = new Texture20220413("resources/textures/orange-transparent-1024x1024.png");
             _texture.UnitAndBind(TextureUnit.Texture0);
 
-            _texture2 = new Texture("resources/textures/smiley-transparent-1024x1024.png");
+            _texture2 = new Texture20220413("resources/textures/smiley-transparent-1024x1024.png");
             _texture2.UnitAndBind(TextureUnit.Texture1);
 
             _shader.Uniform("uTexture0", 0);
@@ -203,7 +203,7 @@ void main()
             //GL.CullFace(CullFaceMode.Back);
             //GL.Enable(EnableCap.CullFace);
 
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 

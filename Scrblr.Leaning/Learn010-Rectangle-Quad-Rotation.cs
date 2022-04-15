@@ -57,7 +57,7 @@ void main()
     oColor = ioColor;
 }";
 
-            Shader = new Shader(vertexShaderSource, fragmentShaderSource);
+            Shader = new Shader20220413(vertexShaderSource, fragmentShaderSource);
 
             QueryGraphicsCardCapabilities();
 
@@ -71,7 +71,7 @@ void main()
 
         public void Render()
         {
-            Clear(ClearFlag.Color);
+            Clear(ClearFlag.ColorBuffer);
 
             //GL.Enable(EnableCap.CullFace);
             //GL.CullFace(CullFaceMode.Back);
