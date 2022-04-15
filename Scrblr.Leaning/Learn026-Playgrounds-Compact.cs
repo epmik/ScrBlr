@@ -156,15 +156,17 @@ void main()
 
             Graphics.PushMatrix();
 
+            Graphics.Translate(0f, 0f, -20f);
+
             for (var i = 0; i < _objects.Length; i++)
             {
                 Graphics.PushMatrix();
 
+                Graphics.Translate(ref _objects[i].Position);
+
                 Graphics.Scale(_objects[i].Scale);
 
                 Graphics.Rotate(_objects[i].Degrees, _objects[i].Axis);
-
-                Graphics.Translate(ref _objects[i].Position);
 
                 Graphics.ActiveShader().Uniform("uModelMatrix", Graphics.ModelMatrix());
 
