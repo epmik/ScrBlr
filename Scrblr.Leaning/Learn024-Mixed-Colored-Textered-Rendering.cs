@@ -9,7 +9,7 @@ using System.Text;
 namespace Scrblr.Leaning
 {
     [Sketch(Name = "Learn024-Mixed-Colored-Textered-Rendering")]
-    public class Learn024 : AbstractSketch2d
+    public class Learn024 : AbstractSketch
     {
         public Learn024()
             : base(8, 8)

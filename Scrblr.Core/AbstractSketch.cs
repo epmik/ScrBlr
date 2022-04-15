@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Scrblr.Core
 {
-    public abstract class AbstractSketch2d : GraphicsSettings, ISketch
+    public abstract class AbstractSketch : GraphicsSettings, ISketch
     {
         #region Fields and Properties
 
@@ -115,7 +115,7 @@ namespace Scrblr.Core
 
         #region Constructors
 
-        public AbstractSketch2d()
+        public AbstractSketch()
             : this(DefaultFrustumWidth, DefaultFrustumHeight)
         {
 
@@ -127,7 +127,7 @@ namespace Scrblr.Core
         /// </summary>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public AbstractSketch2d(float width, float height)
+        public AbstractSketch(float width, float height)
             : base(0, 0)
         {
             FrustumWidth = width;

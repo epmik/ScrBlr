@@ -11,7 +11,7 @@ using System.Text;
 namespace Scrblr.Leaning
 {
     [Sketch(Name = "Learn025-Playgrounds")]
-    public class Learn025 : AbstractSketch2d
+    public class Learn025 : AbstractSketch
     {
         public Learn025()
             : base(600, 600)
