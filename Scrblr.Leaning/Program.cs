@@ -7,7 +7,7 @@ namespace Scrblr.Leaning
     {
         static void Main(string[] args)
         {
-            Sketch.Run<Learn026>();
+            Sketch.Run<Learn027>();
         }
     }
 }
