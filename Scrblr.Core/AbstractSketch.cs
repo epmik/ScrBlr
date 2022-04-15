@@ -44,6 +44,11 @@ namespace Scrblr.Core
 
         private long LastFramesPerSecondTimeStamp { get; set; }
 
+        /// <summary>
+        /// default == true
+        /// </summary>
+        protected bool AutoClearBuffers { get; set; } = true;
+
         #region Action Handlers
 
         public event Action LoadAction;
@@ -395,6 +400,11 @@ namespace Scrblr.Core
 
                     _saveFrameGraphicsContext.Bind();
                 }
+            }
+
+            if(AutoClearBuffers)
+            {
+                Graphics.ClearBuffers();
             }
         }
 
