@@ -197,7 +197,7 @@ void main()
 
                 Graphics.ClearBuffers();
 
-                Graphics.ActivePrimitiveType = PrimitiveType.TriangleStrip;
+                Graphics.ActiveRenderPrimitiveType = PrimitiveType.TriangleStrip;
 
             }
 
