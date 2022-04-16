@@ -15,32 +15,45 @@ namespace Scrblr.Leaning
     public class Learn027 : AbstractSketch
     {
         public Learn027()
-            : base(600, 600)
+            : base(8, 8)
         {
         }
 
         public void Render()
         {
-            Graphics.Quad();
+            Graphics.PushMatrix();
+            Graphics.Rectangle();
+            Graphics.PopMatrix();
+
+            Graphics.PushMatrix();
+            Graphics.Translate(1.25f, 0f);
+            Graphics.Rectangle().Color(255, 0, 0);
+            Graphics.PopMatrix();
 
 
+            //Graphics.Disable(EnableFlag.Rendering);
 
+            if(!Graphics.IsEnabled(EnableFlag.Rendering))
+            {
+                var shader = Graphics.StandardShader(VertexFlag.Position0 | VertexFlag.Color0);
 
-            //var shader = Graphics.StandardShader(VertexFlag.Position0 | VertexFlag.Color0);
+                shader.Use();
 
-            //shader.Use();
+                var vertexBuffer = Graphics.StandardVertexBuffer();
 
-            //var vertexBuffer = Graphics.StandardVertexBuffer();
+                vertexBuffer.Bind();
 
-            //vertexBuffer.Bind();
+                vertexBuffer.EnableElements(VertexFlag.Position0 | VertexFlag.Color0);
 
-            //vertexBuffer.EnableElements(VertexFlag.Position0 | VertexFlag.Color0);
+                shader.Uniform("uModelMatrix", Matrix4.CreateTranslation(0, 0, -4f));
+                shader.Uniform("uViewMatrix", Graphics.ActiveCamera().ViewMatrix());
+                shader.Uniform("uProjectionMatrix", Graphics.ActiveCamera().ProjectionMatrix());
 
-            //shader.Uniform("uModelMatrix", Matrix4.CreateTranslation(0, 0, -4f));
-            //shader.Uniform("uViewMatrix", Graphics.ActiveCamera().ViewMatrix());
-            //shader.Uniform("uProjectionMatrix", Graphics.ActiveCamera().ProjectionMatrix());
+                GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
 
-            //GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
+                shader.Uniform("uModelMatrix", Matrix4.CreateTranslation(1.25f, 0, 0f));
+                GL.DrawArrays(PrimitiveType.TriangleStrip, 4, 4);
+            }
         }
     }
 }

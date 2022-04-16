@@ -72,9 +72,9 @@ namespace Scrblr.Core
         public Vector3 _normal;
 
         /// <summary>
-        /// default == Color4.White
+        /// default == black
         /// </summary>
-        public Color4 _color = Color4.White;
+        public float[] _color = new float[] { 0f, 0f, 0f, 1f };
 
         private static int DefaultTransformStackSize = 8;
 
@@ -208,10 +208,10 @@ namespace Scrblr.Core
 
         public Geometry Color(float r, float g, float b, float a = 1f)
         {
-            _color.R = r;
-            _color.G = g;
-            _color.B = b;
-            _color.A = a;
+            _color[0] = r;
+            _color[1] = g;
+            _color[2] = b;
+            _color[3] = a;
 
             return this;
         }
@@ -393,7 +393,7 @@ namespace Scrblr.Core
                     
                     vertexBuffer.WriteFixed(VertexFlag.Normal0, DefaultNormal);
 
-                    vertexBuffer.WriteFixed(VertexFlag.Color0, DefaultColor);
+                    vertexBuffer.WriteFixed(VertexFlag.Color0, ref _color);
 
                     vertexBuffer.WriteFixed(VertexFlag.Uv0, uvs[i]);
 

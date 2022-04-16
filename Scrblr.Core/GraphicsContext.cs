@@ -418,7 +418,7 @@ void main()
 
             if (shader == null)
             {
-                shader = QueryStandardShader(_defaultVertexBuffer.EnabledVertexFlags);
+                shader = QueryStandardShader(_defaultVertexBuffer.VertexFlags);
             }
 
             return shader;
@@ -429,15 +429,15 @@ void main()
         /// </summary>
         //private VertexFlag ActiveVertexBufferFlags = VertexFlag.Position0 | VertexFlag.Color0;
 
-        public void EnableVertexBuffer(VertexFlag vertexFlags)
-        {
-            EnableVertexBuffer(vertexFlags, AttachedShader());
-        }
+        //public void EnableVertexBuffer(VertexFlag vertexFlags)
+        //{
+        //    EnableVertexBuffer(vertexFlags, AttachedShader());
+        //}
 
-        public void EnableVertexBuffer(VertexFlag vertexFlags, Shader shader)
-        {
-            _defaultVertexBuffer.ToggleElements(shader, vertexFlags);
-        }
+        //public void EnableVertexBuffer(VertexFlag vertexFlags, Shader shader)
+        //{
+        //    _defaultVertexBuffer.ToggleElements(shader, vertexFlags);
+        //}
 
         public void Rotate(float degrees)
         {
@@ -488,8 +488,8 @@ void main()
                 DefaultVertexBufferElementCount,
                 new[] {
                     new VertexMapping.Map { VertexFlag = VertexFlag.Position0, ElementType = VertexMapping.ElementType.Single, Count = 3 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Normal0, ElementType = VertexMapping.ElementType.Single, Count = 3 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Normal1, ElementType = VertexMapping.ElementType.Single, Count = 3 },
+                    //new VertexMapping.Map { VertexFlag = VertexFlag.Normal0, ElementType = VertexMapping.ElementType.Single, Count = 3 },
+                    //new VertexMapping.Map { VertexFlag = VertexFlag.Normal1, ElementType = VertexMapping.ElementType.Single, Count = 3 },
                     new VertexMapping.Map { VertexFlag = VertexFlag.Color0, ElementType = VertexMapping.ElementType.Single, Count = 4 },
                     new VertexMapping.Map { VertexFlag = VertexFlag.Color1, ElementType = VertexMapping.ElementType.Single, Count = 4 },
                     new VertexMapping.Map { VertexFlag = VertexFlag.Uv0, ElementType = VertexMapping.ElementType.Single, Count = 2 },
@@ -540,6 +540,11 @@ void main()
 
         private void FlushRenderChunk()
         {
+            if (!_enableRendering)
+            {
+                return;
+            }
+
             for (var c = 0; c < _renderChunkCount; c++)
             {
                 var renderChunk = _renderChunks[c];
@@ -711,12 +716,50 @@ void main()
 
         public void Enable(EnableFlag enableFlag)
         {
-            GL.Enable((EnableCap)enableFlag);
+            switch (enableFlag)
+            {
+                case EnableFlag.Rendering:
+                    _enableRendering = true;
+                    break;
+                case EnableFlag.ClearBuffer:
+                    _enableClearBuffer = true;
+                    break;
+                default:
+                    GL.Disable((EnableCap)enableFlag);
+                    break;
+            }
         }
+
+        public bool IsEnabled(EnableFlag enableFlag)
+        {
+            switch (enableFlag)
+            {
+                case EnableFlag.Rendering:
+                    return _enableRendering;
+                case EnableFlag.ClearBuffer:
+                    return _enableClearBuffer;
+                default:
+                    return GL.IsEnabled((EnableCap)enableFlag);
+            }
+        }
+
+        private bool _enableRendering = true;
+        private bool _enableClearBuffer = true;
 
         public void Disable(EnableFlag enableFlag)
         {
-            GL.Disable((EnableCap)enableFlag);
+            switch(enableFlag)
+            {
+                case EnableFlag.Rendering:
+                    _enableRendering = false;
+                    break;
+                case EnableFlag.ClearBuffer:
+                    _enableClearBuffer = false;
+                    break;
+                default:
+                    GL.Disable((EnableCap)enableFlag);
+                    break;
+            }
         }
 
         public void ClearBuffers()
@@ -743,6 +786,11 @@ void main()
 
         public void ClearBuffers(ClearFlag clearFlag)
         {
+            if(!_enableClearBuffer)
+            {
+                return;
+            }
+
             GL.Clear((ClearBufferMask)clearFlag);
         }
 
@@ -772,7 +820,7 @@ void main()
                 Flush();
             }
 
-            var index = vertexBuffer.UsedElements();
+            var used = vertexBuffer.UsedElements();
 
             WriteToVertexBuffer(geometry, vertexBuffer);
 
@@ -785,8 +833,8 @@ void main()
             _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
             _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
             _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
-            _renderChunks[_renderChunkCount].ElementCount = vertexBuffer.UsedElements();
-            _renderChunks[_renderChunkCount].ElementIndex = _renderChunks[_renderChunkCount].ElementCount - geometry.VertexSize;
+            _renderChunks[_renderChunkCount].ElementCount = geometry.VertexSize;
+            _renderChunks[_renderChunkCount].ElementIndex = vertexBuffer.UsedElements() - geometry.VertexSize;
             _renderChunks[_renderChunkCount].Texture0 = geometry._texture0;
             _renderChunks[_renderChunkCount].Texture1 = geometry._texture1;
             _renderChunks[_renderChunkCount].Texture2 = geometry._texture2;
@@ -957,7 +1005,7 @@ void main()
 
         #region Geometry Functions
 
-        public Geometry.QuadGeometry Quad()
+        public Geometry.QuadGeometry Rectangle()
         {
             var g = new Geometry.QuadGeometry(AttachedShader(), ModelMatrix());
 

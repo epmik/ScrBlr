@@ -299,6 +299,8 @@ namespace Scrblr.Core
             _internalWindow.KeyDown += KeyDownInternal;
             _internalWindow.KeyUp += KeyUpInternal;
 
+            _graphics = new GraphicsContext(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
+
             Camera = new NearFarScrollCamera
             {
                 Width = FrustumWidth,
@@ -309,7 +311,7 @@ namespace Scrblr.Core
                 Position = new Vector3(0, 0, 2),
             };
 
-            _graphics = new GraphicsContext(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
+            _internalWindow.Resize += Camera.Resize;
 
             _graphics.ActiveCamera(Camera);
         }

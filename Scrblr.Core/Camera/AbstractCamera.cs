@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -104,9 +105,32 @@ namespace Scrblr.Core
             }
         }
 
+        private float _aspectRatio;
+
+        /// <summary>
+        /// changing Height also changes the Top and Bottom properties
+        /// default == 800
+        /// </summary>
+        public float AspectRatio
+        {
+            get
+            {
+                return _aspectRatio;
+            }
+            set
+            {
+                _aspectRatio = value;
+                Width = Height * _aspectRatio;
+            }
+        }
 
         public AbstractCamera()
         {
+        }
+
+        public void Resize(ResizeEventArgs a)
+        {
+            AspectRatio = (float)a.Size.X / (float)a.Size.Y;
         }
 
         public virtual Matrix4 ProjectionMatrix()

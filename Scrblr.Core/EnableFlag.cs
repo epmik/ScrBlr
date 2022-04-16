@@ -8,5 +8,8 @@ namespace Scrblr.Core
         DepthTest = EnableCap.DepthTest,
         StencilTest = EnableCap.StencilTest,
         Texture2d = EnableCap.Texture2D,
+
+        Rendering = 1,
+        ClearBuffer,
     }
 }

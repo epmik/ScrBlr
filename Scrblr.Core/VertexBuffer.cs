@@ -304,20 +304,15 @@ namespace Scrblr.Core
         {
             GL.BindVertexArray(Mapping.Handle);
 
+            DisableElements();
+
             var location = 0;
-
-            //foreach (var map in Mapping.Maps)
-            //{
-            //    GL.DisableVertexAttribArray(location++);
-            //}
-
-            //location = 0;
 
             foreach (var map in Mapping.Maps)
             {
                 if(!vertexFlags.HasFlag(map.VertexFlag))
                 {
-                    GL.DisableVertexAttribArray(location++);
+                    //GL.DisableVertexAttribArray(location++);
 
                     continue;
                 }
@@ -326,51 +321,32 @@ namespace Scrblr.Core
             }
         }
 
-        public void ToggleElements(Shader shader)
-        {
-            ToggleElements(shader, VertexFlags);
-        }
-
-        public VertexFlag EnabledVertexFlags { get; private set; }
-
-        public void ToggleElements(Shader shader, VertexFlag vertexFlags)
-        {
-            if(EnabledVertexFlags == vertexFlags)
-            {
-                return;
-            }
-
-            GL.BindVertexArray(Mapping.Handle);
-
-            EnabledVertexFlags = VertexFlag.None;
-
-            //foreach (var e in Mapping.Maps)
-            //{
-            //    if (!shader.TryAttributeLocation(e.ShaderInputName, out int location))
-            //    {
-            //        continue;
-            //    }
-
-            //    if (vertexFlags.HasFlag(e.VertexFlag))
-            //    {
-            //        EnabledVertexFlags |= e.VertexFlag;
-
-            //        GL.EnableVertexAttribArray(location);
-            //    }
-            //    else
-            //    {
-            //        GL.DisableVertexAttribArray(location);
-            //    }
-            //}
-        }
-
-        //private void DisableElements()
+        //public void ToggleElements(Shader shader)
         //{
-        //    foreach (var e in Layout.Parts)
-        //    {
-        //        GL.DisableVertexAttribArray(e.ShaderLocation);
-        //    }
+        //    ToggleElements(shader, VertexFlags);
         //}
+
+        //public VertexFlag EnabledVertexFlags { get; private set; }
+
+        //public void ToggleElements(Shader shader, VertexFlag vertexFlags)
+        //{
+        //    if(EnabledVertexFlags == vertexFlags)
+        //    {
+        //        return;
+        //    }
+
+        //    GL.BindVertexArray(Mapping.Handle);
+
+        //    EnabledVertexFlags = VertexFlag.None;
+        //}
+
+        public void DisableElements()
+        {
+            for (var location = 0; location < Mapping.Maps.Length; location++)
+            {
+                GL.DisableVertexAttribArray(location);
+            }
+        }
 
         //public void EnableElement(VertexFlag vertexFlag)
         //{
