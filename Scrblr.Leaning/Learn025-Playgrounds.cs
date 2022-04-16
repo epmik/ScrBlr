@@ -150,8 +150,8 @@ void main()
             }
             else
             {
-                Graphics.VertexBuffer.Bind();
-                Graphics.VertexBuffer.Write(ref _vertices);
+                Graphics.DefaultVertexBuffer.Bind();
+                Graphics.DefaultVertexBuffer.Write(ref _vertices);
             }
 
             if(_enableLocalVariables)

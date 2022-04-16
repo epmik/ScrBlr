@@ -78,6 +78,18 @@ namespace Scrblr.Core
 
     public static class VertexFlagExtensions
     {
+        public static VertexFlag Combine(this IEnumerable<VertexFlag> vertexFlags)
+        {
+            var v = VertexFlag.None;
+
+            foreach (var flag in vertexFlags)
+            {
+                v = v.AddFlag(flag);
+            }
+
+            return v;
+        }
+
         public static string ShaderInputName(this VertexFlag vertexFlag)
         {
             var shaderBindAttribute = vertexFlag.GetAttribute<ShaderBindAttribute>();

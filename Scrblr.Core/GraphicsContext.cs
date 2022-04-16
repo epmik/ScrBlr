@@ -21,8 +21,8 @@ namespace Scrblr.Core
         internal const string Po0Co0Vss = @"
 #version 330 core
 
-in vec3 iPosition0;  
-in vec4 iColor0;
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 1) in vec4 iColor0;
 
 out vec4 ioColor0;
 
@@ -126,11 +126,6 @@ void main()
 
         #region Fields and Properties
 
-
-        private int _vertexBufferElementCount = 32768;
-
-        public VertexBuffer VertexBuffer { get; set; }
-
         /// <summary>
         /// default == 256
         /// </summary>
@@ -160,12 +155,18 @@ void main()
 
         private Geometry[] _tesselatedGeometry;
 
-
-
-
+        // todo implement default camera instead of relying on the camera provided by AbstractSketch
         private ICamera _activeCamera { get; set; }
 
-        public ICamera ActiveCamera { get { return _activeCamera; } set { _activeCamera = value; } }
+        public ICamera ActiveCamera() 
+        { 
+            return _activeCamera; 
+        }
+
+        public void ActiveCamera(ICamera camera)
+        {
+            _activeCamera = camera;
+        }
 
         private static int GraphicsContextCount { get; set; }
 
@@ -195,19 +196,43 @@ void main()
 
         private FrameBuffer _frameBuffer;
 
-        private Shader _activeShader { get; set; }
+        private Shader _attachedShader { get; set; }
 
-        public void ActiveShader(Shader shader)
+        public void AttachShader(Shader shader)
         {
-            _activeShader = shader;
+            _attachedShader = shader;
         }
 
-        public Shader ActiveShader()
+        public Shader AttachedShader()
         {
-            return _activeShader;
+            return _attachedShader;
         }
 
         private Dictionary<string, Shader> _standardShaderDictionary;
+
+
+
+        private const int DefaultVertexBufferElementCount = 32768;
+
+        private VertexBuffer _defaultVertexBuffer { get; set; }
+
+        private VertexBuffer _attachedVertexBuffer { get; set; }
+
+        public VertexBuffer AttachedVertexBuffer()
+        {
+            return _attachedVertexBuffer;
+        }
+
+        public void AttachVertexBuffer(VertexBuffer vertexBuffer)
+        {
+            _attachedVertexBuffer = vertexBuffer;
+        }
+
+        private const int _standardVertexBufferArraySize = 8;
+
+        private int _standardVertexBufferArrayCount = 0;
+
+        private VertexBuffer[] _standardVertexBufferArray = new VertexBuffer[_standardVertexBufferArraySize];
 
         #endregion Fields and Properties
 
@@ -368,7 +393,7 @@ void main()
 
         public void Render()
         {
-            Render(ActiveRenderPrimitiveType, 0, VertexBuffer.TotelElements());
+            Render(ActiveRenderPrimitiveType, 0, _defaultVertexBuffer.TotelElements());
         }
 
         public void Render(int index, int count)
@@ -378,7 +403,7 @@ void main()
 
         public void Render(PrimitiveType primitiveType, int index, int count)
         {
-            VertexBuffer.Bind();
+            _defaultVertexBuffer.Bind();
 
             var shader = ActiveOrStandardShader();
 
@@ -389,11 +414,11 @@ void main()
 
         private Shader ActiveOrStandardShader()
         {
-            var shader = ActiveShader();
+            var shader = AttachedShader();
 
             if (shader == null)
             {
-                shader = QueryStandardShader(VertexBuffer.EnabledVertexFlags);
+                shader = QueryStandardShader(_defaultVertexBuffer.EnabledVertexFlags);
             }
 
             return shader;
@@ -406,12 +431,12 @@ void main()
 
         public void EnableVertexBuffer(VertexFlag vertexFlags)
         {
-            EnableVertexBuffer(vertexFlags, ActiveShader());
+            EnableVertexBuffer(vertexFlags, AttachedShader());
         }
 
         public void EnableVertexBuffer(VertexFlag vertexFlags, Shader shader)
         {
-            VertexBuffer.ToggleElements(shader, vertexFlags);
+            _defaultVertexBuffer.ToggleElements(shader, vertexFlags);
         }
 
         public void Rotate(float degrees)
@@ -444,28 +469,47 @@ void main()
 
             _tesselatedGeometry = new Geometry[_maxTesselatedGeometryCount];
 
-            VertexBuffer = new VertexBuffer(
-                _vertexBufferElementCount,
-                new[] {
-                    new VertexBufferLayout.Part { VertexFlag = VertexFlag.Position0, ElementType = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    //new VertexBufferLayout.Part { VertexFlag = VertexFlag.Normal0, ElementType = VertexBufferLayout.ElementType.Single, Count = 3 },
-                    new VertexBufferLayout.Part { VertexFlag = VertexFlag.Color0, ElementType = VertexBufferLayout.ElementType.Single, Count = 4 },
-                    new VertexBufferLayout.Part { VertexFlag = VertexFlag.Uv0, ElementType = VertexBufferLayout.ElementType.Single, Count = 2 },
-                    new VertexBufferLayout.Part { VertexFlag = VertexFlag.Uv1, ElementType = VertexBufferLayout.ElementType.Single, Count = 2 },
-                },
-                VertexBufferUsage.DynamicDraw);
+            InitializeStandardVertexBuffers();
 
             // disable depth testing by default for 2d
+            // todo is this needed isn't this set somewhere else? at the level of AbstractSketch
+            // GraphicsContext shouldn't be aware of 2d or 3d rendering, it's all 3d here
+            // The AbstractSketch does know the difference
             Disable(EnableFlag.DepthTest);
+
+            GL.ClearColor(_clearColor);
         }
 
         #endregion Load
+
+        private void InitializeStandardVertexBuffers()
+        {
+            _standardVertexBufferArray[0] = new VertexBuffer(
+                DefaultVertexBufferElementCount,
+                new[] {
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Position0, ElementType = VertexMapping.ElementType.Single, Count = 3 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Normal0, ElementType = VertexMapping.ElementType.Single, Count = 3 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Normal1, ElementType = VertexMapping.ElementType.Single, Count = 3 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Color0, ElementType = VertexMapping.ElementType.Single, Count = 4 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Color1, ElementType = VertexMapping.ElementType.Single, Count = 4 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv0, ElementType = VertexMapping.ElementType.Single, Count = 2 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv1, ElementType = VertexMapping.ElementType.Single, Count = 2 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv2, ElementType = VertexMapping.ElementType.Single, Count = 2 },
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv3, ElementType = VertexMapping.ElementType.Single, Count = 2 },
+                },
+                VertexBufferUsage.DynamicDraw);
+
+            _standardVertexBufferArrayCount++;
+        }
 
         #region Reset
 
         public void Reset()
         {
-            VertexBuffer.Clear();
+            for(var i = 0; i < _standardVertexBufferArrayCount; i++)
+            {
+                _standardVertexBufferArray[i].Clear();
+            }
 
             ResetRenderChunks();
 
@@ -485,19 +529,9 @@ void main()
 
         public void Flush()
         {
-            if (_geometryCount < 1)
-            {
-                return;
-            }
-
             TesselateGeometry();
 
             GeometryToRenderChunks();
-
-            if (_renderChunkCount < 1)
-            {
-                return;
-            }
 
             FlushRenderChunk();
 
@@ -523,7 +557,7 @@ void main()
                 }
 
                 renderChunk.VertexBuffer.Bind();
-                renderChunk.VertexBuffer.ToggleElements(renderChunk.Shader);
+                renderChunk.VertexBuffer.EnableElements(renderChunk.VertexFlag);
 
                 GL.DrawArrays((PrimitiveType)renderChunk.GeometryType, renderChunk.ElementIndex, renderChunk.ElementCount);
             }
@@ -623,7 +657,7 @@ void main()
 
         protected Shader QueryStandardShader(VertexBuffer vertexBuffer)
         {
-            return QueryStandardShader(vertexBuffer.VertexFlags(true), vertexBuffer);
+            return QueryStandardShader(vertexBuffer.VertexFlags, vertexBuffer);
         }
 
         protected Shader QueryStandardShader(VertexFlag vertexFlag, VertexBuffer vertexBuffer)
@@ -648,6 +682,22 @@ void main()
             }
 
             throw new InvalidOperationException($"QueryShaderFor(VertexBuffer vertexBuffer) failed. Could not find a shader source for key: {key}.");
+        }
+
+        protected VertexBuffer QueryStandardVertexBuffer(VertexFlag vertexFlag)
+        {
+            // todo fix for multiple vertexbuffers
+            return _standardVertexBufferArray[0];
+
+            //foreach (var vertexBuffer in _standardVertexBufferArray)
+            //{
+            //    if(vertexBuffer.IsMatch(vertexFlag))
+            //    {
+            //        vertexFlag.RemoveFlag(vertexFlag);
+
+            //        yield return vertexBuffer;
+            //    }
+            //}
         }
 
         #endregion Standard Shaders Functions
@@ -712,56 +762,95 @@ void main()
         }
 
 
-        protected void InsertRenderChunk(Geometry geometry)
+        protected void InsertRenderBatchAndWriteToVertexBuffer(Geometry geometry)
         {
-            if (!VertexBuffer.CanWriteElements(geometry.VertexCount) || _renderChunkCount + 1 >= _maxRenderChunks)
+            var shader = QueryShader(geometry);
+            var vertexBuffer = QueryVertexBuffer(geometry);
+
+            if (!vertexBuffer.CanWriteElements(geometry.VertexSize) || _renderChunkCount + 1 >= _maxRenderChunks)
             {
                 Flush();
             }
 
-            var shader = geometry.Shader();
+            var index = vertexBuffer.UsedElements();
 
-            if (shader == null)
-            {
-                shader = QueryStandardShader(geometry.VertexFlags, VertexBuffer);
-            }
+            WriteToVertexBuffer(geometry, vertexBuffer);
 
+            var camera = ActiveCamera();
+
+            // todo: is this all needed? why not store just the Geometry object?
             _renderChunks[_renderChunkCount].Shader = shader;
-            _renderChunks[_renderChunkCount].VertexBuffer = VertexBuffer;
-            _renderChunks[_renderChunkCount].ViewMatrix = ActiveCamera.ViewMatrix();
-            _renderChunks[_renderChunkCount].ProjectionMatrix = ActiveCamera.ProjectionMatrix();
+            _renderChunks[_renderChunkCount].VertexBuffer = vertexBuffer;
+            _renderChunks[_renderChunkCount].ViewMatrix = camera.ViewMatrix();
+            _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
             _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
             _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
-            _renderChunks[_renderChunkCount].ElementIndex = VertexBuffer.UsedElements();
-            _renderChunks[_renderChunkCount].ElementCount = geometry.VertexCount;
+            _renderChunks[_renderChunkCount].ElementCount = vertexBuffer.UsedElements();
+            _renderChunks[_renderChunkCount].ElementIndex = _renderChunks[_renderChunkCount].ElementCount - geometry.VertexSize;
             _renderChunks[_renderChunkCount].Texture0 = geometry._texture0;
             _renderChunks[_renderChunkCount].Texture1 = geometry._texture1;
             _renderChunks[_renderChunkCount].Texture2 = geometry._texture2;
             _renderChunks[_renderChunkCount].Texture3 = geometry._texture3;
-
             _renderChunks[_renderChunkCount].VertexFlag = geometry.VertexFlags;
 
             _renderChunkCount++;
+
         }
 
-        //protected void InsertRenderChunk(GeometryType geometryType, int elementCount)
-        //{
-        //    if (!_vertexBuffer.CanWriteElements(elementCount) || _renderChunkCount + 1 >= _maxRenderChunks)
-        //    {
-        //        Flush();
-        //    }
+        public VertexBuffer StandardVertexBuffer()
+        {
+            return _standardVertexBufferArray[0];
+        }
 
-        //    _renderChunks[_renderChunkCount].Shader = QueryShaderFor(geometry);
-        //    _renderChunks[_renderChunkCount].VertexBuffer = _vertexBuffer;
-        //    _renderChunks[_renderChunkCount].ViewMatrix = CurrentCamera.ViewMatrix();
-        //    _renderChunks[_renderChunkCount].ProjectionMatrix = CurrentCamera.ProjectionMatrix();
-        //    _renderChunks[_renderChunkCount].ModelMatrix = CurrentModelMatrix;
-        //    _renderChunks[_renderChunkCount].GeometryType = geometryType;
-        //    _renderChunks[_renderChunkCount].ElementIndex = _vertexBuffer.UsedElements();
-        //    _renderChunks[_renderChunkCount].ElementCount = elementCount;
+        public Shader StandardShader(VertexFlag vertexFlag)
+        {
+            return QueryStandardShader(vertexFlag);
+        }
 
-        //    _renderChunkCount++;
-        //}
+        /// <summary>
+        /// Qeuries for a valid shader for this Geometry
+        /// Looks first for the shader bound to this Geometry
+        /// Then for the ActiveShader bound to this GraphicsContext
+        /// Then queries the standard shaders
+        /// </summary>
+        /// <param name="geometry"></param>
+        /// <returns>null if no shader was found</returns>
+        private VertexBuffer QueryVertexBuffer(Geometry geometry)
+        {
+            var vertexBuffer = AttachedVertexBuffer();
+
+            if (vertexBuffer == null)
+            {
+                vertexBuffer = QueryStandardVertexBuffer(geometry.VertexFlags);
+            }
+
+            return vertexBuffer;
+        }
+
+        /// <summary>
+        /// Qeuries for a valid shader for this Geometry
+        /// Looks first for the shader bound to this Geometry
+        /// Then for the ActiveShader bound to this GraphicsContext
+        /// Then queries the standard shaders
+        /// </summary>
+        /// <param name="geometry"></param>
+        /// <returns>null if no shader was found</returns>
+        private Shader QueryShader(Geometry geometry)
+        {
+            var shader = AttachedShader();
+
+            //if (shader == null)
+            //{
+            //    shader = AttachedShader();
+            //}
+
+            if (shader == null)
+            {
+                shader = QueryStandardShader(geometry.VertexFlags);
+            }
+
+            return shader;
+        }
 
         private void TesselateGeometry()
         {
@@ -782,100 +871,87 @@ void main()
 
         private void GeometryToRenderChunks(Geometry[] geometry, int count)
         {
-            if (count == 0)
-            {
-                return;
-            }
-
             for (var i = 0; i < count; i++)
             {
-                var g = geometry[i];
-
-                InsertRenderChunk(g);
-
-                WriteToVertexBuffer(g);
+                InsertRenderBatchAndWriteToVertexBuffer(geometry[i]);
             }
         }
 
-        private void WriteToVertexBuffer(Geometry geometry)
+        private void WriteToVertexBuffer(Geometry geometry, VertexBuffer vertexBuffer)
         {
-            if (geometry is Geometry.QuadGeometry)
-            {
-                // remove this ?
-                WriteQuadGeometryToVertexBuffer((Geometry.QuadGeometry)geometry);
+            vertexBuffer.Bind();
 
-                return;
-            }
-
-            VertexBuffer.Bind();
-
-            foreach (var v in geometry.Vertices())
-            {
-                VertexBuffer.Write(v._position);
-
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Normal0) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Normal0))
-                {
-                    VertexBuffer.Write(v._normal);
-                }
-
-                VertexBuffer.Write(v._color);
-
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv0) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv0))
-                {
-                    VertexBuffer.Write(v._uv0);
-                }
-
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv1) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv1))
-                {
-                    VertexBuffer.Write(v._uv1);
-                }
-
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv2) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv2))
-                {
-                    VertexBuffer.Write(v._uv2);
-                }
-
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv3) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv3))
-                {
-                    VertexBuffer.Write(v._uv3);
-                }
-            }
+            geometry.WriteTo(vertexBuffer);
         }
 
-        private void WriteQuadGeometryToVertexBuffer(Geometry.QuadGeometry geometry)
+        //private void WriteToVertexBuffer(ref Color4 data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
+        //{
+        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.R, data.G, data.B, data.A);
+        //}
+
+        //private void WriteToVertexBuffer(ref Vector3 data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
+        //{
+        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.X, data.Y, data.Z);
+        //}
+
+        //private void WriteToVertexBuffer(ref Vector2 data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
+        //{
+        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.X, data.Y);
+        //}
+
+        //private void WriteToVertexBuffer(ref float[] data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
+        //{
+        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.X, data.Y);
+        //}
+
+        //private void WriteToVertexBuffer<T>(VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer, params T[] data) where T : struct
+        //{
+        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, ref data);
+        //}
+
+        //private void WriteToVertexBuffer<T>(VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer, ref T[] data) where T : struct
+        //{
+        //    // always write data
+        //    if (vertexBuffer.VertexFlags.HasFlag(vertexFlag) /* && geometry.VertexFlags.HasFlag(vertexFlag) */)
+        //    {
+        //        vertexBuffer.Write(ref data);
+        //    }
+        //}
+
+        private void WriteGeometryToVertexBuffer(Geometry geometry)
         {
-            VertexBuffer.Bind();
+            _defaultVertexBuffer.Bind();
 
             foreach (var v in geometry.Vertices())
             {
-                VertexBuffer.Write(v._position);
+                //_defaultVertexBuffer.Write(v._position);
 
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Normal0) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Normal0))
-                {
-                    VertexBuffer.Write(geometry._normal);
-                }
+                //if (geometry.VertexFlags.HasFlag(VertexFlag.Normal0) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Normal0))
+                //{
+                //    _defaultVertexBuffer.Write(v._vertexNormal);
+                //}
 
-                VertexBuffer.Write(geometry._color);
+                //_defaultVertexBuffer.Write(v._color0);
 
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv0) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv0))
-                {
-                    VertexBuffer.Write(v._uv0);
-                }
+                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv0) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv0))
+                //{
+                //    _defaultVertexBuffer.Write(v._uv0);
+                //}
 
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv1) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv1))
-                {
-                    VertexBuffer.Write(v._uv1);
-                }
+                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv1) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv1))
+                //{
+                //    _defaultVertexBuffer.Write(v._uv1);
+                //}
 
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv2) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv2))
-                {
-                    VertexBuffer.Write(v._uv2);
-                }
+                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv2) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv2))
+                //{
+                //    _defaultVertexBuffer.Write(v._uv2);
+                //}
 
-                if (geometry.VertexFlags.HasFlag(VertexFlag.Uv3) && VertexBuffer.VertexFlags(true).HasFlag(VertexFlag.Uv3))
-                {
-                    VertexBuffer.Write(v._uv3);
-                }
+                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv3) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv3))
+                //{
+                //    _defaultVertexBuffer.Write(v._uv3);
+                //}
             }
         }
 
@@ -883,7 +959,7 @@ void main()
 
         public Geometry.QuadGeometry Quad()
         {
-            var g = new Geometry.QuadGeometry(ActiveShader(), ModelMatrix());
+            var g = new Geometry.QuadGeometry(AttachedShader(), ModelMatrix());
 
             AddGeometry(g);
 
@@ -892,7 +968,7 @@ void main()
 
         public Geometry CreateGeometry(GeometryType geometryType)
         {
-            return CreateGeometry(geometryType, ActiveShader(), ModelMatrix());
+            return CreateGeometry(geometryType, AttachedShader(), ModelMatrix());
         }
 
         public Geometry CreateGeometry(GeometryType geometryType, Shader shader, Matrix4 modelMatrix)
@@ -902,11 +978,6 @@ void main()
 
         public Geometry CreateGeometry(GeometryType geometryType, int vertexCount, Shader shader, Matrix4 modelMatrix)
         {
-            if (shader == null)
-            {
-                shader = QueryStandardShader(VertexBuffer);
-            }
-
             var g = new Geometry(geometryType, vertexCount, shader, modelMatrix);
 
             AddGeometry(g);
@@ -1096,10 +1167,10 @@ void main()
                 _frameBuffer = null;
             }
 
-            if (VertexBuffer != null)
+            for (var i = 0; i < _standardVertexBufferArrayCount; i++)
             {
-                VertexBuffer.Dispose();
-                VertexBuffer = null;
+                _standardVertexBufferArray[i].Dispose();
+                _standardVertexBufferArray[i] = null;
             }
 
             GC.SuppressFinalize(this);

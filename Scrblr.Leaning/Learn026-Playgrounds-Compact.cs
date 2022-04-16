@@ -115,8 +115,8 @@ void main()
                 };
             }
 
-            Graphics.VertexBuffer.Bind();
-            Graphics.VertexBuffer.Write(ref _vertices);
+            Graphics.DefaultVertexBuffer.Bind();
+            Graphics.DefaultVertexBuffer.Write(ref _vertices);
 
             Graphics.ActiveShader(new Shader(vertexShaderSource, fragmentShaderSource));
 

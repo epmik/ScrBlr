@@ -6,6 +6,7 @@ using Scrblr.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 
 namespace Scrblr.Leaning
@@ -18,25 +19,28 @@ namespace Scrblr.Leaning
         {
         }
 
-        private Texture _texture;
-
-        public void Load()
-        {
-            _texture = new Texture("resources/textures/orange-transparent-1024x1024.png");
-
-            Graphics.ClearColor(1f, 1f, 1f, 1.0f);
-
-            Graphics.Enable(EnableFlag.DepthTest);
-        }
-
-        public void UnLoad()
-        {
-            _texture.Dispose();
-        }
-
         public void Render()
         {
             Graphics.Quad();
+
+
+
+
+            //var shader = Graphics.StandardShader(VertexFlag.Position0 | VertexFlag.Color0);
+
+            //shader.Use();
+
+            //var vertexBuffer = Graphics.StandardVertexBuffer();
+
+            //vertexBuffer.Bind();
+
+            //vertexBuffer.EnableElements(VertexFlag.Position0 | VertexFlag.Color0);
+
+            //shader.Uniform("uModelMatrix", Matrix4.CreateTranslation(0, 0, -4f));
+            //shader.Uniform("uViewMatrix", Graphics.ActiveCamera().ViewMatrix());
+            //shader.Uniform("uProjectionMatrix", Graphics.ActiveCamera().ProjectionMatrix());
+
+            //GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
         }
     }
 }

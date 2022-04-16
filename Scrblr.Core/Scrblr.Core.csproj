@@ -16,6 +16,7 @@
     <Compile Remove="Shapes.cs" />
     <Compile Remove="Tesselator.cs" />
     <Compile Remove="VertexBufferContext.cs" />
+    <Compile Remove="VertexBufferWriter.cs" />
     <Compile Remove="Window.cs" />
   </ItemGroup>
 

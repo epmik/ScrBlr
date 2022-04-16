@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scrblr.Core", "Scrblr.Core\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scrblr.Leaning", "Scrblr.Leaning\Scrblr.Leaning.csproj", "{4ADD13C3-FC1D-438D-9C2F-3A3435F36384}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scrblr.Core.Tests", "Scrblr.Core.Tests\Scrblr.Core.Tests.csproj", "{C44D78E8-4AD5-4BC5-B916-2FBED7B62768}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4ADD13C3-FC1D-438D-9C2F-3A3435F36384}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4ADD13C3-FC1D-438D-9C2F-3A3435F36384}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4ADD13C3-FC1D-438D-9C2F-3A3435F36384}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C44D78E8-4AD5-4BC5-B916-2FBED7B62768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C44D78E8-4AD5-4BC5-B916-2FBED7B62768}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C44D78E8-4AD5-4BC5-B916-2FBED7B62768}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C44D78E8-4AD5-4BC5-B916-2FBED7B62768}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -92,9 +92,9 @@ void main()
             _texture1 = new Texture("resources/textures/smiley-transparent-1024x1024.png");
             //_texture1.UnitAndBind(TextureUnit.Texture1);
 
-            Graphics.VertexBuffer.Bind();
+            Graphics.DefaultVertexBuffer.Bind();
 
-            Graphics.VertexBuffer.Write(_vertices);
+            Graphics.DefaultVertexBuffer.Write(_vertices);
 
         }
 
@@ -123,8 +123,8 @@ void main()
 
                 _texture0.Bind();
 
-                Graphics.VertexBuffer.Bind();
-                Graphics.VertexBuffer.EnableElements(_shader);
+                Graphics.DefaultVertexBuffer.Bind();
+                Graphics.DefaultVertexBuffer.EnableElements(_shader);
 
                 var model = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
 

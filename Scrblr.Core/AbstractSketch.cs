@@ -49,8 +49,11 @@ namespace Scrblr.Core
         /// </summary>
         protected bool AutoClearBuffers { get; set; } = true;
 
-        #region Action Handlers
+        #region Public Event Handlers
 
+        // any public events ending with 'Action' will be bound in the Sketch.BindDelegates<TSketch>(TSketch sketch) function
+        // the function that will be bound (if found) must have the same name as the event minus 'Action'.
+        // i.e.: a function named 'Load' will be bound to the event 'LoadAction'
         public event Action LoadAction;
         public event Action UnLoadAction;
         public event Action RenderAction;
@@ -65,7 +68,7 @@ namespace Scrblr.Core
         public event Action<KeyboardKeyEventArgs> KeyDownAction;
         public event Action<KeyboardKeyEventArgs> KeyUpAction;
 
-        #endregion Action Handlers
+        #endregion Public Event Handlers
 
         #region Save Frame Fields and Properties
 
@@ -308,7 +311,7 @@ namespace Scrblr.Core
 
             _graphics = new GraphicsContext(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
 
-            _graphics.ActiveCamera = Camera;
+            _graphics.ActiveCamera(Camera);
         }
 
         private void LoadInternal()
@@ -507,7 +510,7 @@ namespace Scrblr.Core
                 Graphics.StencilBits,
                 Graphics.Samples);
 
-            _saveFrameGraphicsContext.ActiveCamera = Graphics.ActiveCamera;
+            _saveFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
             _saveFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
         }
 

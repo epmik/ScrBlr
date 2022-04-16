@@ -48,23 +48,45 @@ namespace Scrblr.Core
         {
             Diagnostics.Log($"Binding delegetes.");
 
-            if (!BindHandler(sketch, "Render", "RenderAction"))
+            var sketchType = sketch.GetType();
+
+            var eventInfoArray = sketchType.GetEvents(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach(var eventInfo in eventInfoArray)
             {
-                Diagnostics.Log($"Could not bind the Render delegate. Cannot run and quiting.");
+                if(!eventInfo.Name.EndsWith("Action"))
+                {
+                    continue;
+                }
 
-                return false;
+                var methodName = eventInfo.Name.Substring(0, eventInfo.Name.Length - 6);
+
+                if(!BindDelegete(sketch, sketchType, eventInfo, methodName) && methodName.Equals("Render"))
+                {
+                    Diagnostics.Error($"Could not bind the Render delegate. Cannot run and quiting.");
+
+                    return false;
+                }
             }
-
-            BindHandler(sketch, "Load", "LoadAction");
-            BindHandler(sketch, "UnLoad", "UnLoadAction");
-            BindHandler(sketch, "Update", "UpdateAction");
 
             return true;
         }
 
-        private static bool BindHandler<TSketch>(TSketch sketch, string methodName, string eventName) where TSketch : ISketch
+        private static bool BindDelegete<TSketch>(TSketch sketch, Type sketchType, EventInfo eventInfo, string methodName) where TSketch : ISketch
         {
-            var sketchType = sketch.GetType();
+            var existingField = sketchType.BaseType.GetField(eventInfo.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (existingField != null)
+            {
+                var existingDelegate = existingField.GetValue(sketch) as Delegate;
+
+                if (existingDelegate != null)
+                {
+                    Diagnostics.Log($"Found existing delegete {existingDelegate.Method.Name} for event: {eventInfo.Name}.");
+
+                    return true;
+                }
+            }
 
             var methodInfo = sketchType.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -74,22 +96,6 @@ namespace Scrblr.Core
 
                 return false;
             }
-
-            var existingField = sketchType.BaseType.GetField(eventName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if(existingField != null)
-            {
-                var existingDelegate = existingField.GetValue(sketch) as Delegate;
-
-                if (existingDelegate != null)
-                {
-                    Diagnostics.Log($"Found existing delegete {existingDelegate.Method.Name} for event: {eventName}.");
-
-                    return true;
-                }
-            }
-
-            var eventInfo = sketchType.GetEvent(eventName, BindingFlags.Public | BindingFlags.Instance);
 
             var d = Delegate.CreateDelegate(eventInfo.EventHandlerType, sketch, methodInfo);
 

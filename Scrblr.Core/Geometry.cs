@@ -37,7 +37,7 @@ namespace Scrblr.Core
     //    Geometry.GeometryVertex Vertex(float x, float y, float z = 0f);
     //}
 
-    public class Geometry : IDisposable
+    public partial class Geometry : IDisposable
     {
         #region Fields and Properties
 
@@ -55,116 +55,15 @@ namespace Scrblr.Core
             public TransformType TransformType;
         }
 
-        #region GeometryVertex
-
-        public class GeometryVertex
-        {
-            public Vector3 _position;
-            public Vector3 _normal;
-            /// <summary>
-            /// default == Color4.White
-            /// </summary>
-            public Color4 _color = Color4.White;
-            public Vector2 _uv0;
-            public Vector2 _uv1;
-            public Vector2 _uv2;
-            public Vector2 _uv3;
-
-            public GeometryVertex()
-            {
-            }
-
-            public GeometryVertex(float x, float y, float z = 0f)
-                : this()
-            {
-                Position(x, y, z);
-            }
-
-            public GeometryVertex Position(float x, float y, float z = 0f)
-            {
-                _position.X = x;
-                _position.Y = y;
-                _position.Z = z;
-
-                return this;
-            }
-
-            public GeometryVertex Normal(float x, float y, float z)
-            {
-                _normal.X = x;
-                _normal.Y = y;
-                _normal.Z = z;
-
-                return this;
-            }
-
-            public GeometryVertex Color(float r, float g, float b, float a = -1f)
-            {
-                _color.R = r;
-                _color.G = g;
-                _color.B = g;
-                _color.A = a;
-
-                return this;
-            }
-
-            public GeometryVertex Color(int r, int g, int b, int a = 255)
-            {
-                return Color(r * Utility.ByteToUnitSingleFactor, g * Utility.ByteToUnitSingleFactor, b * Utility.ByteToUnitSingleFactor, a * Utility.ByteToUnitSingleFactor);
-            }
-
-            public GeometryVertex Color(float grey, float a = -1f)
-            {
-                return Color(grey, grey, grey, a);
-            }
-
-            public GeometryVertex Color(int grey, int a = 255)
-            {
-                return Color(grey * Utility.ByteToUnitSingleFactor, a * Utility.ByteToUnitSingleFactor);
-            }
-
-            public GeometryVertex Uv0(float u, float v)
-            {
-                _uv0.X = u;
-                _uv0.Y = v;
-
-                return this;
-            }
-
-            public GeometryVertex Uv1(float u, float v)
-            {
-                _uv1.X = u;
-                _uv1.Y = v;
-
-                return this;
-            }
-
-            public GeometryVertex Uv2(float u, float v)
-            {
-                _uv2.X = u;
-                _uv2.Y = v;
-
-                return this;
-            }
-
-            public GeometryVertex Uv3(float u, float v)
-            {
-                _uv3.X = u;
-                _uv3.Y = v;
-
-                return this;
-            }
-        }
-
-        #endregion GeometryVertex
-
         public GeometryType GeometryType { get; private set; }
 
-        private GeometryVertex[] _vertices;
+        private Vertex[] _vertices;
 
         public static readonly int DefaultVertexCount = 1024 * 32;
 
-        public int VertexCount { get; private set; }
+        public int VertexSize { get { return _vertices.Length; } }
+
+        public int _vertexCount;
 
         public Vector3 _position;
         
@@ -208,7 +107,7 @@ namespace Scrblr.Core
         public Geometry(GeometryType geometryType, int vertexCount, Shader shader, Matrix4 modelMatrix)
         {
             GeometryType = geometryType;
-            _vertices = new GeometryVertex[vertexCount];
+            _vertices = new Vertex[vertexCount];
             _shader = shader;
             _modelMatrix = modelMatrix;
         }
@@ -220,7 +119,7 @@ namespace Scrblr.Core
             return ApplyTransformStack(_modelMatrix);
         }
 
-        public Matrix4 ApplyTransformStack(Matrix4 m)
+        private Matrix4 ApplyTransformStack(Matrix4 m)
         {
             for (var i = 0; i < _transformArrayCount; i++)
             {
@@ -245,20 +144,11 @@ namespace Scrblr.Core
             return m;
         }
 
-        private void GrowTransformStack()
-        {
-            var transformStack = new Transform[_transformStack.Length + DefaultTransformStackSize];
-
-            _transformStack.CopyTo(transformStack, 0);
-
-            _transformStack = transformStack;
-        }
-
         private Geometry AddTransform(TransformType transformType, Vector3 vector, float radians = 0f)
         {
             if (_transformArrayCount == _transformStack.Length)
             {
-                GrowTransformStack();
+                Array.Resize(ref _transformStack, _transformStack.Length + DefaultTransformStackSize);
             }
 
             _transformStack[_transformArrayCount++] = new Transform
@@ -375,48 +265,48 @@ namespace Scrblr.Core
             return this;
         }
 
-        public Geometry Shader(Shader shader)
-        {
-            _shader = shader;
+        //public Geometry Shader(Shader shader)
+        //{
+        //    _shader = shader;
 
-            return this;
-        }
+        //    return this;
+        //}
 
-        public Shader Shader()
-        {
-            return _shader;
-        }
+        //public Shader Shader()
+        //{
+        //    return _shader;
+        //}
 
-        public GeometryVertex[] Vertices()
+        public Vertex[] Vertices()
         {
             return _vertices;
         }
 
-        public GeometryVertex Vertex()
+        public Vertex Vertex()
         {
-            if (VertexCount >= _vertices.Length)
+            if (_vertexCount >= _vertices.Length)
             {
-                throw new InvalidOperationException($"Vertex(float x, float y) failed. _vertices.Length had been reached: {VertexCount}");
+                throw new InvalidOperationException($"Vertex(float x, float y) failed. _vertices.Length had been reached: {_vertexCount}");
             }
 
-            var v = new GeometryVertex();
+            var v = new Vertex(VertexFlags);
 
-            _vertices[VertexCount++] = v;
+            _vertices[_vertexCount++] = v;
 
             return v;
         }
 
-        public GeometryVertex Vertex(float x, float y, float z = 0f)
+        public Vertex Vertex(float x, float y, float z = 0f)
         {
-            return Vertex().Position(x, y, z);
+            return Vertex().Set(VertexFlag.Position0, x, y, z);
         }
 
-        protected void AllocateVertices()
+        private static readonly float[] DefaultNormal = new float[] { 0, 0, 1f };
+        private static readonly float[] DefaultColor = new float[] { 1, 1, 1f, 1f };
+
+        public virtual void WriteTo(VertexBuffer vertexBuffer)
         {
-            foreach (var v in _vertices)
-            {
-                Vertex();
-            }
+
         }
 
         public class QuadGeometry : Geometry
@@ -431,68 +321,84 @@ namespace Scrblr.Core
             /// </summary>
             public float _height = 1f;
 
-            private GeometryVertex[] _defaultVertices = new GeometryVertex[]
-            {
-                // left top
-                new GeometryVertex().Position(0.5f, 0.5f).Color(1f, 1f, 1f).Normal(0, 0, 1f).Uv0(0f, 0f).Uv1(0f, 0f).Uv2(0f, 0f).Uv3(0f, 0f),
-                // left bottom
-                new GeometryVertex().Position(0.5f, -0.5f).Color(1f, 1f, 1f).Normal(0, 0, 1f).Uv0(0f, 1f).Uv1(0f, 1f).Uv2(0f, 1f).Uv3(0f, 1f),
-                // right top
-                new GeometryVertex().Position(-0.5f, 0.5f).Color(1f, 1f, 1f).Normal(0, 0, 1f).Uv0(1f, 0f).Uv1(1f, 0f).Uv2(1f, 0f).Uv3(1f, 0f),
-                // right bottom
-                new GeometryVertex().Position(-0.5f, -0.5f).Color(1f, 1f, 1f).Normal(0, 0, 1f).Uv0(1f, 1f).Uv1(1f, 1f).Uv2(1f, 1f).Uv3(1f, 1f),
-            };
-
             public QuadGeometry(Shader shader, Matrix4 modelMatrix)
                 : base(GeometryType.TriangleStrip, 4, shader, modelMatrix)
             {
-                AllocateVertices();
-
-                for(var i = 0; i < _vertices.Length; i++)
-                {
-                    _vertices[i]._position = _defaultVertices[i]._position;
-                    _vertices[i]._normal = _defaultVertices[i]._normal;
-                    _vertices[i]._color = _defaultVertices[i]._color;
-                    _vertices[i]._uv0 = _defaultVertices[i]._uv0;
-                    _vertices[i]._uv1 = _defaultVertices[i]._uv1;
-                    _vertices[i]._uv2 = _defaultVertices[i]._uv2;
-                    _vertices[i]._uv3 = _defaultVertices[i]._uv3;
-                }
+                
             }
 
             public QuadGeometry Width(float w)
             {
                 _width = w;
 
-                return UpdateVertexPositions();
+                return this;
             }
 
             public QuadGeometry Height(float h)
             {
                 _height = h;
 
-                return UpdateVertexPositions();
+                return this;
             }
 
-            public override Geometry Position(float x, float y, float z = 0f)
-            {
-                base.Position(x, y, z);
+            //public override Geometry Position(float x, float y, float z = 0f)
+            //{
+            //    base.Position(x, y, z);
 
-                return UpdateVertexPositions();
-            }
+            //    return UpdateVertexPositions();
+            //}
 
-            private QuadGeometry UpdateVertexPositions()
+            private float[][] Points()
             {
                 var hw = _width * 0.5f;
                 var hh = _height * 0.5f;
 
                 // ccw triangle order
-                _vertices[0].Position(_position.X + hw, _position.Y + hh);
-                _vertices[1].Position(_position.X + hw, _position.Y - hh);
-                _vertices[2].Position(_position.X - hw, _position.Y + hh);
-                _vertices[3].Position(_position.X - hw, _position.Y - hh);
+                return new float[][]
+                {
+                    // top left
+                    new float[] { _position.X + hw, _position.Y + hh, 0f },
+                    // bottom left
+                    new float[] { _position.X + hw, _position.Y - hh, 0f },
+                    // top right
+                    new float[] { _position.X - hw, _position.Y + hh, 0f },
+                    // bottom right
+                    new float[] { _position.X - hw, _position.Y - hh, 0f },
+                };
+            }
 
-                return this;
+            private float[][] Uvs()
+            {
+                return new float[][]
+                {
+                    // top left
+                    new float[] { 0f, 0f },
+                    // bottom left
+                    new float[] { 0, 1f },
+                    // top right
+                    new float[] { 1f, 0f },
+                    // bottom right
+                    new float[] { 1f, 1f },
+                };
+            }
+
+            public override void WriteTo(VertexBuffer vertexBuffer)
+            {
+                var points = Points();
+                var uvs = Uvs();
+
+                for (var i = 0; i < 4; i++)
+                {
+                    vertexBuffer.WriteFixed(VertexFlag.Position0, points[i]);
+                    
+                    vertexBuffer.WriteFixed(VertexFlag.Normal0, DefaultNormal);
+
+                    vertexBuffer.WriteFixed(VertexFlag.Color0, DefaultColor);
+
+                    vertexBuffer.WriteFixed(VertexFlag.Uv0, uvs[i]);
+
+                    vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
+                }
             }
         }
 
