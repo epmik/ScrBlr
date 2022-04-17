@@ -329,14 +329,19 @@ namespace Scrblr.Core
         {
             if(Dimension == Dimensions.Two)
             {
-                GL.Disable(EnableCap.DepthTest);
+                Graphics.Disable(EnableFlag.DepthTest);
             }
             else
             {
-                GL.Enable(EnableCap.DepthTest);
+                Graphics.Enable(EnableFlag.DepthTest);
             }
 
-            GL.Enable(EnableCap.Multisample);
+            if(Samples > 1)
+            {
+                Graphics.Enable(EnableFlag.MultiSampling);
+            }
+
+            Graphics.Enable(EnableFlag.Blending);
         }
 
         private void UpdateFrameInternal(FrameEventArgs e)
@@ -390,8 +395,6 @@ namespace Scrblr.Core
 
             RenderAction();
 
-            Graphics.Flush();
-
             PostRenderFrameInternal(e);
         }
 
@@ -406,16 +409,18 @@ namespace Scrblr.Core
                     _saveFrameGraphicsContext.Bind();
                 }
             }
-
-            if(AutoClearBuffers)
-            {
-                Graphics.ClearBuffers();
-            }
         }
 
         private void PostRenderFrameInternal(FrameEventArgs e)
         {
-            if(_saveNextFrame)
+            if (AutoClearBuffers)
+            {
+                Graphics.ClearBuffers();
+            }
+
+            Graphics.Flush();
+
+            if (_saveNextFrame)
             {
                 _saveNextFrame = false;
 
@@ -510,7 +515,7 @@ namespace Scrblr.Core
                 Graphics.ColorBits,
                 Graphics.DepthBits,
                 Graphics.StencilBits,
-                Graphics.Samples);
+                1 /*Graphics.Samples*/);    // TODO multi sampling for frame buffer doesn't work
 
             _saveFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
             _saveFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());

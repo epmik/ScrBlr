@@ -46,7 +46,6 @@ namespace Scrblr.Core
             /// <summary>
             /// default == true
             /// </summary>
-            // todo is this needed, not set anywhere, use VertexFlag and VertexFlags properties?
             //public bool Enabled = true;
 
             /// <summary>

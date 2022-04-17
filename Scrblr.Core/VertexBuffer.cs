@@ -302,9 +302,9 @@ namespace Scrblr.Core
 
         public void EnableElements(VertexFlag vertexFlags)
         {
-            GL.BindVertexArray(Mapping.Handle);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
 
-            DisableElements();
+            GL.BindVertexArray(Mapping.Handle);
 
             var location = 0;
 
@@ -312,7 +312,7 @@ namespace Scrblr.Core
             {
                 if(!vertexFlags.HasFlag(map.VertexFlag))
                 {
-                    //GL.DisableVertexAttribArray(location++);
+                    GL.DisableVertexAttribArray(location++);
 
                     continue;
                 }
@@ -320,25 +320,6 @@ namespace Scrblr.Core
                 GL.EnableVertexAttribArray(location++);
             }
         }
-
-        //public void ToggleElements(Shader shader)
-        //{
-        //    ToggleElements(shader, VertexFlags);
-        //}
-
-        //public VertexFlag EnabledVertexFlags { get; private set; }
-
-        //public void ToggleElements(Shader shader, VertexFlag vertexFlags)
-        //{
-        //    if(EnabledVertexFlags == vertexFlags)
-        //    {
-        //        return;
-        //    }
-
-        //    GL.BindVertexArray(Mapping.Handle);
-
-        //    EnabledVertexFlags = VertexFlag.None;
-        //}
 
         public void DisableElements()
         {
@@ -348,34 +329,6 @@ namespace Scrblr.Core
             }
         }
 
-        //public void EnableElement(VertexFlag vertexFlag)
-        //{
-        //    GL.BindVertexArray(Layout.Handle);
-
-        //    var e = Layout.Parts.SingleOrDefault(o => o.VertexFlag == vertexFlag);
-
-        //    if (e == null)
-        //    {
-        //        throw new InvalidOperationException($"EnableElement(VertexBufferLayout.ElementIdentifier) failed. The element {vertexFlag} could not be found.");
-        //    }
-
-        //    GL.EnableVertexAttribArray(e.ShaderLocation);
-        //}
-
-        //public void DisableElement(VertexFlag identifier)
-        //{
-        //    GL.BindVertexArray(Layout.Handle);
-
-        //    var e = Layout.Parts.SingleOrDefault(o => o.Identifier == identifier);
-
-        //    if (e == null)
-        //    {
-        //        throw new InvalidOperationException($"DisableElement(VertexBufferLayout.ElementIdentifier) failed. The element {identifier} could not be found.");
-        //    }
-
-        //    GL.DisableVertexAttribArray(e.ShaderLocation);
-        //}
-
         public void Dispose()
         {
             UnBind();
@@ -383,6 +336,11 @@ namespace Scrblr.Core
             GL.DeleteBuffer(Handle);
             
             GC.SuppressFinalize(this);
+        }
+
+        public override string ToString()
+        {
+            return VertexFlags.StandardShaderDictionaryKey();
         }
     }
 }

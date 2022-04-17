@@ -18,11 +18,59 @@ namespace Scrblr.Core
     {
         #region Shader Sources
 
+
+        internal const string Po0Vss = @"
+#version 330 core
+
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+
+void main(void)
+{
+    gl_Position = vec4(iPosition0, 1.0) * uModelMatrix * uViewMatrix * uProjectionMatrix;
+}";
+
+        internal const string Po0Fss = @"
+#version 330 core
+
+out vec4 oColor0;
+
+void main()
+{
+    oColor0 = vec4(0, 0, 0, 1); 
+}";
+
+
+
+
         internal const string Po0Co0Vss = @"
 #version 330 core
 
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
 layout(location = 0) in vec3 iPosition0;  
-layout(location = 1) in vec4 iColor0;
+layout(location = 3) in vec4 iColor0;
 
 out vec4 ioColor0;
 
@@ -51,11 +99,23 @@ void main()
 }";
 
 
+
+
         internal const string Po0Uv0Vss = @"
 #version 330 core
 
-in vec3 iPosition0;  
-in vec2 iUv0;
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 5) in vec2 iUv0;
 
 out vec2 ioUv0;
 
@@ -85,12 +145,24 @@ void main()
 }";
 
 
+
+
         internal const string Po0Co0Uv0Vss = @"
 #version 330 core
 
-in vec3 iPosition0;  
-in vec4 iColor0;
-in vec2 iUv0;
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 3) in vec4 iColor0;
+layout(location = 5) in vec2 iUv0;
 
 out vec4 ioColor0;
 out vec2 ioUv0;
@@ -122,7 +194,229 @@ void main()
     oColor0 = texture(uTexture0, ioUv0) * ioColor0; 
 }";
 
+
+
+
+        internal const string Po0Uv0Uv1Vss = @"
+#version 330 core
+
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 5) in vec2 iUv0;
+layout(location = 6) in vec2 iUv1;
+
+out vec2 ioUv0;
+out vec2 ioUv1;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+
+void main(void)
+{
+    gl_Position = vec4(iPosition0, 1.0) * uModelMatrix * uViewMatrix * uProjectionMatrix;
+
+	ioUv0 = iUv0;
+	ioUv1 = iUv1;
+}";
+
+        internal const string Po0Uv0Uv1Fss = @"
+#version 330 core
+
+uniform sampler2D uTexture0;
+uniform sampler2D uTexture1;
+
+in vec2 ioUv0;
+in vec2 ioUv1;
+
+out vec4 oColor0;
+
+void main()
+{
+    oColor0 = mix(texture(uTexture0, ioUv0), texture(uTexture1, ioUv1), 0.5);
+}";
+
+
+
+
+        internal const string Po0Co0Uv0Uv1Vss = @"
+#version 330 core
+
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 3) in vec4 iColor0;
+layout(location = 5) in vec2 iUv0;
+layout(location = 6) in vec2 iUv1;
+
+out vec4 ioColor0;
+out vec2 ioUv0;
+out vec2 ioUv1;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+
+void main(void)
+{
+    gl_Position = vec4(iPosition0, 1.0) * uModelMatrix * uViewMatrix * uProjectionMatrix;
+
+	ioColor0 = iColor0;
+	ioUv0 = iUv0;
+	ioUv1 = iUv1;
+}";
+
+        internal const string Po0Co0Uv0Uv1Fss = @"
+#version 330 core
+
+uniform sampler2D uTexture0;
+uniform sampler2D uTexture1;
+
+in vec4 ioColor0;
+in vec2 ioUv0;
+in vec2 ioUv1;
+
+out vec4 oColor0;
+
+void main()
+{
+
+    
+    oColor0 = mix(texture(uTexture0, ioUv0), texture(uTexture1, ioUv1), 0.5) * ioColor0; 
+}";
+
+
+
+
         #endregion Shader Sources
+
+        private void FlushRenderChunks()
+        {
+            if (!_enableRendering)
+            {
+                return;
+            }
+
+            for (var c = 0; c < _renderChunkCount; c++)
+            {
+                var renderChunk = _renderChunks[c];
+
+                renderChunk.Shader.Use();
+
+                renderChunk.Shader.Uniform("uViewMatrix", renderChunk.ViewMatrix);
+                renderChunk.Shader.Uniform("uProjectionMatrix", renderChunk.ProjectionMatrix);
+                renderChunk.Shader.Uniform("uModelMatrix", renderChunk.ModelMatrix);
+
+                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv0))
+                {
+                    renderChunk.Texture0.UnitAndBind(TextureUnit.Texture0);
+                    renderChunk.Shader.Uniform("uTexture0", 0);
+                }
+
+                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv1))
+                {
+                    renderChunk.Texture1.UnitAndBind(TextureUnit.Texture1);
+                    renderChunk.Shader.Uniform("uTexture1", 1);
+                }
+
+                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv2) || renderChunk.VertexFlag.HasFlag(VertexFlag.Uv3))
+                {
+                    Diagnostics.Warn("Waring FlushRenderChunks(). VertexFlag.Uv2 and VertexFlag.Uv3 are not yet supported.");
+                }
+
+                renderChunk.VertexBuffer.Bind();
+                renderChunk.VertexBuffer.EnableElements(renderChunk.VertexFlag);
+
+                GL.DrawArrays((PrimitiveType)renderChunk.GeometryType, renderChunk.ElementIndex, renderChunk.ElementCount);
+            }
+        }
+
+        protected void InsertRenderBatchAndWriteToVertexBuffer(AbstractGeometry geometry)
+        {
+            var shader = QueryShader(geometry);
+            var vertexBuffer = QueryVertexBuffer(geometry);
+
+            if (!vertexBuffer.CanWriteElements(geometry.VertexCount) || _renderChunkCount + 1 >= _maxRenderChunks)
+            {
+                Flush();
+            }
+
+            geometry.WriteToVertexBuffer(vertexBuffer);
+
+            var camera = ActiveCamera();
+
+            // todo: is this all needed? why not store just the Geometry object?
+            _renderChunks[_renderChunkCount].Shader = shader;
+            _renderChunks[_renderChunkCount].VertexBuffer = vertexBuffer;
+            _renderChunks[_renderChunkCount].ViewMatrix = camera.ViewMatrix();
+            _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
+            _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
+            _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
+            _renderChunks[_renderChunkCount].ElementCount = geometry.VertexCount;
+            _renderChunks[_renderChunkCount].ElementIndex = vertexBuffer.UsedElements() - geometry.VertexCount;
+            _renderChunks[_renderChunkCount].Texture0 = geometry._texture0;
+            _renderChunks[_renderChunkCount].Texture1 = geometry._texture1;
+            _renderChunks[_renderChunkCount].Texture2 = geometry._texture2;
+            _renderChunks[_renderChunkCount].Texture3 = geometry._texture3;
+            _renderChunks[_renderChunkCount].VertexFlag = geometry.VertexFlags;
+
+            _renderChunkCount++;
+
+        }
+
+        private void InitializeStandardShaderDictionary()
+        {
+            if (_standardShaderDictionary == null)
+            {
+                _standardShaderDictionary = new Dictionary<string, Shader>();
+            }
+
+            _standardShaderDictionary.Clear();
+
+            InitializeStandardShaderDictionary("Po0", GraphicsContext.Po0Vss, GraphicsContext.Po0Fss);
+            InitializeStandardShaderDictionary("Po0-Co0", GraphicsContext.Po0Co0Vss, GraphicsContext.Po0Co0Fss);
+            InitializeStandardShaderDictionary("Po0-Uv0", GraphicsContext.Po0Uv0Vss, GraphicsContext.Po0Uv0Fss);
+            InitializeStandardShaderDictionary("Po0-Co0-Uv0", GraphicsContext.Po0Co0Uv0Vss, GraphicsContext.Po0Co0Uv0Fss);
+            InitializeStandardShaderDictionary("Po0-Uv0-Uv1", GraphicsContext.Po0Uv0Uv1Vss, GraphicsContext.Po0Uv0Uv1Fss);
+            InitializeStandardShaderDictionary("Po0-Co0-Uv0-Uv1", GraphicsContext.Po0Co0Uv0Uv1Vss, GraphicsContext.Po0Co0Uv0Uv1Fss);
+        }
+
+        private void InitializeStandardVertexBuffers()
+        {
+            _standardVertexBufferArray[0] = new VertexBuffer(
+                DefaultVertexBufferElementCount,
+                new[] {
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Position0, ElementType = VertexMapping.ElementType.Single, Count = 3 }, // location 0 - name iPosition0
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Normal0, ElementType = VertexMapping.ElementType.Single, Count = 3 },   // location 1 - name iNormal0
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Normal1, ElementType = VertexMapping.ElementType.Single, Count = 3 },   // location 2 - name iNormal1
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Color0, ElementType = VertexMapping.ElementType.Single, Count = 4 },    // location 3 - name iColor0
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Color1, ElementType = VertexMapping.ElementType.Single, Count = 4 },    // location 4 - name iColor1
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv0, ElementType = VertexMapping.ElementType.Single, Count = 2 },       // location 5 - name iUv0
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv1, ElementType = VertexMapping.ElementType.Single, Count = 2 },       // location 6 - name iUv1
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv2, ElementType = VertexMapping.ElementType.Single, Count = 2 },       // location 7 - name iUv2
+                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv3, ElementType = VertexMapping.ElementType.Single, Count = 2 },       // location 8 - name iUv3
+                },
+                VertexBufferUsage.DynamicDraw);
+
+            _standardVertexBufferArrayCount++;
+        }
 
         #region Fields and Properties
 
@@ -143,7 +437,7 @@ void main()
 
         private int _geometryCount;
 
-        private Geometry[] _geometry;
+        private AbstractGeometry[] _geometry;
 
 
         /// <summary>
@@ -153,7 +447,7 @@ void main()
 
         private int _tesselatedGeometryCount;
 
-        private Geometry[] _tesselatedGeometry;
+        private AbstractGeometry[] _tesselatedGeometry;
 
         // todo implement default camera instead of relying on the camera provided by AbstractSketch
         private ICamera _activeCamera { get; set; }
@@ -391,38 +685,38 @@ void main()
         /// </summary>
         public PrimitiveType ActiveRenderPrimitiveType { get; set; } = PrimitiveType.Triangles;
 
-        public void Render()
-        {
-            Render(ActiveRenderPrimitiveType, 0, _defaultVertexBuffer.TotelElements());
-        }
+        //public void Render()
+        //{
+        //    Render(ActiveRenderPrimitiveType, 0, _defaultVertexBuffer.TotelElements());
+        //}
 
-        public void Render(int index, int count)
-        {
-            Render(ActiveRenderPrimitiveType, index, count);
-        }
+        //public void Render(int index, int count)
+        //{
+        //    Render(ActiveRenderPrimitiveType, index, count);
+        //}
 
-        public void Render(PrimitiveType primitiveType, int index, int count)
-        {
-            _defaultVertexBuffer.Bind();
+        //public void Render(PrimitiveType primitiveType, int index, int count)
+        //{
+        //    _defaultVertexBuffer.Bind();
 
-            var shader = ActiveOrStandardShader();
+        //    var shader = ActiveOrStandardShader();
 
-            shader.Use();
+        //    shader.Use();
 
-            GL.DrawArrays(primitiveType, index, count);
-        }
+        //    GL.DrawArrays(primitiveType, index, count);
+        //}
 
-        private Shader ActiveOrStandardShader()
-        {
-            var shader = AttachedShader();
+        //private Shader ActiveOrStandardShader()
+        //{
+        //    var shader = AttachedShader();
 
-            if (shader == null)
-            {
-                shader = QueryStandardShader(_defaultVertexBuffer.VertexFlags);
-            }
+        //    if (shader == null)
+        //    {
+        //        shader = QueryStandardShader(_defaultVertexBuffer.VertexFlags);
+        //    }
 
-            return shader;
-        }
+        //    return shader;
+        //}
 
         /// <summary>
         /// default == VertexFlag.Position0 | VertexFlag.Color0
@@ -465,42 +759,16 @@ void main()
                 _renderChunks[i] = new RenderChunk();
             }
 
-            _geometry = new Geometry[_maxGeometryCount];
+            _geometry = new AbstractGeometry[_maxGeometryCount];
 
-            _tesselatedGeometry = new Geometry[_maxTesselatedGeometryCount];
+            _tesselatedGeometry = new AbstractGeometry[_maxTesselatedGeometryCount];
 
             InitializeStandardVertexBuffers();
-
-            // disable depth testing by default for 2d
-            // todo is this needed isn't this set somewhere else? at the level of AbstractSketch
-            // GraphicsContext shouldn't be aware of 2d or 3d rendering, it's all 3d here
-            // The AbstractSketch does know the difference
-            Disable(EnableFlag.DepthTest);
 
             GL.ClearColor(_clearColor);
         }
 
         #endregion Load
-
-        private void InitializeStandardVertexBuffers()
-        {
-            _standardVertexBufferArray[0] = new VertexBuffer(
-                DefaultVertexBufferElementCount,
-                new[] {
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Position0, ElementType = VertexMapping.ElementType.Single, Count = 3 },
-                    //new VertexMapping.Map { VertexFlag = VertexFlag.Normal0, ElementType = VertexMapping.ElementType.Single, Count = 3 },
-                    //new VertexMapping.Map { VertexFlag = VertexFlag.Normal1, ElementType = VertexMapping.ElementType.Single, Count = 3 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Color0, ElementType = VertexMapping.ElementType.Single, Count = 4 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Color1, ElementType = VertexMapping.ElementType.Single, Count = 4 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv0, ElementType = VertexMapping.ElementType.Single, Count = 2 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv1, ElementType = VertexMapping.ElementType.Single, Count = 2 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv2, ElementType = VertexMapping.ElementType.Single, Count = 2 },
-                    new VertexMapping.Map { VertexFlag = VertexFlag.Uv3, ElementType = VertexMapping.ElementType.Single, Count = 2 },
-                },
-                VertexBufferUsage.DynamicDraw);
-
-            _standardVertexBufferArrayCount++;
-        }
 
         #region Reset
 
@@ -533,68 +801,14 @@ void main()
 
             GeometryToRenderChunks();
 
-            FlushRenderChunk();
+            FlushRenderChunks();
 
             Reset();
-        }
-
-        private void FlushRenderChunk()
-        {
-            if (!_enableRendering)
-            {
-                return;
-            }
-
-            for (var c = 0; c < _renderChunkCount; c++)
-            {
-                var renderChunk = _renderChunks[c];
-
-                renderChunk.Shader.Use();
-
-                renderChunk.Shader.Uniform("uViewMatrix", renderChunk.ViewMatrix);
-                renderChunk.Shader.Uniform("uProjectionMatrix", renderChunk.ProjectionMatrix);
-                renderChunk.Shader.Uniform("uModelMatrix", renderChunk.ModelMatrix);
-
-                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv0))
-                {
-                    renderChunk.Texture0.UnitAndBind(TextureUnit.Texture0);
-                    renderChunk.Shader.Uniform("uTexture0", 0);
-                }
-
-                renderChunk.VertexBuffer.Bind();
-                renderChunk.VertexBuffer.EnableElements(renderChunk.VertexFlag);
-
-                GL.DrawArrays((PrimitiveType)renderChunk.GeometryType, renderChunk.ElementIndex, renderChunk.ElementCount);
-            }
         }
 
         #endregion Flush
 
         #region Standard Shaders Functions
-
-        private void InitializeStandardShaderDictionary()
-        {
-            if (_standardShaderDictionary == null)
-            {
-                _standardShaderDictionary = new Dictionary<string, Shader>();
-            }
-
-            _standardShaderDictionary.Clear();
-
-            InitializeStandardShaderDictionary("Po0Co0", GraphicsContext.Po0Co0Vss, GraphicsContext.Po0Co0Fss);
-            InitializeStandardShaderDictionary("Po0Uv0", GraphicsContext.Po0Uv0Vss, GraphicsContext.Po0Uv0Fss);
-            InitializeStandardShaderDictionary("Po0Co0Uv0", GraphicsContext.Po0Co0Uv0Vss, GraphicsContext.Po0Co0Uv0Fss);
-            //InitializeStandardShaderDictionary("Po0Co0Uv0Uv1", GraphicsContext.Po0Co0Uv0Uv1Vss, GraphicsContext.Po0Co0Uv0Uv1Fss);
-
-            //InitializeStandardShaderDictionary("Po0Uv0");
-            //InitializeStandardShaderDictionary("Po0Co0Uv0");
-            //InitializeStandardShaderDictionary("Po0Co0Uv0Uv1");
-
-            //InitializeStandardShaderDictionary(VertexFlag.Position0 | VertexFlag.Color0);
-            //InitializeStandardShaderDictionary(VertexFlag.Position0 | VertexFlag.Uv0);
-            //InitializeStandardShaderDictionary(VertexFlag.Position0 | VertexFlag.Color0 | VertexFlag.Uv0);
-            //InitializeStandardShaderDictionary(VertexFlag.Position0 | VertexFlag.Color0 | VertexFlag.Uv0 | VertexFlag.Uv1);
-        }
 
         private void InitializeStandardShaderDictionary(string key, string vertexShaderSource, string fragmentShaderSource)
         {
@@ -602,11 +816,6 @@ void main()
 
             _standardShaderDictionary.Add(key.ToLowerInvariant(), shader);
         }
-
-        //private void InitializeStandardShaderDictionary(VertexFlag vertexFlag)
-        //{
-        //    InitializeStandardShaderDictionary(vertexFlag.ShaderUid());
-        //}
 
         //private void InitializeStandardShaderDictionary(string key)
         //{
@@ -638,44 +847,22 @@ void main()
         //    }
         //}
 
-        //private string QueryGraphicsContextShaderSource(string key, string postfix)
+        //protected Shader QueryStandardShader(VertexBuffer vertexBuffer)
         //{
-        //    var fieldInfo = (typeof(GraphicsContext)).GetField(key + "Vss", BindingFlags.IgnoreCase);
-
-        //    if(fieldInfo == null)
-        //    {
-        //        return null;
-        //    }
-
-        //    return (string)fieldInfo.GetValue(null);
+        //    return QueryStandardShader(vertexBuffer.VertexFlags, vertexBuffer);
         //}
 
-        //private Shader QueryStandardShaderFor(Geometry geometry)
+        //protected Shader QueryStandardShader(VertexFlag vertexFlag, VertexBuffer vertexBuffer)
         //{
-        //    if(geometry.Shader() != null)
+        //    var key = vertexFlag.StandardShaderDictionaryKey();
+
+        //    if (_standardShaderDictionary.ContainsKey(key.ToLowerInvariant()))
         //    {
-        //        return geometry.Shader();
+        //        return _standardShaderDictionary[key];
         //    }
 
-        //    return QueryStandardShaderFor(_vertexBuffer);
+        //    throw new InvalidOperationException($"QueryShaderFor(VertexBuffer vertexBuffer) failed. Could not find a shader source for key: {key}.");
         //}
-
-        protected Shader QueryStandardShader(VertexBuffer vertexBuffer)
-        {
-            return QueryStandardShader(vertexBuffer.VertexFlags, vertexBuffer);
-        }
-
-        protected Shader QueryStandardShader(VertexFlag vertexFlag, VertexBuffer vertexBuffer)
-        {
-            var key = vertexFlag.StandardShaderDictionaryKey();
-
-            if (_standardShaderDictionary.ContainsKey(key.ToLowerInvariant()))
-            {
-                return _standardShaderDictionary[key];
-            }
-
-            throw new InvalidOperationException($"QueryShaderFor(VertexBuffer vertexBuffer) failed. Could not find a shader source for key: {key}.");
-        }
 
         protected Shader QueryStandardShader(VertexFlag vertexFlag)
         {
@@ -724,8 +911,12 @@ void main()
                 case EnableFlag.ClearBuffer:
                     _enableClearBuffer = true;
                     break;
+                case EnableFlag.Blending:
+                    GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                    GL.Enable((EnableCap)enableFlag);
+                    break;
                 default:
-                    GL.Disable((EnableCap)enableFlag);
+                    GL.Enable((EnableCap)enableFlag);
                     break;
             }
         }
@@ -794,6 +985,20 @@ void main()
             GL.Clear((ClearBufferMask)clearFlag);
         }
 
+        public void ClearColor(float grey, float a = 1f)
+        {
+            ClearColor(grey, grey, grey, a);
+        }
+
+        public void ClearColor(int grey, int a = 255)
+        {
+            ClearColor(grey, grey, grey, a);
+        }
+        public void ClearColor(int r, int g, int b, int a = 255)
+        {
+            ClearColor(r * Utility.ByteToUnitSingleFactor, g * Utility.ByteToUnitSingleFactor, b * Utility.ByteToUnitSingleFactor, a * Utility.ByteToUnitSingleFactor);
+        }
+
         public void ClearColor(float r, float g, float b, float a = 1f)
         {
             _clearColor.R = r;
@@ -802,47 +1007,6 @@ void main()
             _clearColor.A = a;
 
             GL.ClearColor(_clearColor);
-        }
-
-        public void ClearColor(int r, int g, int b, int a = 255)
-        {
-            ClearColor(Utility.ToUnitSingle(r), Utility.ToUnitSingle(g), Utility.ToUnitSingle(b), Utility.ToUnitSingle(a));
-        }
-
-
-        protected void InsertRenderBatchAndWriteToVertexBuffer(Geometry geometry)
-        {
-            var shader = QueryShader(geometry);
-            var vertexBuffer = QueryVertexBuffer(geometry);
-
-            if (!vertexBuffer.CanWriteElements(geometry.VertexSize) || _renderChunkCount + 1 >= _maxRenderChunks)
-            {
-                Flush();
-            }
-
-            var used = vertexBuffer.UsedElements();
-
-            WriteToVertexBuffer(geometry, vertexBuffer);
-
-            var camera = ActiveCamera();
-
-            // todo: is this all needed? why not store just the Geometry object?
-            _renderChunks[_renderChunkCount].Shader = shader;
-            _renderChunks[_renderChunkCount].VertexBuffer = vertexBuffer;
-            _renderChunks[_renderChunkCount].ViewMatrix = camera.ViewMatrix();
-            _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
-            _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
-            _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
-            _renderChunks[_renderChunkCount].ElementCount = geometry.VertexSize;
-            _renderChunks[_renderChunkCount].ElementIndex = vertexBuffer.UsedElements() - geometry.VertexSize;
-            _renderChunks[_renderChunkCount].Texture0 = geometry._texture0;
-            _renderChunks[_renderChunkCount].Texture1 = geometry._texture1;
-            _renderChunks[_renderChunkCount].Texture2 = geometry._texture2;
-            _renderChunks[_renderChunkCount].Texture3 = geometry._texture3;
-            _renderChunks[_renderChunkCount].VertexFlag = geometry.VertexFlags;
-
-            _renderChunkCount++;
-
         }
 
         public VertexBuffer StandardVertexBuffer()
@@ -863,7 +1027,7 @@ void main()
         /// </summary>
         /// <param name="geometry"></param>
         /// <returns>null if no shader was found</returns>
-        private VertexBuffer QueryVertexBuffer(Geometry geometry)
+        private VertexBuffer QueryVertexBuffer(AbstractGeometry geometry)
         {
             var vertexBuffer = AttachedVertexBuffer();
 
@@ -883,14 +1047,9 @@ void main()
         /// </summary>
         /// <param name="geometry"></param>
         /// <returns>null if no shader was found</returns>
-        private Shader QueryShader(Geometry geometry)
+        private Shader QueryShader(AbstractGeometry geometry)
         {
             var shader = AttachedShader();
-
-            //if (shader == null)
-            //{
-            //    shader = AttachedShader();
-            //}
 
             if (shader == null)
             {
@@ -917,7 +1076,7 @@ void main()
             GeometryToRenderChunks(_tesselatedGeometry, _tesselatedGeometryCount);
         }
 
-        private void GeometryToRenderChunks(Geometry[] geometry, int count)
+        private void GeometryToRenderChunks(AbstractGeometry[] geometry, int count)
         {
             for (var i = 0; i < count; i++)
             {
@@ -925,115 +1084,46 @@ void main()
             }
         }
 
-        private void WriteToVertexBuffer(Geometry geometry, VertexBuffer vertexBuffer)
-        {
-            vertexBuffer.Bind();
-
-            geometry.WriteTo(vertexBuffer);
-        }
-
-        //private void WriteToVertexBuffer(ref Color4 data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
-        //{
-        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.R, data.G, data.B, data.A);
-        //}
-
-        //private void WriteToVertexBuffer(ref Vector3 data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
-        //{
-        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.X, data.Y, data.Z);
-        //}
-
-        //private void WriteToVertexBuffer(ref Vector2 data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
-        //{
-        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.X, data.Y);
-        //}
-
-        //private void WriteToVertexBuffer(ref float[] data, VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer)
-        //{
-        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, data.X, data.Y);
-        //}
-
-        //private void WriteToVertexBuffer<T>(VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer, params T[] data) where T : struct
-        //{
-        //    WriteToVertexBuffer(vertexFlag, geometry, vertexBuffer, ref data);
-        //}
-
-        //private void WriteToVertexBuffer<T>(VertexFlag vertexFlag, Geometry geometry, VertexBuffer vertexBuffer, ref T[] data) where T : struct
-        //{
-        //    // always write data
-        //    if (vertexBuffer.VertexFlags.HasFlag(vertexFlag) /* && geometry.VertexFlags.HasFlag(vertexFlag) */)
-        //    {
-        //        vertexBuffer.Write(ref data);
-        //    }
-        //}
-
-        private void WriteGeometryToVertexBuffer(Geometry geometry)
-        {
-            _defaultVertexBuffer.Bind();
-
-            foreach (var v in geometry.Vertices())
-            {
-                //_defaultVertexBuffer.Write(v._position);
-
-                //if (geometry.VertexFlags.HasFlag(VertexFlag.Normal0) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Normal0))
-                //{
-                //    _defaultVertexBuffer.Write(v._vertexNormal);
-                //}
-
-                //_defaultVertexBuffer.Write(v._color0);
-
-                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv0) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv0))
-                //{
-                //    _defaultVertexBuffer.Write(v._uv0);
-                //}
-
-                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv1) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv1))
-                //{
-                //    _defaultVertexBuffer.Write(v._uv1);
-                //}
-
-                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv2) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv2))
-                //{
-                //    _defaultVertexBuffer.Write(v._uv2);
-                //}
-
-                //if (geometry.VertexFlags.HasFlag(VertexFlag.Uv3) && _defaultVertexBuffer.VertexFlags.HasFlag(VertexFlag.Uv3))
-                //{
-                //    _defaultVertexBuffer.Write(v._uv3);
-                //}
-            }
-        }
-
         #region Geometry Functions
 
-        public Geometry.QuadGeometry Rectangle()
+        public RectangleGeometry Rectangle()
         {
-            var g = new Geometry.QuadGeometry(AttachedShader(), ModelMatrix());
+            var g = new RectangleGeometry(ModelMatrix());
 
             AddGeometry(g);
 
             return g;
         }
 
-        public Geometry CreateGeometry(GeometryType geometryType)
+        public QuadGeometry Quad()
         {
-            return CreateGeometry(geometryType, AttachedShader(), ModelMatrix());
-        }
-
-        public Geometry CreateGeometry(GeometryType geometryType, Shader shader, Matrix4 modelMatrix)
-        {
-            return CreateGeometry(geometryType, Geometry.DefaultVertexCount, shader, modelMatrix);
-        }
-
-        public Geometry CreateGeometry(GeometryType geometryType, int vertexCount, Shader shader, Matrix4 modelMatrix)
-        {
-            var g = new Geometry(geometryType, vertexCount, shader, modelMatrix);
+            var g = new QuadGeometry(ModelMatrix());
 
             AddGeometry(g);
 
             return g;
         }
 
-        public void AddGeometry(Geometry geometry)
+        //public TGeometry CreateGeometry<TGeometry>(GeometryType geometryType) where TGeometry : AbstractGeometry, new()
+        //{
+        //    return CreateGeometry<TGeometry>(geometryType, ModelMatrix());
+        //}
+
+        //public TGeometry CreateGeometry<TGeometry>(GeometryType geometryType, Matrix4 modelMatrix) where TGeometry : AbstractGeometry, new()
+        //{
+        //    return CreateGeometry<TGeometry>(geometryType, Geometry.DefaultVertexCount, modelMatrix);
+        //}
+
+        //public TGeometry CreateGeometry<TGeometry>(GeometryType geometryType, int vertexCount, Matrix4 modelMatrix) where TGeometry : AbstractGeometry, new()
+        //{
+        //    var g = new TGeometry(geometryType, vertexCount, modelMatrix);
+
+        //    AddGeometry(g);
+
+        //    return g;
+        //}
+
+        public void AddGeometry(AbstractGeometry geometry)
         {
             if (_geometryCount + 1 >= _maxGeometryCount)
             {
@@ -1066,144 +1156,6 @@ void main()
         }
 
         #endregion Geometry Functions
-
-        #region Shape Functions
-
-        //#region Rectangle
-
-        //public void Rectangle(float x, float y, float width, float height)
-        //{
-        //    InsertRenderChunk(GeometryType.TriangleStrip, 4);
-
-        //    _vertexBuffer.Bind();
-
-        //    var halfWidth = width * 0.5f;
-        //    var halfHeight = height * 0.5f;
-
-        //    x -= halfWidth;
-        //    y -= halfHeight;
-
-        //    _vertexBuffer.Write(x + width, y + height, 0f);           // top right
-        //    _vertexBuffer.Write(_currentFillColor);
-
-        //    _vertexBuffer.Write(x, y + height, 0f);                   // top left
-        //    _vertexBuffer.Write(_currentFillColor);
-
-        //    _vertexBuffer.Write(x + width, y, 0f);                    // bottom right
-        //    _vertexBuffer.Write(_currentFillColor);
-
-        //    _vertexBuffer.Write(x, y, 0f);                            // bottom left
-        //    _vertexBuffer.Write(_currentFillColor);
-        //}
-
-        //#endregion Rectangle
-
-        //#region Quad
-
-        //public void Quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
-        //{
-        //    InsertRenderChunk(GeometryType.TriangleStrip, 4);
-
-        //    _vertexBuffer.Bind();
-
-        //    _vertexBuffer.Write(x1, y1, 0f);
-        //    _vertexBuffer.Write(_currentFillColor);
-
-        //    _vertexBuffer.Write(x2, y2, 0f);
-        //    _vertexBuffer.Write(_currentFillColor);
-
-        //    _vertexBuffer.Write(x3, y3, 0f);
-        //    _vertexBuffer.Write(_currentFillColor);
-
-        //    _vertexBuffer.Write(x4, y4, 0f);
-        //    _vertexBuffer.Write(_currentFillColor);
-        //}
-
-        //#endregion Quad
-
-        //#region Line Functions
-
-        //public void Lines(params float[] coordinates)
-        //{
-        //    InsertRenderChunk(GeometryType.Lines, 4);
-
-        //    _vertexBuffer.Bind();
-
-        //    for (var i = 0; i < coordinates.Length;)
-        //    {
-        //        _vertexBuffer.Write(coordinates[i++], coordinates[i++], 0f);
-        //        _vertexBuffer.Write(_currentFillColor);
-        //    }
-        //}
-
-        //public void LineLoop(params float[] coordinates)
-        //{
-        //    InsertRenderChunk(GeometryType.LineLoop, 4);
-
-        //    _vertexBuffer.Bind();
-
-        //    for (var i = 0; i < coordinates.Length;)
-        //    {
-        //        _vertexBuffer.Write(coordinates[i++], coordinates[i++], 0f);
-        //        _vertexBuffer.Write(_currentFillColor);
-        //    }
-        //}
-
-        //public void LineStrip(params float[] coordinates)
-        //{
-        //    InsertRenderChunk(GeometryType.LineStrip, 4);
-
-        //    _vertexBuffer.Bind();
-
-        //    for (var i = 0; i < coordinates.Length;)
-        //    {
-        //        _vertexBuffer.Write(coordinates[i++], coordinates[i++], 0f);
-        //        _vertexBuffer.Write(_currentFillColor);
-        //    }
-        //}
-
-        //#endregion Line Functions
-
-        #endregion Shape Functions
-
-        #region Fill Functions
-
-        ///// <summary>
-        ///// default == Color4.OrangeRed
-        ///// </summary>
-        //private Color4 _currentFillColor = Color4.Black;
-
-        //public void Fill(int grey, int a = 255)
-        //{
-        //    var g = Utility.ToUnitSingle(grey);
-
-        //    Fill(g, g, g, Utility.ToUnitSingle(a));
-        //}
-
-        //public void Fill(float grey, float a = 1f)
-        //{
-        //    Fill(grey, grey, grey, a);
-        //}
-
-        //public void Fill(int r, int g, int b, int a = 255)
-        //{
-        //    Fill(Utility.ToUnitSingle(r), Utility.ToUnitSingle(g), Utility.ToUnitSingle(b), Utility.ToUnitSingle(a));
-        //}
-
-        //public void Fill(float r, float g, float b, float a = 1f)
-        //{
-        //    _currentFillColor.R = r;
-        //    _currentFillColor.G = g;
-        //    _currentFillColor.B = b;
-        //    _currentFillColor.A = a;
-        //}
-
-        //public void Fill(Color4 color)
-        //{
-        //    Fill(color.R, color.G, color.B, color.A);
-        //}
-
-        #endregion Fill Functions    
 
         #region Dispose
 

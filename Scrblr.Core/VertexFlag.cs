@@ -115,11 +115,11 @@ namespace Scrblr.Core
                     continue;
                 }
 
-                key += shaderBindAttribute.Uid;
+                key += shaderBindAttribute.Uid + "-";
 
             }
 
-            return key;
+            return key.Substring(0, key.Length - 1);
         }
     }
 }

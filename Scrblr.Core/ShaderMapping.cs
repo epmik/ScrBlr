@@ -9,6 +9,9 @@ namespace Scrblr.Core
 {
     public class ShaderMapping
     {
+        // TODO implement/use this
+        // vertex buffer/shader binding can be complicated: use int location id's or named variables and/or both?
+        // for the standard (internal shaders) it could be feasible to use fixed locations id's.
         #region Fields and Properties
 
         public class Map

@@ -50,13 +50,17 @@ namespace Scrblr.Core
                 Width = bitmap.Width;
                 Height = bitmap.Height;
 
-                var pixelFormat = bitmap.RawFormat == System.Drawing.Imaging.ImageFormat.Png 
-                    ? System.Drawing.Imaging.PixelFormat.Format32bppArgb 
-                    : System.Drawing.Imaging.PixelFormat.Format32bppRgb;
+                // TODO what pixel formats to use? PixelFormat.Format32bppArgb works for both jpg and png
+                var pixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppArgb;
+                //var pixelFormat = bitmap.RawFormat == System.Drawing.Imaging.ImageFormat.Png 
+                //    ? System.Drawing.Imaging.PixelFormat.Format32bppArgb 
+                //    : System.Drawing.Imaging.PixelFormat.Format32bppRgb;
 
-                var pixelInternalFormat = bitmap.RawFormat == System.Drawing.Imaging.ImageFormat.Png
-                    ? PixelInternalFormat.Rgba
-                    : PixelInternalFormat.Rgb;
+                // TODO what pixel formats to use? PixelInternalFormat.Rgba works for both jpg and png
+                var pixelInternalFormat = PixelInternalFormat.Rgba;
+                //var pixelInternalFormat = bitmap.RawFormat == System.Drawing.Imaging.ImageFormat.Png
+                //    ? PixelInternalFormat.Rgba
+                //    : PixelInternalFormat.Rgb;
 
                 bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
 

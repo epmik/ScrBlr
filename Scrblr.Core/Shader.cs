@@ -12,6 +12,8 @@ namespace Scrblr.Core
 
         public readonly int Handle;
 
+        //private readonly string _name;
+
         private readonly Dictionary<string, int> _uniformLocations;
         private readonly Dictionary<string, int> _attributeLocations;
 
@@ -25,6 +27,8 @@ namespace Scrblr.Core
         // A commented example of GLSL can be found in shader.vert.
         public Shader(string vertexShaderPathOrSource, string fragmentShaderPathOrSource)
         {
+            //_name = vertexShaderPathOrSource + "-" + fragmentShaderPathOrSource;
+
             // There are several different types of shaders, but the only two you need for basic rendering are the vertex and fragment shaders.
             // The vertex shader is responsible for moving around vertices, and uploading that data to the fragment shader.
             //   The vertex shader won't be too important here, but they'll be more important later.
@@ -270,5 +274,10 @@ namespace Scrblr.Core
             //GL.UseProgram(Handle);
             GL.Uniform4(_uniformLocations[name], x, y, z, w);
         }
+
+        //public override string ToString()
+        //{
+        //    return _name;
+        //}
     }
 }

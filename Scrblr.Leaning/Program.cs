@@ -1,5 +1,6 @@
 ﻿using Scrblr.Core;
 using System;
+using System.Threading;
 
 namespace Scrblr.Leaning
 {
@@ -8,6 +9,10 @@ namespace Scrblr.Leaning
         static void Main(string[] args)
         {
             Sketch.Run<Learn027>();
+
+            Console.WriteLine("Closing in 5 seconds...");
+
+            Thread.Sleep(5000);
         }
     }
 }
