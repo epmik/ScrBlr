@@ -17,6 +17,7 @@ namespace Scrblr.Core
         FrontFaceCulling,
         BackFaceCulling,
         ClockWiseFace,
+        CounterClockWiseFace,
         //FrontAndBackFaceCulling,
     }
 }
