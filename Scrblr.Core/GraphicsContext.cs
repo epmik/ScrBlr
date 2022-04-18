@@ -1104,6 +1104,20 @@ void main()
             return g;
         }
 
+        public CircleGeometry Circle()
+        {
+            return Circle(1f);
+        }
+
+        public CircleGeometry Circle(float radius)
+        {
+            var g = new CircleGeometry(radius, ModelMatrix());
+
+            AddGeometry(g);
+
+            return g;
+        }
+
         //public TGeometry CreateGeometry<TGeometry>(GeometryType geometryType) where TGeometry : AbstractGeometry, new()
         //{
         //    return CreateGeometry<TGeometry>(geometryType, ModelMatrix());
