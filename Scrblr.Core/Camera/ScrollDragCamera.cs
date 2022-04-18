@@ -6,19 +6,24 @@ using System.IO;
 
 namespace Scrblr.Core
 {
-    public class NearFarScrollCamera : AbstractCamera
+    public class ScrollDragCamera : AbstractCamera
     {
         private float _scrollFactor = 1f;
 
-        public NearFarScrollCamera()
+        public ScrollDragCamera()
         {
 
         }
 
         public override Matrix4 ProjectionMatrix()
         {
-            return Matrix4.CreateOrthographicOffCenter(Left * _scrollFactor, Right * _scrollFactor, Bottom * _scrollFactor, Top * _scrollFactor, Near, Far);
-            //return Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(Fov), AspectRatio, Near, Far);
+            switch (ProjectionMode)
+            {
+                case ProjectionMode.Perspective:
+                    return Matrix4.CreatePerspectiveOffCenter(Left, Right, Bottom, Top, Near, Far);
+                default:
+                    return Matrix4.CreateOrthographicOffCenter(Left * _scrollFactor, Right * _scrollFactor, Bottom * _scrollFactor, Top * _scrollFactor, Near, Far);
+            }
         }
 
         public void Scroll(float direction, double time)
