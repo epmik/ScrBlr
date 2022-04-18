@@ -239,17 +239,30 @@ namespace Scrblr.Core
 
         public void Run()
         {
+            Diagnostics.Log($"Virtual memory: {(Process.GetCurrentProcess().VirtualMemorySize64 / (1024 * 1024))} MB");
+
             _timeStopWatch.Start();
 
             Initialize();
 
             Diagnostics.Log($"Initialize time: {_timeStopWatch.ElapsedMilliseconds} ms.");
 
+            // see https://stackoverflow.com/a/2342090/527843
+            GC.Collect();   // The first time, objects are put on the freachable queue and are later finalized.
+            GC.WaitForPendingFinalizers();
+            GC.Collect();   // Afterwards, they are collectable.
+
+            Diagnostics.Log($"Virtual memory: {(Process.GetCurrentProcess().VirtualMemorySize64 / (1024 * 1024))} MB");
+
             _internalWindow.Run();
 
             _timeStopWatch.Stop();
 
             Diagnostics.Log($"Close time: {_timeStopWatch.ElapsedMilliseconds} ms.");
+
+            Diagnostics.Log($"Virtual memory: {(Process.GetCurrentProcess().VirtualMemorySize64 / (1024 * 1024))} MB");
+
+            GC.Collect();
         }
 
         public long CurrentTimeStamp() 
@@ -360,6 +373,9 @@ namespace Scrblr.Core
 
         private void PreUpdateFrameInternal(FrameEventArgs e)
         {
+            Diagnostics.Log($"Pre frame allocated managed memory - before garbage collection: {(GC.GetTotalMemory(false) / (1024 * 1024))} MB");
+            //Diagnostics.Log($"Allocated managed memory - after garbage collection: {(GC.GetTotalMemory(true) / (1024 * 1024))} MB");
+
             FrameCount++;
             FramesPerSecond++;
 
@@ -434,6 +450,8 @@ namespace Scrblr.Core
             }
 
             _internalWindow.SwapBuffers();
+
+            Diagnostics.Log($"Post frame allocated managed memory - before garbage collection: {(GC.GetTotalMemory(false) / (1024 * 1024))} MB");
         }
 
         private void UnLoadInternal()
