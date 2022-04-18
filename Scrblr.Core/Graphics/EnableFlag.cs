@@ -10,8 +10,13 @@ namespace Scrblr.Core
         Texture2d = EnableCap.Texture2D,
         Blending = EnableCap.Blend,
         MultiSampling = EnableCap.Multisample,
+        //Culling = EnableCap.CullFace,
 
         Rendering = 1,
         ClearBuffer,
+        FrontFaceCulling,
+        BackFaceCulling,
+        ClockWiseFace,
+        //FrontAndBackFaceCulling,
     }
 }

@@ -380,7 +380,6 @@ void main()
             _renderChunks[_renderChunkCount].VertexFlag = geometry.VertexFlags;
 
             _renderChunkCount++;
-
         }
 
         private void InitializeStandardShaderDictionary()
@@ -917,6 +916,37 @@ void main()
                     GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
                     GL.Enable((EnableCap)enableFlag);
                     break;
+                //case EnableFlag.Culling:
+                //    GL.Enable((EnableCap)enableFlag);
+                //    break;
+                case EnableFlag.BackFaceCulling:
+                    _enableBackFaceCulling = true;
+                    if (_enableFrontFaceCulling)
+                    {
+                        GL.CullFace(CullFaceMode.FrontAndBack);
+                    }
+                    else
+                    {
+                        GL.CullFace(CullFaceMode.Back);
+                    }
+                    GL.Enable(EnableCap.CullFace);
+                    break;
+                case EnableFlag.FrontFaceCulling:
+                    _enableFrontFaceCulling = true;
+                    if (_enableBackFaceCulling)
+                    {
+                        GL.CullFace(CullFaceMode.FrontAndBack);
+                    }
+                    else
+                    {
+                        GL.CullFace(CullFaceMode.Front);
+                    }
+                    GL.Enable(EnableCap.CullFace);
+                    break;
+                //case EnableFlag.FrontAndBackFaceCulling:
+                //    _enableBackFaceCulling = _enableFrontFaceCulling = true;
+                //    GL.CullFace(CullFaceMode.FrontAndBack);
+                //    break;
                 default:
                     GL.Enable((EnableCap)enableFlag);
                     break;
@@ -931,6 +961,10 @@ void main()
                     return _enableRendering;
                 case EnableFlag.ClearBuffer:
                     return _enableClearBuffer;
+                case EnableFlag.BackFaceCulling:
+                    return _enableBackFaceCulling;
+                case EnableFlag.FrontFaceCulling:
+                    return _enableFrontFaceCulling;
                 default:
                     return GL.IsEnabled((EnableCap)enableFlag);
             }
@@ -938,6 +972,8 @@ void main()
 
         private bool _enableRendering = true;
         private bool _enableClearBuffer = true;
+        private bool _enableBackFaceCulling = true;
+        private bool _enableFrontFaceCulling = false;
 
         public void Disable(EnableFlag enableFlag)
         {
@@ -948,6 +984,34 @@ void main()
                     break;
                 case EnableFlag.ClearBuffer:
                     _enableClearBuffer = false;
+                    break;
+                case EnableFlag.Blending:
+                    GL.Disable((EnableCap)enableFlag);
+                    break;
+                //case EnableFlag.Culling:
+                //    GL.Disable((EnableCap)enableFlag);
+                //    break;
+                case EnableFlag.BackFaceCulling:
+                    _enableBackFaceCulling = false;
+                    if (_enableFrontFaceCulling)
+                    {
+                        GL.CullFace(CullFaceMode.Front);
+                    }
+                    else
+                    {
+                        GL.Disable(EnableCap.CullFace);
+                    }
+                    break;
+                case EnableFlag.FrontFaceCulling:
+                    _enableFrontFaceCulling = false;
+                    if(_enableBackFaceCulling)
+                    {
+                        GL.CullFace(CullFaceMode.Back);
+                    }
+                    else
+                    {
+                        GL.Disable(EnableCap.CullFace);
+                    }
                     break;
                 default:
                     GL.Disable((EnableCap)enableFlag);
@@ -1108,12 +1172,26 @@ void main()
 
         public CircleGeometry Circle()
         {
-            return Circle(1f);
+            return Circle(CircleGeometry.DefaultRadius);
         }
 
         public CircleGeometry Circle(float radius)
         {
             var g = new CircleGeometry(radius, ModelMatrix());
+
+            AddGeometry(g);
+
+            return g;
+        }
+
+        public EllipseGeometry Ellipse()
+        {
+            return Ellipse(EllipseGeometry.DefaultWidth, EllipseGeometry.DefaultHeight);
+        }
+
+        public EllipseGeometry Ellipse(float width, float height)
+        {
+            var g = new EllipseGeometry(width, height, ModelMatrix());
 
             AddGeometry(g);
 

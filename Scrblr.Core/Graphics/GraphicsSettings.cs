@@ -135,8 +135,8 @@ namespace Scrblr.Core
         #region Constructors
 
         public GraphicsSettings(
-            int width, 
-            int height, 
+            int width,
+            int height,
             int colorBits = GraphicsSettings.DefaultColorBits,
             int depthBits = GraphicsSettings.DefaultDepthBits,
             int stencilBits = GraphicsSettings.DefaultStencilBits,
