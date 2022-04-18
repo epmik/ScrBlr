@@ -57,6 +57,13 @@ namespace Scrblr.Leaning
             _smileyWithTransparency = new Texture("resources/textures/smiley-transparent-1024x1024.png");
         }
 
+        public void UnLoad()
+        {
+            _gridNoTransparency.Dispose();
+            _gridWithTransparency.Dispose();
+            _smileyWithTransparency.Dispose();
+        }
+
         public void Update()
         {
             _degrees += (float)(_rotationDegreesPerSecond * ElapsedTime);
@@ -93,7 +100,7 @@ namespace Scrblr.Leaning
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
-            Graphics.Rectangle();
+            Graphics.Circle();
             Graphics.PopMatrix();
         }
 
@@ -101,7 +108,39 @@ namespace Scrblr.Leaning
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
-            Graphics.Rectangle().Color(255, 0, 0);
+            Graphics.Circle(1.25f).Color(255, 0, 0);
+            Graphics.PopMatrix();
+        }
+
+        private void Render003(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Circle().Radius(0.75f).Color(255, 255, 0);
+            Graphics.PopMatrix();
+        }
+
+        private void Render004(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Circle().Segments(8).Color(255, 0, 255);
+            Graphics.PopMatrix();
+        }
+
+        private void Render005(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Circle().AutoSegments(true).Color(255, 0, 255);
+            Graphics.PopMatrix();
+        }
+
+        private void Render006(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Circle().AutoSegments(false).Color(255, 0, 255);
             Graphics.PopMatrix();
         }
     }
