@@ -22,7 +22,7 @@ namespace Scrblr.Core
 
         public Guid Guid = Guid.NewGuid();
 
-        public int VertexCount { get; protected set; }
+        public virtual int VertexCount { get; private set; }
 
         public GeometryType GeometryType { get; private set; }
 
