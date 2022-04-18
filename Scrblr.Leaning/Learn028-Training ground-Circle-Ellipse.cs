@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Scrblr.Leaning
 {
-    [Sketch(Name = "Learn028-Training ground-Circle-Oval")]
+    [Sketch(Name = "Learn028-Training ground-Circle-Ellipse")]
     public class Learn028 : AbstractSketch
     {
         int _rows = 5, _columns = 5;
@@ -78,6 +78,8 @@ namespace Scrblr.Leaning
         {
             Graphics.ClearColor(128);
 
+            Graphics.Disable(EnableFlag.BackFaceCulling);
+
             var i = 0;
             var rowY = _rowStartY;
 
@@ -96,7 +98,15 @@ namespace Scrblr.Leaning
             }
         }
 
-        private void Render001(float x, float y)
+        //private void Render000(float x, float y)
+        //{
+        //    Graphics.PushMatrix();
+        //    Graphics.Translate(x, y);
+        //    Graphics.Rectangle();
+        //    Graphics.PopMatrix();
+        //}
+
+        private void RenderCircle001(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
@@ -104,23 +114,23 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
-        private void Render002(float x, float y)
+        private void RenderCircle002(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
-            Graphics.Circle(1.25f).Color(225, 0, 128);
+            Graphics.Circle(1f).Color(225, 0, 128);
             Graphics.PopMatrix();
         }
 
-        private void Render003(float x, float y)
+        private void RenderCircle003(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
-            Graphics.Circle().Radius(0.75f).Color(128, 32, 128);
+            Graphics.Circle().Radius(0.25f).Color(128, 32, 128);
             Graphics.PopMatrix();
         }
 
-        private void Render004(float x, float y)
+        private void RenderCircle004(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
@@ -128,7 +138,7 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
-        private void Render005(float x, float y)
+        private void RenderCircle005(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
@@ -136,7 +146,7 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
-        private void Render006(float x, float y)
+        private void RenderCircle006(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
@@ -144,7 +154,7 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
-        private void Render007(float x, float y)
+        private void RenderCircle007(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Translate(x, y);
@@ -152,27 +162,27 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
-        private void Render008(float x, float y)
+        private void RenderCircle008(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y);
-            Graphics.Circle().AutoSegments(false).Segments(5).Color(32, 96, 224).Texture(_gridNoTransparency);
+            Graphics.Circle().AutoSegments(false).Segments(7).Color(32, 96, 224).Texture(_gridNoTransparency);
             Graphics.PopMatrix();
         }
 
-        private void Render009(float x, float y)
+        private void RenderCircle009(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y);
-            Graphics.Circle().AutoSegments(false).Segments(5).Texture(_smileyWithTransparency);
+            Graphics.Circle().AutoSegments(false).Segments(5).Texture(_gridWithTransparency);
             Graphics.PopMatrix();
         }
 
-        private void Render010(float x, float y)
+        private void RenderCircle010(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
@@ -182,13 +192,114 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
-        private void Render011(float x, float y)
+        private void RenderCircle011(float x, float y)
         {
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.Y);
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y);
             Graphics.Circle().AutoSegments(false).Segments(5).Color(154, 96, 0).Texture(_gridNoTransparency).Texture(_smileyWithTransparency);
+            Graphics.PopMatrix();
+        }
+
+
+
+
+
+
+        private void RenderEllipse001(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Ellipse();
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse002(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Ellipse(1.50f, 1f).Color(225, 0, 128);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse003(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().Width(0.25f).Height(1.25f).Color(128, 32, 128);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse004(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().Segments(8).Color(0, 64, 225);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse005(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().Width(1.25f).Height(0.5f).AutoSegments(true).Color(64, 125, 255);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse006(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().Width(1.15f).Height(1.55f).AutoSegments(false).Texture(_gridNoTransparency);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse007(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().AutoSegments(false).Segments(5).Texture(_gridNoTransparency);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse008(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().AutoSegments(false).Segments(7).Color(32, 96, 224).Texture(_gridNoTransparency);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse009(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().AutoSegments(false).Segments(5).Texture(_gridWithTransparency);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse010(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y);
+            Graphics.Circle().AutoSegments(false).Segments(5).Color(32, 96, 224).Texture(_smileyWithTransparency);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderEllipse011(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y);
+            Graphics.Ellipse().AutoSegments(false).Segments(5).Color(154, 96, 0).Texture(_gridNoTransparency).Texture(_smileyWithTransparency);
             Graphics.PopMatrix();
         }
     }
