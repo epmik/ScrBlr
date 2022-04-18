@@ -18,7 +18,7 @@ namespace Scrblr.Core
 
         public static bool WriteToConsole = true;
         public static bool WriteToDebugWindow = true;
-        public static Level WriteLevel = Level.Warn;
+        public static Level WriteLevel = Level.Log;
 
         public static void Log(string message)
         {
