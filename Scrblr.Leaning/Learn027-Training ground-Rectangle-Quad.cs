@@ -77,6 +77,8 @@ namespace Scrblr.Leaning
         {
             Graphics.ClearColor(128);
 
+            Graphics.Disable(EnableFlag.BackFaceCulling);
+
             var i = 0;
             var rowY = _rowStartY;
 
