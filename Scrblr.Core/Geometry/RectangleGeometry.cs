@@ -43,16 +43,16 @@ namespace Scrblr.Core
         }
 
         // OpenGL, unlike other graphics API's, has its texture coordinate origin in the bottom-left corner of a texture. Other API's have this origin in the top left.
-        private static readonly float[][] _defaultUvs = new float[][]
+        private static readonly float[,] _defaultUvs = new float[,]
             {
                     // top left
-                    new float[] { 0f, 1f },
+                    { 0f, 1f },
                     // bottom left
-                    new float[] { 0, 0f },
+                    { 0, 0f },
                     // top right
-                    new float[] { 1f, 1f },
+                    { 1f, 1f },
                     // bottom right
-                    new float[] { 1f, 0f },
+                    { 1f, 0f },
             };
         // OpenGL, unlike other graphics API's, has its texture coordinate origin in the bottom-left corner of a texture. Other API's have this origin in the top left.
         //private static readonly float[][] _defaultUvs = new float[][]
@@ -67,22 +67,22 @@ namespace Scrblr.Core
         //            new float[] { 1f, 1f },
         //    };
 
-        private float[][] CalculatePoints()
+        private float[,] CalculatePoints()
         {
             var hw = _width * 0.5f;
             var hh = _height * 0.5f;
 
             // ccw triangle order
-            return new float[][]
+            return new float[,]
             {
                     // top left
-                    new float[] { _position.X + hw, _position.Y + hh, 0f },
+                    { _position.X - hw, _position.Y + hh, 0f },
                     // bottom left
-                    new float[] { _position.X + hw, _position.Y - hh, 0f },
+                    { _position.X - hw, _position.Y - hh, 0f },
                     // top right
-                    new float[] { _position.X - hw, _position.Y + hh, 0f },
+                    { _position.X + hw, _position.Y + hh, 0f },
                     // bottom right
-                    new float[] { _position.X - hw, _position.Y - hh, 0f },
+                    { _position.X + hw, _position.Y - hh, 0f },
             };
         }
 
@@ -92,15 +92,15 @@ namespace Scrblr.Core
 
             for (var i = 0; i < 4; i++)
             {
-                vertexBuffer.WriteFixed(VertexFlag.Position0, ref points[i]);
+                vertexBuffer.WriteFixed(VertexFlag.Position0, new float[] { points[i, 0], points[i, 1], points[i, 2] });
 
                 vertexBuffer.WriteFixed(VertexFlag.Normal0, DefaultNormal);
 
                 vertexBuffer.WriteFixed(VertexFlag.Color0, ref _color);
 
-                vertexBuffer.WriteFixed(VertexFlag.Uv0, ref _defaultUvs[i]);
+                vertexBuffer.WriteFixed(VertexFlag.Uv0, new float[] { _defaultUvs[i, 0], _defaultUvs[i, 1] });
 
-                vertexBuffer.WriteFixed(VertexFlag.Uv1, ref _defaultUvs[i]);
+                vertexBuffer.WriteFixed(VertexFlag.Uv1, new float[] { _defaultUvs[i, 0], _defaultUvs[i, 1] });
 
                 vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
             }

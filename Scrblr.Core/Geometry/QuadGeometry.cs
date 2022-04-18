@@ -8,18 +8,18 @@ namespace Scrblr.Core
     {
         private float[,] _points = new float[4,3]
         {
-            {  0.5f,  0.5f,  0.0f },
-            {  0.5f, -0.5f,  0.0f },
-            { -0.5f,  0.5f,  0.0f },
-            { -0.5f, -0.5f,  0.0f },
+            // top left
+            {  -0.5f,  0.5f,  0.0f },
+            // bottom left
+            {  -0.5f, -0.5f,  0.0f },
+            // top right
+            {   0.5f,  0.5f,  0.0f },
+            // bottom right
+            {   0.5f, -0.5f,  0.0f },
         };
-
-        // long[,] data = new long[2, 4]{ {1,2,3,4}, {7,8,9,10} }; 
 
         private float[,] _uvs;
 
-
-        // OpenGL, unlike other graphics API's, has its texture coordinate origin in the bottom-left corner of a texture. Other API's have this origin in the top left.
         private static readonly float[,] _defaultUvs = new float[4,2]
             {
                 // top left
@@ -31,19 +31,6 @@ namespace Scrblr.Core
                 // bottom right
                 { 1f, 0f },
             };
-
-        // OpenGL, unlike other graphics API's, has its texture coordinate origin in the bottom-left corner of a texture. Other API's have this origin in the top left.
-        //private static readonly float[][] _defaultUvs = new float[][]
-        //    {
-        //            // top left
-        //            new float[] { 0f, 0f },
-        //            // bottom left
-        //            new float[] { 0, 1f },
-        //            // top right
-        //            new float[] { 1f, 0f },
-        //            // bottom right
-        //            new float[] { 1f, 1f },
-        //    };
 
         public QuadGeometry()
             : base(GeometryType.TriangleStrip, 4, Matrix4.Identity)

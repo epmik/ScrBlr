@@ -33,6 +33,7 @@ namespace Scrblr.Core
 
         public CircleGeometry AutoSegments(bool autoSegments)
         {
+            // TODO number of segments dependent on the size of the circle in screen space
             _segments = autoSegments ? 0 : _segments;
 
             return this;
@@ -83,13 +84,13 @@ namespace Scrblr.Core
             points[0, 1] = _position.Y;
             points[0, 2] = _position.Z;
 
-            var step = (float)(Math.PI * 2 / (double)segments);
-            var radians = 0f;
+            var step = Math.PI * 2 / (double)segments;
+            var radians = Math.PI * 0.5;
 
             for (var i = 1; i < segments + 1; i++)
             {
-                points[i, 0] = (float)(Math.Sin(radians) * _radius);
-                points[i, 1] = (float)(Math.Cos(radians) * _radius);
+                points[i, 0] = (float)(Math.Cos(radians) * _radius);
+                points[i, 1] = (float)(Math.Sin(radians) * _radius);
                 points[i, 2] = 0f;
 
                 radians += step;
@@ -113,8 +114,8 @@ namespace Scrblr.Core
             // +2 for the center point and duplicated endpoint
             var uvs = new float[segments + 2, 2];
 
-            var step = (float)(Math.PI * 2 / (double)segments);
-            var radians = 0f;
+            var step = Math.PI * 2 / (double)segments;
+            var radians = Math.PI * 0.5;
 
             // center point
             uvs[0, 0] = 0.5f;
@@ -122,8 +123,8 @@ namespace Scrblr.Core
 
             for (var i = 1; i < segments + 1; i++)
             {
-                uvs[i, 0] = (float)((Math.Sin(radians) * radius) + 0.5);
-                uvs[i, 1] = (float)((Math.Cos(radians) * radius) + 0.5);
+                uvs[i, 0] = (float)((Math.Cos(radians) * radius) + 0.5);
+                uvs[i, 1] = (float)((Math.Sin(radians) * radius) + 0.5);
 
                 radians += step;
             }

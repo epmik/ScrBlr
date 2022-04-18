@@ -97,8 +97,8 @@ namespace Scrblr.Core
             points[0, 1] = _position.Y;
             points[0, 2] = _position.Z;
 
-            var step = (float)(Math.PI * 2 / (double)segments);
-            var radians = 0f;
+            var step = Math.PI * 2 / (double)segments;
+            var radians = Math.PI * 0.5;
 
             // alternate method https://stackoverflow.com/questions/10322341/simple-algorithm-for-drawing-filled-ellipse-in-c-c
             // https://web.archive.org/web/20120225095359/http://homepage.smc.edu/kennedy_john/belipse.pdf
@@ -108,8 +108,8 @@ namespace Scrblr.Core
             for (var i = 1; i < segments + 1; i++)
             {
                 // see https://math.stackexchange.com/a/396533/1049098
-                points[i, 0] = (float)(Math.Sin(radians) * radiusW);
-                points[i, 1] = (float)(Math.Cos(radians) * radiusH);
+                points[i, 0] = (float)(Math.Cos(radians) * radiusW);
+                points[i, 1] = (float)(Math.Sin(radians) * radiusH);
                 points[i, 2] = 0f;
 
                 radians += step;
@@ -137,8 +137,8 @@ namespace Scrblr.Core
             // +2 for the center point and duplicated endpoint
             var uvs = new float[segments + 2, 2];
 
-            var step = (float)(Math.PI * 2 / (double)segments);
-            var radians = 0f;
+            var step = Math.PI * 2 / (double)segments;
+            var radians = Math.PI * 0.5;
 
             // center point
             uvs[0, 0] = 0.5f;
@@ -146,8 +146,8 @@ namespace Scrblr.Core
 
             for (var i = 1; i < segments + 1; i++)
             {
-                uvs[i, 0] = (float)((Math.Sin(radians) * halfRadius) + 0.5);
-                uvs[i, 1] = (float)((Math.Cos(radians) * halfRadius) + 0.5);
+                uvs[i, 0] = (float)((Math.Cos(radians) * halfRadius) + 0.5);
+                uvs[i, 1] = (float)((Math.Sin(radians) * halfRadius) + 0.5);
 
                 radians += step;
             }
