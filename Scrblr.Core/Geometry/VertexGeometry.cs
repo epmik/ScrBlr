@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Scrblr.Core
 {
-    public class Geometry : AbstractGeometry<Geometry>
+    public class VertexGeometry : AbstractGeometry<VertexGeometry>
     {
         #region Fields and Properties
 
@@ -20,17 +20,17 @@ namespace Scrblr.Core
 
         #region Constructors
 
-        public Geometry(GeometryType geometryType)
+        public VertexGeometry(GeometryType geometryType)
             : this(geometryType, DefaultVertexCount, Matrix4.Identity)
         {
         }
 
-        public Geometry(GeometryType geometryType, Matrix4 modelMatrix)
+        public VertexGeometry(GeometryType geometryType, Matrix4 modelMatrix)
             : this(geometryType, DefaultVertexCount, modelMatrix)
         {
         }
 
-        public Geometry(GeometryType geometryType, int vertexCount, Matrix4 modelMatrix)
+        public VertexGeometry(GeometryType geometryType, int vertexCount, Matrix4 modelMatrix)
             : base(geometryType, DefaultVertexCount, modelMatrix)
         {
             _vertices = new Vertex[vertexCount];
