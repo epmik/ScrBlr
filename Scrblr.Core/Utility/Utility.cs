@@ -10,5 +10,12 @@ namespace Scrblr.Core
         {
             return (float)v * ByteToUnitSingleFactor;
         }
+
+        // taken from equilinox source
+        //public static float FastSin(float min, float max, float time)
+        //{
+        //    float x = 1 - Math.Abs((time + 0.25f) * 2 % 2 - 1);
+        //    return Maths.smoothInterpolate(min, max, x);
+        //}
     }
 }
