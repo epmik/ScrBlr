@@ -355,6 +355,14 @@ namespace Scrblr.Core
             }
 
             Graphics.Enable(EnableFlag.Blending);
+
+            GL.FrontFace(FrontFaceDirection.Cw);
+
+            Graphics.Enable(EnableFlag.ClockWiseFace);
+
+            Graphics.Enable(EnableFlag.BackFaceCulling);
+
+            Graphics.Disable(EnableFlag.FrontFaceCulling);
         }
 
         private void UpdateFrameInternal(FrameEventArgs e)
