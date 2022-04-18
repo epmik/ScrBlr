@@ -6,6 +6,7 @@ using Scrblr.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -18,6 +19,7 @@ namespace Scrblr.Leaning
         float _rowHeight, _columnWidth, _rowMargin, _columnMargin, _columnsStartX, _rowStartY;
         float _rotationDegreesPerSecond = 90, _degrees;
         private Texture _gridNoTransparency, _gridWithTransparency, _smileyWithTransparency;
+        private MethodInfo[] _renderMethodInfoArray;
 
         public Learn027()
             : base(8, 8)
@@ -26,7 +28,7 @@ namespace Scrblr.Leaning
 
             _rowMargin = FrustumHeight / (float)((_rows * 2) + (_rows + 1));
 
-            if(_columnMargin < _rowMargin)
+            if (_columnMargin < _rowMargin)
             {
                 _rowMargin = _columnMargin;
             }
@@ -40,6 +42,10 @@ namespace Scrblr.Leaning
 
             _columnsStartX = (FrustumWidth / -2) + _columnWidth;
             _rowStartY = (FrustumHeight / 2) - _rowHeight;
+
+            _renderMethodInfoArray = GetType()
+                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(o => o.Name.StartsWith("Render") && o.Name.Length > 6).OrderBy(o => o.Name).ToArray();
         }
 
         public void Load()
@@ -55,7 +61,7 @@ namespace Scrblr.Leaning
         {
             _degrees += (float)(_rotationDegreesPerSecond * ElapsedTime);
 
-            if(_degrees >= 360f)
+            if (_degrees >= 360f)
             {
                 _degrees -= 360f;
             }
@@ -65,184 +71,167 @@ namespace Scrblr.Leaning
         {
             Graphics.ClearColor(128);
 
-            var columnsX = _columnsStartX;
+            var i = 0;
             var rowY = _rowStartY;
 
-            //// default, black at center of screen
+            for (var r = 0; r < _rows && i < _renderMethodInfoArray.Length; r++)
+            {
+                var columnX = _columnsStartX;
+
+                for (var c = 0; c < _columns && i < _renderMethodInfoArray.Length; c++)
+                {
+                    _renderMethodInfoArray[i++].Invoke(this, new object[] { columnX, rowY });
+
+                    columnX += _columnWidth + _columnMargin;
+                }
+
+                rowY -= _rowHeight + _rowMargin;
+            }
+        }
+
+        private void Render001(float columnsX, float rowY)
+        {
+            //// default
+            Graphics.PushMatrix();
+            Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle();
+            Graphics.PopMatrix();
+        }
 
-            //GL.Enable(EnableCap.Texture2D);
-            //GL.Enable(EnableCap.Blend);
-            //GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-
-
-            // column 1 row 1
+        private void Render002(float columnsX, float rowY)
+        {
             // translated and red (int)
             Graphics.PushMatrix();
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Color(255, 0, 0);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-            // column 2 row 1
+        private void Render003(float columnsX, float rowY)
+        {
             // grey (single parameter) and rotated
             Graphics.PushMatrix();
             Graphics.Rotate(45, Axis.Y);
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Color(220);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-            // column 3 row 1
+        private void Render004(float columnsX, float rowY)
+        {
             // blue (float) and rotating
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Color(0, 0, 1f);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-            // column 4 row 1
+        private void Render005(float columnsX, float rowY)
+        {
             // green (float + transparency) and rotating
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Color(0, 1f, 0, 0.5f);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-            // column 5 row 1
+        private void Render006(float columnsX, float rowY)
+        {
             // green, width and height, 
             Graphics.PushMatrix();
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Width(1.25f).Height(0.5f).Color(0, 1f, 0);
             Graphics.PopMatrix();
+        }
 
-
-
-            columnsX = _columnsStartX;
-            rowY -= _rowHeight + _rowMargin;
-
-
-
-            // column 1 row 2
+        private void Render007(float columnsX, float rowY)
+        {
             Graphics.PushMatrix();
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Texture(_gridNoTransparency);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 2 row 2
+        private void Render008(float columnsX, float rowY)
+        {
             // texture with transparency
             Graphics.PushMatrix();
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Texture(_gridWithTransparency);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 3 row 2
+        private void Render009(float columnsX, float rowY)
+        {
             // red texture no transparency
             Graphics.PushMatrix();
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Color(0, 225, 225).Texture(_gridNoTransparency);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 4 row 2
+        private void Render010(float columnsX, float rowY)
+        {
             // scaled, red, texture with transparency
             Graphics.PushMatrix();
             Graphics.Scale(0.75f);
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Color(0, 225, 225).Texture(_gridWithTransparency);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 5 row 2
+        private void Render011(float columnsX, float rowY)
+        {
             // scaled, 2 textures with transparency
             Graphics.PushMatrix();
             Graphics.Scale(0.75f, 1.25f);
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Texture(_gridNoTransparency).Texture(_smileyWithTransparency);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            columnsX = _columnsStartX;
-            rowY -= _rowHeight + _rowMargin;
-
-
-
-            // column 1 row 3
+        private void Render012(float columnsX, float rowY)
+        {
             // rotated, color, 2 textures with transparency
             Graphics.PushMatrix();
             Graphics.Rotate(45, Axis.Z);
             Graphics.Translate(columnsX, rowY);
             Graphics.Rectangle().Color(0, 225, 225).Texture(_gridNoTransparency).Texture(_smileyWithTransparency);
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 2 row 3
+        private void Render013(float columnsX, float rowY)
+        {
             // default quad
             Graphics.PushMatrix();
             Graphics.Translate(columnsX, rowY);
             Graphics
                 .Quad();
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // skip default rectangle in the middle
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 4 row 3
+        private void Render014(float columnsX, float rowY)
+        {
             // red, points float[] array containing 2 values per point
             Graphics.PushMatrix();
             Graphics.Translate(columnsX, rowY);
             Graphics
                 .Quad()
                 .Color(1f, 0f, 0f)
-                .Points(new float[] 
-                { 
-                    0.7f, 0.3f, 
-                    0.8f, -0.2f, 
-                    -0.3f, 0.9f, 
-                    -0.2f, -0.7f 
+                .Points(new float[]
+                {
+                    0.7f, 0.3f,
+                    0.8f, -0.2f,
+                    -0.3f, 0.9f,
+                    -0.2f, -0.7f
                 });
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 5 row 3
+        private void Render015(float columnsX, float rowY)
+        {
             // grey, points float[] array containing 3 values per point
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
@@ -250,25 +239,20 @@ namespace Scrblr.Leaning
             Graphics
                 .Quad()
                 .Color(0.85f)
-                .Points(new float[] 
-                { 
-                    0.7f, 0.3f, 0.0f, 
-                    0.8f, -0.2f, 0.0f, 
-                    -0.3f, 0.9f, 0.0f, 
+                .Points(new float[]
+                {
+                    0.7f, 0.3f, 0.0f,
+                    0.8f, -0.2f, 0.0f,
+                    -0.3f, 0.9f, 0.0f,
                     -0.2f, -0.7f, 0.0f
                 });
             Graphics.PopMatrix();
 
             columnsX += _columnWidth + _columnMargin;
+        }
 
-
-
-            columnsX = _columnsStartX;
-            rowY -= _rowHeight + _rowMargin;
-
-
-
-            // column 1 row 4
+        private void Render016(float columnsX, float rowY)
+        {
             // grey transparent, points float[][] array containing 2 values per point
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.Z);
@@ -276,20 +260,18 @@ namespace Scrblr.Leaning
             Graphics
                 .Quad()
                 .Color(0.85f, 0.5f)
-                .Points(new float[,] 
-                { 
-                    { 0.7f, 0.3f }, 
-                    { 0.8f, -0.2f }, 
-                    { -0.3f, 0.9f }, 
-                    { -0.2f, -0.7f } 
+                .Points(new float[,]
+                {
+                    { 0.7f, 0.3f },
+                    { 0.8f, -0.2f },
+                    { -0.3f, 0.9f },
+                    { -0.2f, -0.7f }
                 });
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 2 row 4
+        private void Render017(float columnsX, float rowY)
+        {
             // points float[][] array containing 3 values per point
             Graphics.PushMatrix();
             Graphics.Rotate(25, Axis.Z);
@@ -305,12 +287,10 @@ namespace Scrblr.Leaning
                     { -0.2f, -0.7f, 0.0f }
                 });
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 3 row 4
+        private void Render018(float columnsX, float rowY)
+        {
             // points float[][] array containing 3 values per point
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
@@ -328,12 +308,10 @@ namespace Scrblr.Leaning
                 .Texture(_gridNoTransparency);
 
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 4 row 4
+        private void Render019(float columnsX, float rowY)
+        {
             // points float[][] array containing 3 values per point
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
@@ -351,12 +329,10 @@ namespace Scrblr.Leaning
                 .Texture(_gridWithTransparency);
 
             Graphics.PopMatrix();
+        }
 
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 5 row 4
+        private void Render020(float columnsX, float rowY)
+        {
             // points float[][] array containing 3 values per point
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.Z);
@@ -371,82 +347,16 @@ namespace Scrblr.Leaning
                     { -0.3f, 0.9f, 0.0f },
                     { -0.2f, -0.7f, 0.0f }
                 })
-                .Uvs(new float[,] 
-                { 
-                    { 0.1f, 0.2f }, 
-                    { 0.0f, 0.9f }, 
-                    { 0.85f, 0.0f }, 
-                    { 0.9f, 1.0f } 
+                .Uvs(new float[,]
+                {
+                    { 0.1f, 0.2f },
+                    { 0.0f, 0.9f },
+                    { 0.85f, 0.0f },
+                    { 0.9f, 1.0f }
                 })
                 .Texture(_gridWithTransparency);
 
             Graphics.PopMatrix();
-
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-            // column 4 row 3
-            // rotated, color, 2 textures with transparency
-            //Graphics.PushMatrix();
-            //Graphics.Translate(columnsX, rowY);
-            //Graphics
-            //    .Quad()
-            //    .Points(new float[][] { new float[] { 0.7f, 0.3f }, new float[] { 0.8f, -0.2f }, new float[] { -0.3f, 0.9f }, new float[] { -0.2f, -0.7f } })
-            //    .Color(0, 225, 225)
-            //    .Uvs(new float[][] { new float[] { 0.1f, 0.9f }, new float[] { 0.0f, 0.2f }, new float[] { 0.85f, 1.0f }, new float[] { 0.9f, 0.0f } })
-            //    .Texture(_gridNoTransparency)
-            //    .Texture(_smileyWithTransparency);
-            //Graphics.PopMatrix();
-
-            columnsX += _columnWidth + _columnMargin;
-
-
-
-
-
-
-
-            //// column 1 row 3
-            //// blue, 2 textures with transparency
-            //Graphics.PushMatrix();
-            //Graphics.Translate(columnsX, rowY);
-            //Graphics.Rectangle().Color(0, 0, 1f).Texture(_gridWithTransparency).Texture(_smileyWithTransparency);
-            //Graphics.PopMatrix();
-
-            //columnsX += _columnWidth + _columnMargin;
-
-
-
-            //Graphics.Disable(EnableFlag.Rendering);
-
-            if (!Graphics.IsEnabled(EnableFlag.Rendering))
-            {
-                Graphics.ClearBuffers();
-
-                var vertexFlags = VertexFlag.Position0;// | VertexFlag.Color0;// | VertexFlag.Uv0 | VertexFlag.Uv1;
-
-                var shader = Graphics.StandardShader(vertexFlags);
-
-                shader.Use();
-
-                var vertexBuffer = Graphics.StandardVertexBuffer();
-
-                vertexBuffer.Bind();
-
-                vertexBuffer.EnableElements(vertexFlags);
-
-                //_gridNoTransparency.UnitAndBind(TextureUnit.Texture0);
-                //_smileyWithTransparency.UnitAndBind(TextureUnit.Texture1);
-
-                shader.Uniform("uModelMatrix", Matrix4.CreateTranslation(0, 0, 0));
-                shader.Uniform("uViewMatrix", Graphics.ActiveCamera().ViewMatrix());
-                shader.Uniform("uProjectionMatrix", Graphics.ActiveCamera().ProjectionMatrix());
-                //shader.Uniform("uTexture0", 0);
-                //shader.Uniform("uTexture1", 1);
-
-                GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
-            }
         }
     }
 }
