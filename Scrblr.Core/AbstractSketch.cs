@@ -333,12 +333,12 @@ namespace Scrblr.Core
         {
             Graphics.Load();
 
-            EnableDefaultOpenGlStates();
+            EnableDefaultStates();
 
             LoadAction?.Invoke();
         }
 
-        private void EnableDefaultOpenGlStates()
+        private void EnableDefaultStates()
         {
             if(Dimension == Dimensions.Two)
             {
@@ -356,9 +356,7 @@ namespace Scrblr.Core
 
             Graphics.Enable(EnableFlag.Blending);
 
-            GL.FrontFace(FrontFaceDirection.Cw);
-
-            Graphics.Enable(EnableFlag.ClockWiseFace);
+            Graphics.Enable(EnableFlag.CounterClockWiseFace);
 
             Graphics.Enable(EnableFlag.BackFaceCulling);
 
