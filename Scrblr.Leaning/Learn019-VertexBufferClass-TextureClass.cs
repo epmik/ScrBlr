@@ -93,7 +93,7 @@ void main()
 
         private Texture20220413 _texture2;
 
-        private Camera _camera;
+        private FirstPersonCamera _camera;
 
         private bool _firstMove = true;
 
@@ -178,7 +178,7 @@ void main()
             _shader.Uniform("uTexture1", 1);
 
 
-            _camera = new Camera(Vector3.UnitZ * 5, (float)WindowWidth, (float)WindowHeight);
+            _camera = new FirstPersonCamera(Vector3.UnitZ * 5, (float)WindowWidth, (float)WindowHeight);
 
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             //CursorGrabbed = true;
@@ -218,7 +218,7 @@ void main()
             _texture2.UnitAndBind(TextureUnit.Texture1);
             _shader.Use();
 
-            _shader.Uniform("uViewMatrix", _camera.GetViewMatrix());
+            _shader.Uniform("uViewMatrix", _camera.ViewMatrix());
 
             for(var i = 0; i < _objects.Length; i++)
             {
@@ -230,7 +230,7 @@ void main()
 
                 var ortho = Matrix4.CreateOrthographicOffCenter(-size_x, size_x, -size_y, size_y, 0.0f, 2.0f * distance);
 
-                _shader.Uniform("uProjectionMatrix", _camera.GetProjectionMatrix());
+                _shader.Uniform("uProjectionMatrix", _camera.ProjectionMatrix());
 
                 var model = Matrix4.CreateScale(_objects[i].Scale);
 
@@ -289,28 +289,28 @@ void main()
 
             if (input.IsKeyDown(Keys.W))
             {
-                _camera.Position += _camera.Front * cameraSpeed * (float)ElapsedTime; // Forward
+                _camera.Position += _camera.LookVector * cameraSpeed * (float)ElapsedTime; // Forward
             }
 
             if (input.IsKeyDown(Keys.S))
             {
-                _camera.Position -= _camera.Front * cameraSpeed * (float)ElapsedTime; // Backwards
+                _camera.Position -= _camera.LookVector * cameraSpeed * (float)ElapsedTime; // Backwards
             }
             if (input.IsKeyDown(Keys.A))
             {
-                _camera.Position -= _camera.Right * cameraSpeed * (float)ElapsedTime; // Left
+                _camera.Position -= _camera.RightVector * cameraSpeed * (float)ElapsedTime; // Left
             }
             if (input.IsKeyDown(Keys.D))
             {
-                _camera.Position += _camera.Right * cameraSpeed * (float)ElapsedTime; // Right
+                _camera.Position += _camera.RightVector * cameraSpeed * (float)ElapsedTime; // Right
             }
             if (input.IsKeyDown(Keys.Space))
             {
-                _camera.Position += _camera.Up * cameraSpeed * (float)ElapsedTime; // Up
+                _camera.Position += _camera.UpVector * cameraSpeed * (float)ElapsedTime; // Up
             }
             if (input.IsKeyDown(Keys.LeftShift))
             {
-                _camera.Position -= _camera.Up * cameraSpeed * (float)ElapsedTime; // Down
+                _camera.Position -= _camera.UpVector * cameraSpeed * (float)ElapsedTime; // Down
             }
 
             // Get the mouse state

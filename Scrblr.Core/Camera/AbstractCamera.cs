@@ -9,6 +9,8 @@ namespace Scrblr.Core
 {
     public abstract class AbstractCamera : ICamera
     {
+        public ProjectionMode ProjectionMode { get; set; } = ProjectionMode.Perspective;
+
         /// <summary>
         /// default == Vector3(0, 0, 0)
         /// </summary>
@@ -35,9 +37,29 @@ namespace Scrblr.Core
         public Vector3 RightVector = new Vector3(1, 0, 0);
 
         /// <summary>
+        /// default Math.PI / 2 or 90 degrees
+        /// </summary>
+        private float _fov = (float)(Math.PI / 2);
+
+        /// <summary>
+        /// Field of view in degrees, default == 90
+        /// </summary>
+        public float Fov
+        {
+            get => MathHelper.RadiansToDegrees(_fov);
+            set
+            {
+                _fov = MathHelper.DegreesToRadians(MathHelper.Clamp(value, 1f, 120f));
+
+                // see https://stackoverflow.com/a/55009832/527843
+                DepthRatio = (float)(Math.Atan(_fov / 2.0) * 2.0);
+            }
+        }
+
+        /// <summary>
         /// Must be specified in degrees, default == 45f
         /// </summary>
-        public float Fov { get; set; } = 45f;
+        public float DepthRatio { get; set; }
 
         /// <summary>
         /// Must be specified in angles, default == 1f
@@ -84,6 +106,7 @@ namespace Scrblr.Core
                 var h = value / 2;
                 Left = -h;
                 Right = h;
+                //AspectRatio = Width / Height;
             }
         }
 
@@ -135,15 +158,26 @@ namespace Scrblr.Core
 
         public virtual Matrix4 ProjectionMatrix()
         {
-            return Matrix4.CreateOrthographicOffCenter(Left, Right, Bottom, Top, Near, Far);
+            switch(ProjectionMode)
+            {
+                case ProjectionMode.Perspective:
+                    return Matrix4.CreatePerspectiveOffCenter(Left, Right, Bottom, Top, Near, Far);
+                default:
+                    return Matrix4.CreateOrthographicOffCenter(Left, Right, Bottom, Top, Near, Far);
+            }
         }
 
         public virtual Matrix4 ViewMatrix()
         {
             return Matrix4.LookAt(
-                Position,
-                Position + ForwardVector,
+                Position, 
+                Position + LookVector, 
                 UpVector);
+
+            //return Matrix4.LookAt(
+            //    Position,
+            //    Position + ForwardVector,
+            //    UpVector);
         }
     }
 }
