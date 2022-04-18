@@ -35,7 +35,7 @@ namespace Scrblr.Core
         public Vector3 RightVector = new Vector3(1, 0, 0);
 
         /// <summary>
-        /// Must be specified in angles, default == 45f
+        /// Must be specified in degrees, default == 45f
         /// </summary>
         public float Fov { get; set; } = 45f;
 
