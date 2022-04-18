@@ -49,6 +49,14 @@ namespace Scrblr.Leaning
             }
         }
 
+        public void KeyUp(KeyboardKeyEventArgs a)
+        {
+            if(a.Key == Keys.P)
+            {
+                Camera.ProjectionMode = Camera.ProjectionMode.Next();
+            }
+        }
+
         public void Render()
         {
             Graphics.ClearColor(128);
