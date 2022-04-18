@@ -57,6 +57,12 @@ namespace Scrblr.Leaning
             _smileyWithTransparency = new Texture("resources/textures/smiley-transparent-1024x1024.png");
         }
 
+        public void UnLoad()
+        {
+            _gridNoTransparency.Dispose();
+            _gridWithTransparency.Dispose();
+            _smileyWithTransparency.Dispose();
+        }
         public void Update()
         {
             _degrees += (float)(_rotationDegreesPerSecond * ElapsedTime);
