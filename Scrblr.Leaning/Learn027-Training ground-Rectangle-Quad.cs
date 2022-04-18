@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Scrblr.Leaning
 {
-    [Sketch(Name = "Learn027-Training ground")]
+    [Sketch(Name = "Learn027-Training ground-Rectangle-Quad")]
     public class Learn027 : AbstractSketch
     {
         int _rows = 5, _columns = 5;
