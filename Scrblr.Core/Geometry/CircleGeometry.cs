@@ -6,7 +6,7 @@ namespace Scrblr.Core
 {
     public class CircleGeometry : AbstractGeometry<CircleGeometry>
     {
-        public const float DefaultRadius = 1f;
+        public const float DefaultRadius = 0.5f;
         public const int DefaultSegments = 24;
 
         private float _radius = DefaultRadius;
@@ -39,7 +39,7 @@ namespace Scrblr.Core
         }
 
         public CircleGeometry()
-            : this(1f)
+            : this(DefaultRadius)
         {
 
         }
@@ -51,7 +51,7 @@ namespace Scrblr.Core
         }
 
         public CircleGeometry(Matrix4 modelMatrix)
-            : this(1f, modelMatrix)
+            : this(DefaultRadius, modelMatrix)
         {
 
         }
@@ -74,8 +74,6 @@ namespace Scrblr.Core
         {
             var segments = _segments == 0 ? DefaultSegments : _segments;
 
-            var halfRadius = _radius * 0.5;
-
             // we're creating a triangle fan
             // +2 for the center point and duplicated endpoint
             var points = new float[segments + 2, 3];
@@ -90,8 +88,8 @@ namespace Scrblr.Core
 
             for (var i = 1; i < segments + 1; i++)
             {
-                points[i, 0] = (float)(Math.Sin(radians) * halfRadius);
-                points[i, 1] = (float)(Math.Cos(radians) * halfRadius);
+                points[i, 0] = (float)(Math.Sin(radians) * _radius);
+                points[i, 1] = (float)(Math.Cos(radians) * _radius);
                 points[i, 2] = 0f;
 
                 radians += step;
@@ -109,7 +107,7 @@ namespace Scrblr.Core
         {
             var segments = _segments == 0 ? DefaultSegments : _segments;
 
-            var halfRadius = 0.5;
+            var radius = 0.5;
 
             // we're creating a triangle fan
             // +2 for the center point and duplicated endpoint
@@ -124,8 +122,8 @@ namespace Scrblr.Core
 
             for (var i = 1; i < segments + 1; i++)
             {
-                uvs[i, 0] = (float)((Math.Sin(radians) * halfRadius) + 0.5);
-                uvs[i, 1] = (float)((Math.Cos(radians) * halfRadius) + 0.5);
+                uvs[i, 0] = (float)((Math.Sin(radians) * radius) + 0.5);
+                uvs[i, 1] = (float)((Math.Cos(radians) * radius) + 0.5);
 
                 radians += step;
             }
