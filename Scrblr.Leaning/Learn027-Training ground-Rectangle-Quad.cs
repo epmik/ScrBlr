@@ -77,6 +77,7 @@ namespace Scrblr.Leaning
         {
             Graphics.ClearColor(128);
 
+            Graphics.Disable(EnableFlag.FrontFaceCulling);
             Graphics.Disable(EnableFlag.BackFaceCulling);
 
             var i = 0;
@@ -230,10 +231,15 @@ namespace Scrblr.Leaning
                 .Color(1f, 0f, 0f)
                 .Points(new float[]
                 {
-                    0.7f, 0.3f,
-                    0.8f, -0.2f,
-                    -0.3f, 0.9f,
-                    -0.2f, -0.7f
+                    // CCW
+                    // top left
+                    -0.7f, 0.3f,
+                    // bottom left
+                    -0.8f, -0.2f,
+                    // top right
+                    0.3f, 0.9f,
+                    // bottom right
+                    0.2f, -0.7f,
                 });
             Graphics.PopMatrix();
         }
@@ -249,10 +255,15 @@ namespace Scrblr.Leaning
                 .Color(0.85f)
                 .Points(new float[]
                 {
-                    0.7f, 0.3f, 0.0f,
-                    0.8f, -0.2f, 0.0f,
-                    -0.3f, 0.9f, 0.0f,
-                    -0.2f, -0.7f, 0.0f
+                    // CCW
+                    // top left
+                    -0.7f, 0.3f, 0.0f,
+                    // bottom left
+                    -0.8f, -0.2f, 0.0f,
+                    // top right
+                    0.3f, 0.9f, 0.0f,
+                    // bottom right
+                    0.2f, -0.7f, 0.0f
                 });
             Graphics.PopMatrix();
 
@@ -270,10 +281,15 @@ namespace Scrblr.Leaning
                 .Color(0.85f, 0.5f)
                 .Points(new float[,]
                 {
-                    { 0.7f, 0.3f },
-                    { 0.8f, -0.2f },
-                    { -0.3f, 0.9f },
-                    { -0.2f, -0.7f }
+                    // CCW
+                    // top left
+                    { -0.7f, 0.3f },
+                    // bottom left
+                    { -0.8f, -0.2f },
+                    // top right
+                    { 0.3f, 0.9f },
+                    // bottom right
+                    { 0.2f, -0.7f }
                 });
             Graphics.PopMatrix();
         }
@@ -289,10 +305,15 @@ namespace Scrblr.Leaning
                 .Color(100, 100, 0)
                 .Points(new float[,]
                 {
-                    { 0.7f, 0.3f, 0.0f },
-                    { 0.8f, -0.2f, 0.0f },
-                    { -0.3f, 0.9f, 0.0f },
-                    { -0.2f, -0.7f, 0.0f }
+                    // CCW
+                    // top left
+                    { -0.7f, 0.3f, 0.0f },
+                    // bottom left
+                    { -0.8f, -0.2f, 0.0f },
+                    // top right
+                    { 0.3f, 0.9f, 0.0f },
+                    // bottom right
+                    { 0.2f, -0.7f, 0.0f }
                 });
             Graphics.PopMatrix();
         }
@@ -301,17 +322,22 @@ namespace Scrblr.Leaning
         {
             // points float[][] array containing 3 values per point
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
             Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Rotate(_degrees, Axis.Y);
             Graphics.Translate(columnsX, rowY);
             Graphics
                 .Quad()
                 .Points(new float[,]
                 {
-                    { 0.7f, 0.3f, 0.0f },
-                    { 0.8f, -0.2f, 0.0f },
-                    { -0.3f, 0.9f, 0.0f },
-                    { -0.2f, -0.7f, 0.0f }
+                    // CCW
+                    // top left
+                    { -0.7f, 0.3f, 0.0f },
+                    // bottom left
+                    { -0.8f, -0.2f, 0.0f },
+                    // top right
+                    { 0.3f, 0.9f, 0.0f },
+                    // bottom right
+                    { 0.2f, -0.7f, 0.0f }
                 })
                 .Texture(_gridNoTransparency);
 
@@ -322,17 +348,22 @@ namespace Scrblr.Leaning
         {
             // points float[][] array containing 3 values per point
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
+            Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Rotate(_degrees, Axis.Y);
             Graphics.Translate(columnsX, rowY);
             Graphics
                 .Quad()
                 .Points(new float[,]
                 {
-                    { 0.7f, 0.3f, 0.0f },
-                    { 0.8f, -0.2f, 0.0f },
-                    { -0.3f, 0.9f, 0.0f },
-                    { -0.2f, -0.7f, 0.0f }
+                    // CCW
+                    // top left
+                    { -0.7f, 0.3f, 0.0f },
+                    // bottom left
+                    { -0.8f, -0.2f, 0.0f },
+                    // top right
+                    { 0.3f, 0.9f, 0.0f },
+                    // bottom right
+                    { 0.2f, -0.7f, 0.0f }
                 })
                 .Texture(_gridWithTransparency);
 
@@ -350,17 +381,26 @@ namespace Scrblr.Leaning
                 .Quad()
                 .Points(new float[,]
                 {
-                    { 0.7f, 0.3f, 0.0f },
-                    { 0.8f, -0.2f, 0.0f },
-                    { -0.3f, 0.9f, 0.0f },
-                    { -0.2f, -0.7f, 0.0f }
+                    // CCW
+                    // top left
+                    { -0.7f, 0.3f, 0.0f },
+                    // bottom left
+                    { -0.8f, -0.2f, 0.0f },
+                    // top right
+                    { 0.3f, 0.9f, 0.0f },
+                    // bottom right
+                    { 0f, -0.7f, 0.0f }
                 })
                 .Uvs(new float[,]
                 {
-                    { 0.1f, 0.2f },
-                    { 0.0f, 0.9f },
-                    { 0.85f, 0.0f },
-                    { 0.9f, 1.0f }
+                    // top left
+                    { 0.1f, 0.9f },
+                    // bottom left
+                    { 0, 0.1f },
+                    // top right
+                    { 0.85f, 0f },
+                    // bottom right
+                    { 0.75f, 0.25f },
                 })
                 .Texture(_gridWithTransparency);
 
