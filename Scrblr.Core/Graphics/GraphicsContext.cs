@@ -943,10 +943,12 @@ void main()
                     }
                     GL.Enable(EnableCap.CullFace);
                     break;
-                //case EnableFlag.FrontAndBackFaceCulling:
-                //    _enableBackFaceCulling = _enableFrontFaceCulling = true;
-                //    GL.CullFace(CullFaceMode.FrontAndBack);
-                //    break;
+                case EnableFlag.ClockWiseFace:
+                    GL.FrontFace(FrontFaceDirection.Cw);
+                    break;
+                case EnableFlag.CounterClockWiseFace:
+                    GL.FrontFace(FrontFaceDirection.Ccw);
+                    break;
                 default:
                     GL.Enable((EnableCap)enableFlag);
                     break;
@@ -988,9 +990,6 @@ void main()
                 case EnableFlag.Blending:
                     GL.Disable((EnableCap)enableFlag);
                     break;
-                //case EnableFlag.Culling:
-                //    GL.Disable((EnableCap)enableFlag);
-                //    break;
                 case EnableFlag.BackFaceCulling:
                     _enableBackFaceCulling = false;
                     if (_enableFrontFaceCulling)
@@ -1012,6 +1011,12 @@ void main()
                     {
                         GL.Disable(EnableCap.CullFace);
                     }
+                    break;
+                case EnableFlag.ClockWiseFace:
+                    GL.FrontFace(FrontFaceDirection.Ccw);
+                    break;
+                case EnableFlag.CounterClockWiseFace:
+                    GL.FrontFace(FrontFaceDirection.Cw);
                     break;
                 default:
                     GL.Disable((EnableCap)enableFlag);
@@ -1192,6 +1197,20 @@ void main()
         public EllipseGeometry Ellipse(float width, float height)
         {
             var g = new EllipseGeometry(width, height, ModelMatrix());
+
+            AddGeometry(g);
+
+            return g;
+        }
+
+        public CubeGeometry Cube()
+        {
+            return Cube(CubeGeometry.DefaultWidth, CubeGeometry.DefaultHeight, CubeGeometry.DefaultDepth);
+        }
+
+        public CubeGeometry Cube(float width, float height, float depth)
+        {
+            var g = new CubeGeometry(width, height, depth, ModelMatrix());
 
             AddGeometry(g);
 
