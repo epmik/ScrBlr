@@ -90,7 +90,7 @@ namespace Scrblr.Core
             } 
         }
 
-        protected NearFarScrollCamera Camera;
+        protected ScrollDragCamera Camera;
 
         public int WindowWidth { get { return _internalWindow != null ? _internalWindow.Size.X : 0; } }
 
@@ -349,7 +349,7 @@ namespace Scrblr.Core
             _internalWindow.KeyDown += KeyDownInternal;
             _internalWindow.KeyUp += KeyUpInternal;
 
-            Camera = new NearFarScrollCamera
+            Camera = new ScrollDragCamera
             {
                 Width = Width,
                 Height = Height,

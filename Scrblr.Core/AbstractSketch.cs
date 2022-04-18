@@ -28,7 +28,7 @@ namespace Scrblr.Core
         public float FrustumHeight { get; private set; } = DefaultFrustumHeight;
         public Dimensions Dimension { get; private set; } = Dimensions.Two;
 
-        protected NearFarScrollCamera Camera;
+        protected ScrollDragCamera Camera;
 
         public int WindowWidth { get { return Width; } }
 
@@ -314,7 +314,7 @@ namespace Scrblr.Core
 
             _graphics = new GraphicsContext(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
 
-            Camera = new NearFarScrollCamera
+            Camera = new ScrollDragCamera
             {
                 Width = FrustumWidth,
                 Height = FrustumHeight,
