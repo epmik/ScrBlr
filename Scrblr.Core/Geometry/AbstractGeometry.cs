@@ -22,7 +22,68 @@ namespace Scrblr.Core
 
         public Guid Guid = Guid.NewGuid();
 
-        public virtual int VertexCount { get; private set; }
+        protected int _vertexCount;
+
+        // false
+        protected bool _vertexCountIsResolutionDependant;
+
+        /// <summary>
+        /// VertexCount is dependent upon 
+        /// </summary>
+        /// <param name="modelMatrix"></param>
+        /// <param name="viewMatrix"></param>
+        /// <param name="projectionMatrix"></param>
+        /// <returns></returns>
+        public virtual int VertexCount(Matrix4 modelMatrix, Matrix4 viewMatrix, Matrix4 projectionMatrix)
+        {
+            return VertexCount(ref modelMatrix, ref viewMatrix, ref projectionMatrix);
+        }
+
+        /// <summary>
+        /// VertexCount is dependent upon 
+        /// </summary>
+        /// <param name="modelMatrix"></param>
+        /// <param name="viewMatrix"></param>
+        /// <param name="projectionMatrix"></param>
+        /// <returns></returns>
+        public virtual int VertexCount(ref Matrix4 modelMatrix, ref Matrix4 viewMatrix, ref Matrix4 projectionMatrix)
+        {
+            if (!_vertexCountIsResolutionDependant)
+            {
+                return _vertexCount;
+            }
+            // TODO implement
+            return _vertexCount;
+        }
+
+        /// <summary>
+        /// VertexCount is dependent upon 
+        /// </summary>
+        /// <param name="modelMatrix"></param>
+        /// <param name="viewMatrix"></param>
+        /// <param name="projectionMatrix"></param>
+        /// <returns></returns>
+        public virtual int VertexCount(Matrix4 modelViewProjectionMatrix)
+        {
+            return VertexCount(ref modelViewProjectionMatrix);
+        }
+
+        /// <summary>
+        /// VertexCount is dependent upon 
+        /// </summary>
+        /// <param name="modelMatrix"></param>
+        /// <param name="viewMatrix"></param>
+        /// <param name="projectionMatrix"></param>
+        /// <returns></returns>
+        public virtual int VertexCount(ref Matrix4 modelViewProjectionMatrix)
+        {
+            if (!_vertexCountIsResolutionDependant)
+            {
+                return _vertexCount;
+            }
+            // TODO implement
+            return _vertexCount;
+        }
 
         public GeometryType GeometryType { get; private set; }
 
@@ -60,7 +121,7 @@ namespace Scrblr.Core
 
         public AbstractGeometry(GeometryType geometryType, int vertexCount, Matrix4 modelMatrix)
         {
-            VertexCount = vertexCount;
+            _vertexCount = vertexCount;
             GeometryType = geometryType;
             _modelMatrix = modelMatrix;
         }

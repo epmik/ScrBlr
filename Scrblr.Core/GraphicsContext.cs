@@ -353,14 +353,16 @@ void main()
             var shader = QueryShader(geometry);
             var vertexBuffer = QueryVertexBuffer(geometry);
 
-            if (!vertexBuffer.CanWriteElements(geometry.VertexCount) || _renderChunkCount + 1 >= _maxRenderChunks)
+            var camera = ActiveCamera();
+
+            var vertexCount = geometry.VertexCount(geometry.ModelMatrix(), camera.ViewMatrix(), camera.ProjectionMatrix());
+
+            if (!vertexBuffer.CanWriteElements(vertexCount) || _renderChunkCount + 1 >= _maxRenderChunks)
             {
                 Flush();
             }
 
             geometry.WriteToVertexBuffer(vertexBuffer);
-
-            var camera = ActiveCamera();
 
             // todo: is this all needed? why not store just the Geometry object?
             _renderChunks[_renderChunkCount].Shader = shader;
@@ -369,8 +371,8 @@ void main()
             _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
             _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
             _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
-            _renderChunks[_renderChunkCount].ElementCount = geometry.VertexCount;
-            _renderChunks[_renderChunkCount].ElementIndex = vertexBuffer.UsedElements() - geometry.VertexCount;
+            _renderChunks[_renderChunkCount].ElementCount = vertexCount;
+            _renderChunks[_renderChunkCount].ElementIndex = vertexBuffer.UsedElements() - vertexCount;
             _renderChunks[_renderChunkCount].Texture0 = geometry._texture0;
             _renderChunks[_renderChunkCount].Texture1 = geometry._texture1;
             _renderChunks[_renderChunkCount].Texture2 = geometry._texture2;
