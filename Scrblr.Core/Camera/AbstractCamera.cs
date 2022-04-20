@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,31 +38,6 @@ namespace Scrblr.Core
         public Vector3 RightVector = new Vector3(1, 0, 0);
 
         /// <summary>
-        /// default Math.PI / 2 or 90 degrees
-        /// </summary>
-        private float _fov = (float)(Math.PI / 2);
-
-        /// <summary>
-        /// Field of view in degrees, default == 90
-        /// </summary>
-        public float Fov
-        {
-            get => MathHelper.RadiansToDegrees(_fov);
-            set
-            {
-                _fov = MathHelper.DegreesToRadians(MathHelper.Clamp(value, 1f, 120f));
-
-                // see https://stackoverflow.com/a/55009832/527843
-                DepthRatio = (float)(Math.Atan(_fov / 2.0) * 2.0);
-            }
-        }
-
-        /// <summary>
-        /// Must be specified in degrees, default == 45f
-        /// </summary>
-        public float DepthRatio { get; set; }
-
-        /// <summary>
         /// Must be specified in angles, default == 1f
         /// </summary>
         public float Near { get; set; } = 1f;
@@ -71,25 +47,76 @@ namespace Scrblr.Core
         /// </summary>
         public float Far { get; set; } = 1000f;
 
-        /// <summary>
-        /// Must be specified in angles, default == -400f
-        /// </summary>
-        public float Left { get; set; } = -400f;
+        private float _left = -1f;
 
         /// <summary>
-        /// Must be specified in angles, default == 400f
+        /// Must be specified in angles, default == -1f
         /// </summary>
-        public float Right { get; set; } = 400f;
+        public float Left
+        {
+            get
+            {
+                return _left;
+            }
+            set
+            {
+                _left = value;
+                _aspectRatio = Width / value;
+            }
+        }
+
+        private float _right = 1f;
 
         /// <summary>
-        /// Must be specified in angles, default == 400f
+        /// Must be specified in angles, default == 1f
         /// </summary>
-        public float Top { get; set; } = 400f;
+        public float Right
+        {
+            get
+            {
+                return _right;
+            }
+            set
+            {
+                _right = value;
+                _aspectRatio = Width / value;
+            }
+        }
+
+        private float _top = -1;
 
         /// <summary>
-        /// Must be specified in angles, default == -400f
+        /// Must be specified in angles, default == 1f
         /// </summary>
-        public float Bottom { get; set; } = -400f;
+        public float Top
+        {
+            get
+            {
+                return _top;
+            }
+            set
+            {
+                _top = value;
+                _aspectRatio = Width / value;
+            }
+        }
+
+        private float _bottom = -1f;
+
+        /// <summary>
+        /// Must be specified in angles, default == -1f
+        /// </summary>
+        public float Bottom 
+        { 
+            get 
+            { 
+                return _bottom; 
+            }
+            set {
+                _bottom = value;
+                _aspectRatio = Width / value;
+            } 
+        }
 
         /// <summary>
         /// changing Width also changes the Left and Right properties
@@ -106,12 +133,12 @@ namespace Scrblr.Core
                 var h = value / 2;
                 Left = -h;
                 Right = h;
-                //AspectRatio = Width / Height;
+                _aspectRatio = value / Height;
             }
         }
 
         /// <summary>
-        /// changing Height also changes the Top and Bottom properties
+        /// Changing Height also changes the Top and Bottom properties
         /// default == 800
         /// </summary>
         public float Height
@@ -125,14 +152,14 @@ namespace Scrblr.Core
                 var h = value / 2;
                 Bottom = -h;
                 Top = h;
+                _aspectRatio = Width / value;
             }
         }
 
         private float _aspectRatio;
 
         /// <summary>
-        /// changing Height also changes the Top and Bottom properties
-        /// default == 800
+        /// The horizontal aspect ratio between Width and Height
         /// </summary>
         public float AspectRatio
         {
@@ -147,13 +174,97 @@ namespace Scrblr.Core
             }
         }
 
+        /// <summary>
+        /// default Math.PI / 2 or 90 degrees
+        /// </summary>
+        private float _fov = (float)(Math.PI / 2);
+
+        /// <summary>
+        /// Field of view in degrees, default == 90
+        /// <para>
+        /// Changing the field of view also changes the Left/Right/Width and Top/Bottom/Height properties
+        /// </para>
+        /// </summary>
+        public float Fov
+        {
+            get => MathHelper.RadiansToDegrees(_fov);
+            set
+            {
+                _fov = MathHelper.DegreesToRadians(MathHelper.Clamp(value, 1f, 120f));
+
+                Top = Near * MathF.Tan(0.5f * _fov);
+                Bottom = -Top;
+                Left = Bottom * AspectRatio;
+                Right = Top * AspectRatio;
+
+                // see https://stackoverflow.com/a/55009832/527843
+                DepthRatio = (float)(Math.Atan(_fov / 2.0) * 2.0);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public float DepthRatio { get; set; }
+
+        public double ElapsedTime { get; set; }
+
+        public KeyboardState KeyboardState { get; set; }
+
+        public MouseState MouseState { get; set; }
+
         public AbstractCamera()
         {
         }
 
-        public void Resize(ResizeEventArgs a)
+        public virtual void Resize(ResizeEventArgs a)
         {
             AspectRatio = (float)a.Size.X / (float)a.Size.Y;
+        }
+
+        public virtual void Update(FrameEventArgs a)
+        {
+
+        }
+
+        public virtual void KeyDown(KeyboardKeyEventArgs a)
+        {
+
+        }
+
+        public virtual void KeyUp(KeyboardKeyEventArgs a)
+        {
+
+        }
+
+        public virtual void MouseEnter()
+        {
+            
+        }
+
+        public virtual void MouseLeave()
+        {
+
+        }
+
+        public virtual void MouseMove(MouseMoveEventArgs a)
+        {
+
+        }
+
+        public virtual void MouseUp(MouseButtonEventArgs a)
+        {
+
+        }
+
+        public virtual void MouseDown(MouseButtonEventArgs a)
+        {
+
+        }
+
+        public virtual void MouseWheel(MouseWheelEventArgs a)
+        {
+
         }
 
         public virtual Matrix4 ProjectionMatrix()
@@ -173,11 +284,6 @@ namespace Scrblr.Core
                 Position, 
                 Position + LookVector, 
                 UpVector);
-
-            //return Matrix4.LookAt(
-            //    Position,
-            //    Position + ForwardVector,
-            //    UpVector);
         }
     }
 }
