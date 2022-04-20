@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Scrblr.Core;
 using System;
@@ -13,14 +14,12 @@ namespace Scrblr.Leaning
     public class Learn019 : AbstractSketch20220410
     {
         public Learn019()
-            : base(600, 600)
+            : base(10, 10)
         {
             LoadAction += Load;
             UnLoadAction += UnLoad;
             RenderAction += Render;
             UpdateAction += Update;
-            MouseWheelAction += MouseWheel;
-            ResizeAction += Resize;
 
             Samples = 8;
         }
@@ -123,7 +122,7 @@ void main()
 
                 _objects[i] = new ObjectInfo 
                 {
-                    Position = new Vector3((float)_random.Next(-10, 10), (float)_random.Next(-10, 10), (float)_random.Next(-10, 10)),
+                    Position = new Vector3((float)_random.Next(-10, 10), (float)_random.Next(-10, 10), (float)_random.Next(-16, 2)),
                     Scale = new Vector3(scale, scale, scale),
                     Axis = (Axis)_random.Next((int)Axis.X, (int)(Axis.Z) + 1),
                     RotateSpeed = (float)_random.NextDouble() * 360f,
@@ -177,16 +176,21 @@ void main()
             _shader.Uniform("uTexture0", 0);
             _shader.Uniform("uTexture1", 1);
 
+            _camera = new FirstPersonCamera
+            {
+                Fov = 90f,
+                AspectRatio = SketchWidth / SketchHeight,
+                Near = 1f,
+                Far = 100f,
+                Position = new Vector3(0, 0, 2),
+            };
 
-            _camera = new FirstPersonCamera(Vector3.UnitZ * 5, (float)WindowWidth, (float)WindowHeight);
+            UpdateAction += _camera.Update;
+            MouseWheelAction += _camera.MouseWheel;
+            ResizeAction += _camera.Resize;
 
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             //CursorGrabbed = true;
-
-
-
-
-
         }
 
         public void UnLoad()
@@ -275,75 +279,16 @@ void main()
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
         }
 
-        public void Update()
+        public void Update(FrameEventArgs a)
         {
+            _camera.ElapsedTime = ElapsedTime;
+            _camera.KeyboardState = KeyboardState;
+            _camera.MouseState = MouseState;
+
             for (var i = 0; i < _objects.Length; i++)
             {
                 _objects[i].Angle += (float)(_objects[i].RotateSpeed * ElapsedTime);
             }
-
-            var input =  KeyboardState;
-
-            const float cameraSpeed = 1.5f;
-            const float sensitivity = 0.2f;
-
-            if (input.IsKeyDown(Keys.W))
-            {
-                _camera.Position += _camera.LookVector * cameraSpeed * (float)ElapsedTime; // Forward
-            }
-
-            if (input.IsKeyDown(Keys.S))
-            {
-                _camera.Position -= _camera.LookVector * cameraSpeed * (float)ElapsedTime; // Backwards
-            }
-            if (input.IsKeyDown(Keys.A))
-            {
-                _camera.Position -= _camera.RightVector * cameraSpeed * (float)ElapsedTime; // Left
-            }
-            if (input.IsKeyDown(Keys.D))
-            {
-                _camera.Position += _camera.RightVector * cameraSpeed * (float)ElapsedTime; // Right
-            }
-            if (input.IsKeyDown(Keys.Space))
-            {
-                _camera.Position += _camera.UpVector * cameraSpeed * (float)ElapsedTime; // Up
-            }
-            if (input.IsKeyDown(Keys.LeftShift))
-            {
-                _camera.Position -= _camera.UpVector * cameraSpeed * (float)ElapsedTime; // Down
-            }
-
-            // Get the mouse state
-            var mouse = MouseState;
-
-            if (_firstMove) // This bool variable is initially set to true.
-            {
-                _lastPos = new Vector2(mouse.X, mouse.Y);
-                _firstMove = false;
-            }
-            else
-            {
-                // Calculate the offset of the mouse position
-                var deltaX = mouse.X - _lastPos.X;
-                var deltaY = mouse.Y - _lastPos.Y;
-                _lastPos = new Vector2(mouse.X, mouse.Y);
-
-                // Apply the camera pitch and yaw (we clamp the pitch in the camera class)
-                _camera.Yaw += deltaX * sensitivity;
-                _camera.Pitch -= deltaY * sensitivity; // Reversed since y-coordinates range from bottom to top
-            }
-
-            //_angle += (float)(45f * ElapsedTime);
-        }
-
-        public void Resize(Vector2i size)
-        {
-            _camera.AspectRatio = size.X / (float)size.Y;
-        }
-
-        public void MouseWheel(Vector2 offset)
-        {
-            _camera.Fov -= offset.Y;
         }
     }
 }
