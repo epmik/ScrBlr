@@ -45,9 +45,9 @@ namespace Scrblr.Core
         public event Action LoadAction;
         public event Action UnLoadAction;
         public event Action RenderAction;
-        public event Action UpdateAction;
-        public event Action<Vector2i> ResizeAction;
-        public event Action<Vector2> MouseWheelAction;
+        public event Action<FrameEventArgs> UpdateAction;
+        public event Action<ResizeEventArgs> ResizeAction;
+        public event Action<MouseWheelEventArgs> MouseWheelAction;
 
         private Matrix4 _modelMatrix = Matrix4.Identity;
         private Matrix4 _viewMatrix = Matrix4.Identity;
@@ -345,12 +345,7 @@ namespace Scrblr.Core
 
         private void MouseWheelInternal(MouseWheelEventArgs a)
         {
-            //ViewPosition.Z = a.Offset;
-
-            if(MouseWheelAction != null)
-            {
-                MouseWheelAction(a.Offset);
-            }
+            MouseWheelAction?.Invoke(a);
         }
 
         private readonly int[] AvailableSizes = { 3000, 2400, 2000, 1600, 1200, 1000, 800, 640, 480 };
@@ -425,9 +420,9 @@ namespace Scrblr.Core
             GL.Enable(EnableCap.Multisample);
         }
 
-        private void UpdateFrameInternal(FrameEventArgs e)
+        private void UpdateFrameInternal(FrameEventArgs a)
         {
-            ElapsedTime = e.Time;
+            ElapsedTime = a.Time;
             FrameCount++;
 
             ClearStatesAndCounters();
@@ -452,7 +447,7 @@ namespace Scrblr.Core
             ModelMatrix = CreateModelMatrix();
             ViewMatrix = Camera.ViewMatrix();
 
-            UpdateAction();
+            UpdateAction(a);
         }
 
         private void ClearStatesAndCounters()
@@ -523,10 +518,7 @@ namespace Scrblr.Core
 
             ProjectionMatrix = CreateProjectionMatrix();
 
-            if(ResizeAction != null)
-            {
-                ResizeAction(_internalWindow.Size);
-            }
+            ResizeAction?.Invoke(e);
         }
 
         private void SaveFrame(int frameBufferHandle = 0)

@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
 using Scrblr.Core;
 using System;
 using System.Collections.Generic;
@@ -146,7 +147,7 @@ void main()
             GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
         }
 
-        public void Update()
+        public void Update(FrameEventArgs a)
         {
             _angle += (float)(45f * ElapsedTime);
         }
