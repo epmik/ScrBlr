@@ -12,11 +12,12 @@ using System.Text;
 
 namespace Scrblr.Leaning
 {
-    [Sketch(Name = "Learn030-Training ground-Cube-Ortho-Perspective-Lighting-Texture-Color-Blending")]
+    [Sketch(Name = "Learn030-Training ground-Cube-Ortho-Perspective")]
     public class Learn030 : AbstractSketch
     {
         float _rotationDegreesPerSecond = 90, _degrees;
-        private Texture _gridNoTransparency, _gridWithTransparency, _smileyWithTransparency;
+        Texture _gridNoTransparency, _gridWithTransparency, _smileyWithTransparency;
+        FirstPersonCamera _firstPersonCamera;
 
         public Learn030()
             : base(2, 2)
@@ -30,6 +31,17 @@ namespace Scrblr.Leaning
             _gridWithTransparency = new Texture("resources/textures/orange-transparent-1024x1024.png");
 
             _smileyWithTransparency = new Texture("resources/textures/smiley-transparent-1024x1024.png");
+
+            _firstPersonCamera = new FirstPersonCamera
+            {
+                Fov = 90f,
+                AspectRatio = FrustumWidth / FrustumHeight,
+                Near = 1f,
+                Far = 1000f,
+                //Position = new Vector3(0, 0, 2),
+            };
+
+            AttachCamera(_firstPersonCamera, true, true);
         }
 
         public void UnLoad()
@@ -53,7 +65,7 @@ namespace Scrblr.Leaning
         {
             if(a.Key == Keys.P)
             {
-                Camera.ProjectionMode = Camera.ProjectionMode.Next();
+                Graphics.ActiveCamera().ProjectionMode = Graphics.ActiveCamera().ProjectionMode.Next();
             }
         }
 
@@ -67,7 +79,7 @@ namespace Scrblr.Leaning
             Graphics.Rotate(_degrees, Axis.X);
             Graphics.Rotate(_degrees, Axis.Y);
             Graphics.Rotate(_degrees, Axis.Z);
-            Graphics.Translate(0, 0);
+            Graphics.Translate(0, 0, -2);
             Graphics.Cube()
                 .Texture(_gridWithTransparency);
             Graphics.PopMatrix();
