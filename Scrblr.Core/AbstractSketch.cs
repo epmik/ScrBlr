@@ -319,14 +319,34 @@ namespace Scrblr.Core
                 Width = FrustumWidth,
                 Height = FrustumHeight,
                 Near = 1f,
-                Far = 100f,
-                Fov = 45f,
-                Position = new Vector3(0, 0, 2),
+                Far = 1000f,
+                //Position = new Vector3(0, 0, 0),
             };
 
-            _internalWindow.Resize += Camera.Resize;
+            AttachCamera(Camera);
+        }
 
-            _graphics.ActiveCamera(Camera);
+        private List<IEventComponent> EventComponents = new List<IEventComponent>();
+
+        protected void AttachCamera(ICamera camera, bool bindEvents = true, bool makeActive = true)
+        {
+            EventComponents.Add(camera);
+
+            if (bindEvents)
+            {
+                _internalWindow.UpdateFrame += camera.Update;
+                _internalWindow.Resize += camera.Resize;
+                _internalWindow.KeyUp += camera.KeyUp;
+                _internalWindow.KeyDown += camera.KeyDown;
+                _internalWindow.MouseDown += camera.MouseDown;
+                _internalWindow.MouseEnter += camera.MouseEnter;
+                _internalWindow.MouseLeave += camera.MouseLeave;
+                _internalWindow.MouseMove += camera.MouseMove;
+                _internalWindow.MouseUp += camera.MouseUp;
+                _internalWindow.MouseWheel += camera.MouseWheel;
+            }
+            // TODO differentiate between attached and active camera's
+            _graphics.ActiveCamera(camera);
         }
 
         private void LoadInternal()
@@ -363,21 +383,16 @@ namespace Scrblr.Core
             Graphics.Disable(EnableFlag.FrontFaceCulling);
         }
 
-        private void UpdateFrameInternal(FrameEventArgs e)
+        private void UpdateFrameInternal(FrameEventArgs a)
         {
-            PreUpdateFrameInternal(e);
-
-            if (_internalWindow.MouseState.Scroll != _internalWindow.MouseState.PreviousScroll)
-            {
-                Camera.Scroll(_internalWindow.MouseState.ScrollDelta.Y, e.Time);
-            }
+            PreUpdateFrameInternal(a);
 
             UpdateAction?.Invoke();
 
-            PostUpdateFrameInternal(e);
+            PostUpdateFrameInternal(a);
         }
 
-        private void PreUpdateFrameInternal(FrameEventArgs e)
+        private void PreUpdateFrameInternal(FrameEventArgs a)
         {
             Diagnostics.Log($"Pre frame allocated managed memory - before garbage collection: {(GC.GetTotalMemory(false) / (1024 * 1024))} MB");
             //Diagnostics.Log($"Allocated managed memory - after garbage collection: {(GC.GetTotalMemory(true) / (1024 * 1024))} MB");
@@ -385,7 +400,7 @@ namespace Scrblr.Core
             FrameCount++;
             FramesPerSecond++;
 
-            ElapsedTime = e.Time;
+            ElapsedTime = a.Time;
 
             var currentTimeStamp = CurrentTimeStamp();
 
@@ -400,6 +415,13 @@ namespace Scrblr.Core
             ResetStatesAndCounters();
 
             _graphics.ClearMatrixStack();
+
+            foreach(var eventComponent in EventComponents)
+            {
+                eventComponent.KeyboardState = _internalWindow.KeyboardState;
+                eventComponent.MouseState = _internalWindow.MouseState;
+                eventComponent.ElapsedTime = ElapsedTime;
+            }
         }
 
         private void PostUpdateFrameInternal(FrameEventArgs e)
