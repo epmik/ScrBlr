@@ -309,7 +309,7 @@ void main()
 
         private void FlushRenderChunks()
         {
-            if (!_enableRendering)
+            if (!State.IsEnabled(EnableFlag.Rendering))
             {
                 return;
             }
@@ -902,127 +902,7 @@ void main()
             GL.Viewport(0, 0, Width, Height);
         }
 
-        public void Enable(EnableFlag enableFlag)
-        {
-            switch (enableFlag)
-            {
-                case EnableFlag.Rendering:
-                    _enableRendering = true;
-                    break;
-                case EnableFlag.ClearBuffer:
-                    _enableClearBuffer = true;
-                    break;
-                case EnableFlag.Blending:
-                    GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-                    GL.Enable((EnableCap)enableFlag);
-                    break;
-                //case EnableFlag.Culling:
-                //    GL.Enable((EnableCap)enableFlag);
-                //    break;
-                case EnableFlag.BackFaceCulling:
-                    _enableBackFaceCulling = true;
-                    if (_enableFrontFaceCulling)
-                    {
-                        GL.CullFace(CullFaceMode.FrontAndBack);
-                    }
-                    else
-                    {
-                        GL.CullFace(CullFaceMode.Back);
-                    }
-                    GL.Enable(EnableCap.CullFace);
-                    break;
-                case EnableFlag.FrontFaceCulling:
-                    _enableFrontFaceCulling = true;
-                    if (_enableBackFaceCulling)
-                    {
-                        GL.CullFace(CullFaceMode.FrontAndBack);
-                    }
-                    else
-                    {
-                        GL.CullFace(CullFaceMode.Front);
-                    }
-                    GL.Enable(EnableCap.CullFace);
-                    break;
-                case EnableFlag.ClockWiseFace:
-                    GL.FrontFace(FrontFaceDirection.Cw);
-                    break;
-                case EnableFlag.CounterClockWiseFace:
-                    GL.FrontFace(FrontFaceDirection.Ccw);
-                    break;
-                default:
-                    GL.Enable((EnableCap)enableFlag);
-                    break;
-            }
-        }
-
-        public bool IsEnabled(EnableFlag enableFlag)
-        {
-            switch (enableFlag)
-            {
-                case EnableFlag.Rendering:
-                    return _enableRendering;
-                case EnableFlag.ClearBuffer:
-                    return _enableClearBuffer;
-                case EnableFlag.BackFaceCulling:
-                    return _enableBackFaceCulling;
-                case EnableFlag.FrontFaceCulling:
-                    return _enableFrontFaceCulling;
-                default:
-                    return GL.IsEnabled((EnableCap)enableFlag);
-            }
-        }
-
-        private bool _enableRendering = true;
-        private bool _enableClearBuffer = true;
-        private bool _enableBackFaceCulling = true;
-        private bool _enableFrontFaceCulling = false;
-
-        public void Disable(EnableFlag enableFlag)
-        {
-            switch(enableFlag)
-            {
-                case EnableFlag.Rendering:
-                    _enableRendering = false;
-                    break;
-                case EnableFlag.ClearBuffer:
-                    _enableClearBuffer = false;
-                    break;
-                case EnableFlag.Blending:
-                    GL.Disable((EnableCap)enableFlag);
-                    break;
-                case EnableFlag.BackFaceCulling:
-                    _enableBackFaceCulling = false;
-                    if (_enableFrontFaceCulling)
-                    {
-                        GL.CullFace(CullFaceMode.Front);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.CullFace);
-                    }
-                    break;
-                case EnableFlag.FrontFaceCulling:
-                    _enableFrontFaceCulling = false;
-                    if(_enableBackFaceCulling)
-                    {
-                        GL.CullFace(CullFaceMode.Back);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.CullFace);
-                    }
-                    break;
-                case EnableFlag.ClockWiseFace:
-                    GL.FrontFace(FrontFaceDirection.Ccw);
-                    break;
-                case EnableFlag.CounterClockWiseFace:
-                    GL.FrontFace(FrontFaceDirection.Cw);
-                    break;
-                default:
-                    GL.Disable((EnableCap)enableFlag);
-                    break;
-            }
-        }
+        public GraphicsState State { get; set; } = GraphicsState.DefaultState();
 
         public void ClearBuffers()
         {
@@ -1048,7 +928,7 @@ void main()
 
         public void ClearBuffers(ClearFlag clearFlag)
         {
-            if(!_enableClearBuffer)
+            if(!State.IsEnabled(EnableFlag.ClearBuffers))
             {
                 return;
             }
