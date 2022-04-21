@@ -73,7 +73,7 @@ namespace Scrblr.Leaning
         {
             Graphics.ClearColor(128);
 
-            Graphics.Enable(EnableFlag.BackFaceCulling);
+            Graphics.State.Enable(EnableFlag.BackFaceCulling);
 
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
