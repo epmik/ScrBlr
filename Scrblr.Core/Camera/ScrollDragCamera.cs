@@ -1,5 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +28,20 @@ namespace Scrblr.Core
             }
         }
 
-        public void Scroll(float direction, double time)
+        public override void KeyUp(KeyboardKeyEventArgs a)
+        {
+            if(a.Key == Keys.P)
+            {
+                ProjectionMode = ProjectionMode.Next();
+            }
+        }
+
+        public override void MouseWheel(MouseWheelEventArgs a)
+        {
+            Scroll(a.OffsetY, ElapsedTime);
+        }
+
+        private void Scroll(float direction, double time)
         {
             var multiplier = direction < 0 ? 1.06f : 0.92f;
 
@@ -36,8 +51,6 @@ namespace Scrblr.Core
             {
                 _scrollFactor = 0.1f;
             }
-
-            //Console.WriteLine($"_scrollFactor: {_scrollFactor}");
         }
     }
 }
