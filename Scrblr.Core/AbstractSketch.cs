@@ -49,6 +49,22 @@ namespace Scrblr.Core
         /// </summary>
         protected bool AutoClearBuffers { get; set; } = true;
 
+        private ProjectionMode _projectionMode = ProjectionMode.Perspective;
+
+        protected ProjectionMode ProjectionMode 
+        {
+            get => _projectionMode;
+            set 
+            { 
+                _projectionMode = value;
+                
+                if(Camera != null)
+                {
+                    Camera.ProjectionMode = value;
+                }
+            }
+        }
+
         #region Public Event Handlers
 
         // any public events ending with 'Action' will be bound in the Sketch.BindDelegates<TSketch>(TSketch sketch) function
@@ -320,10 +336,11 @@ namespace Scrblr.Core
                 Height = FrustumHeight,
                 Near = 1f,
                 Far = 1000f,
+                ProjectionMode = ProjectionMode,
                 //Position = new Vector3(0, 0, 0),
             };
 
-            AttachCamera(Camera);
+            AttachCamera(Camera, true, true);
         }
 
         private List<IEventComponent> EventComponents = new List<IEventComponent>();
@@ -362,25 +379,21 @@ namespace Scrblr.Core
         {
             if(Dimension == Dimensions.Two)
             {
-                Graphics.Disable(EnableFlag.DepthTest);
+                Graphics.State.Disable(EnableFlag.DepthTest);
             }
             else
             {
-                Graphics.Enable(EnableFlag.DepthTest);
+                Graphics.State.Enable(EnableFlag.DepthTest);
             }
 
             if(Samples > 1)
             {
-                Graphics.Enable(EnableFlag.MultiSampling);
+                Graphics.State.Enable(EnableFlag.MultiSampling);
             }
 
-            Graphics.Enable(EnableFlag.Blending);
+            Graphics.State.Enable(EnableFlag.Blending);
 
-            Graphics.Enable(EnableFlag.CounterClockWiseFace);
-
-            Graphics.Enable(EnableFlag.BackFaceCulling);
-
-            Graphics.Disable(EnableFlag.FrontFaceCulling);
+            Graphics.State.Enable(EnableFlag.BackFaceCulling);
         }
 
         private void UpdateFrameInternal(FrameEventArgs a)

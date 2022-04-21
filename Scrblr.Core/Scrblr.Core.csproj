@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Remove="Frustum.cs" />
     <Compile Remove="Geometry-new.cs" />
+    <Compile Remove="Graphics\EnableFlag.cs" />
     <Compile Remove="RenderFlag.cs" />
     <Compile Remove="Shapes.cs" />
     <Compile Remove="Tesselator.cs" />
