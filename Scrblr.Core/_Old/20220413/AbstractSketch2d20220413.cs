@@ -392,11 +392,6 @@ namespace Scrblr.Core
 
             ResetStatesAndCounters();
 
-            if (_internalWindow.MouseState.Scroll != _internalWindow.MouseState.PreviousScroll)
-            {
-                Camera.Scroll(_internalWindow.MouseState.ScrollDelta.Y, e.Time);
-            }
-
             _graphics.ClearMatrixStack();
 
             UpdateAction();
