@@ -38,8 +38,9 @@ namespace Scrblr.Leaning
                 AspectRatio = FrustumWidth / FrustumHeight,
                 Near = 1f,
                 Far = 1000f,
-                //Position = new Vector3(0, 0, 2),
             };
+
+            HideAndLockCursor();
 
             AttachCamera(_firstPersonCamera, true, true);
         }
@@ -73,16 +74,55 @@ namespace Scrblr.Leaning
         {
             Graphics.ClearColor(128);
 
-            Graphics.State.Enable(EnableFlag.BackFaceCulling);
+            var shader = Graphics.StandardShader(VertexFlag.Position0 | VertexFlag.Normal0 | VertexFlag.Color0);
+
+            //shader.Uniform("uLightPosition", new Vector3(8, 0, 0));
+            shader.Uniform("uLightDiffuseColor", new Vector3(1f, 1f, 1f));
+
+            //Graphics.State.Enable(EnableFlag.BackFaceCulling);
+            //Graphics.State.Disable(EnableFlag.FrontFaceCulling);
 
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
             Graphics.Rotate(_degrees, Axis.Y);
             Graphics.Rotate(_degrees, Axis.Z);
-            Graphics.Translate(0, 0, -2);
-            Graphics.Cube()
-                .Texture(_gridWithTransparency);
+            Graphics.Translate(-0.75f, 0, -2);
+            Graphics.Cube().Color(0, 0, 128);
             Graphics.PopMatrix();
+
+
+
+
+            //Graphics.State.Enable(EnableFlag.FrontFaceCulling);
+            //Graphics.State.Disable(EnableFlag.BackFaceCulling);
+
+            //shader.Uniform("uLightPosition", new Vector3(8, 0, 0));
+            //shader.Uniform("uLightDiffuseColor", new Vector4(1f, 0f, 0f, 1f));
+
+            //Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            //Graphics.Translate(0, 0, -4);
+            //Graphics.Cube().Color(0, 128, 0);
+            //Graphics.PopMatrix();
+
+
+
+
+            //Graphics.State.Enable(EnableFlag.BackFaceCulling);
+            //Graphics.State.Disable(EnableFlag.FrontFaceCulling);
+
+            //shader.Uniform("uLightPosition", new Vector3(8, 0, 0));
+            //shader.Uniform("uLightDiffuseColor", new Vector4(1f, 0f, 0f, 1f));
+
+            //Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            //Graphics.Translate(0.75f, 0, -6);
+            //Graphics.Cube().Color(128, 0, 0);
+            //Graphics.PopMatrix();
         }
     }
 }
