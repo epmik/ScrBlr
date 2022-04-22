@@ -16,7 +16,7 @@ namespace Scrblr.Core
         // y-axis rotation
         private float _yaw = -MathHelper.PiOver2;
         
-        private Vector2? _lastMousePosition = null;
+        //private Vector2? _lastMousePosition = null;
 
         public float Pitch
         {
@@ -46,8 +46,12 @@ namespace Scrblr.Core
         public float MoveSpeed = 2.5f;
         public float ScrollSpeed = 12f;
 
+        private bool _firstMouseMove = true;
+
         public override void Update(FrameEventArgs a)
         {
+            base.Update(a);
+
             var ElapsedTime = a.Time;
 
             var input = KeyboardState;
@@ -78,30 +82,27 @@ namespace Scrblr.Core
             {
                 Position -= UpVector * MoveSpeed * (float)ElapsedTime; // Down
             }
+        }
 
-            // Get the mouse state
-            var mouse = MouseState;
+        public override void MouseMove(MouseMoveEventArgs a)
+        {
+            base.MouseMove(a);
 
-            if (_lastMousePosition == null) // This bool variable is initially set to true.
+            if(_firstMouseMove)
             {
-                _lastMousePosition = new Vector2(mouse.X, mouse.Y);
-            }
-            else
-            {
-                // Calculate the offset of the mouse position
-                var deltaX = mouse.X - _lastMousePosition.Value.X;
-                var deltaY = mouse.Y - _lastMousePosition.Value.Y;
+                _firstMouseMove = false;
 
-                _lastMousePosition = new Vector2(mouse.X, mouse.Y);
-
-                // Apply the camera pitch and yaw (we clamp the pitch in the camera class)
-                Yaw += deltaX * MouseMoveSensitivity;
-                Pitch -= deltaY * MouseMoveSensitivity; // Reversed since y-coordinates range from bottom to top
+                return;
             }
+
+            Yaw += a.DeltaX * MouseMoveSensitivity;
+            Pitch -= a.DeltaY * MouseMoveSensitivity;
         }
 
         public override void MouseWheel(MouseWheelEventArgs a)
         {
+            base.MouseWheel(a);
+
             Position += a.Offset.Y * ScrollSpeed * LookVector * MoveSpeed * (float)ElapsedTime; // forward/backwards
         }
 
