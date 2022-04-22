@@ -119,7 +119,7 @@ namespace Scrblr.Core
 
             }
 
-            return key.Substring(0, key.Length - 1);
+            return key.Substring(0, key.Length - 1).ToLowerInvariant();
         }
     }
 }
