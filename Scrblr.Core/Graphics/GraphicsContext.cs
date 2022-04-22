@@ -101,6 +101,70 @@ void main()
 
 
 
+        internal const string Po0No0Co0Vss = @"
+#version 330 core
+
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 1) in vec3 iNormal0;  
+layout(location = 3) in vec4 iColor0;
+
+out vec3 ioPosition0;
+out vec3 ioNormal0;
+out vec4 ioColor0;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+
+void main(void)
+{
+    gl_Position = vec4(iPosition0, 1.0) * uModelMatrix * uViewMatrix * uProjectionMatrix;
+
+    ioPosition0 = vec3(uModelMatrix * uViewMatrix * vec4(iPosition0, 1.0));
+//    ioNormal0 = normalize(iNormal0 * mat3(transpose(inverse(uModelMatrix * uViewMatrix))));
+    ioNormal0 = normalize(iNormal0 * mat3(uModelMatrix * uViewMatrix));
+	ioColor0 = iColor0;
+}";
+
+        internal const string Po0No0Co0Fss = @"
+#version 330 core
+
+in vec3 ioPosition0;
+in vec3 ioNormal0;
+in vec4 ioColor0;
+
+out vec4 oColor0;
+
+//uniform int uLightCount;
+uniform vec3 uLightPosition;
+uniform vec3 uLightDiffuseColor;
+
+void main()
+{
+    vec3 lightDirection = normalize(uLightPosition - ioPosition0);  
+
+    float diff = max(dot(ioNormal0, lightDirection), 0.0);
+
+    //vec3 diffuse = diff * uLightDiffuseColor;
+
+    //vec4 result = vec4(diffuse, 1) * ioColor0;
+
+    oColor0 = vec4(uLightDiffuseColor * diff, 1);
+}";
+
+
+
+
         internal const string Po0Uv0Vss = @"
 #version 330 core
 
@@ -393,6 +457,7 @@ void main()
 
             InitializeStandardShaderDictionary("Po0", GraphicsContext.Po0Vss, GraphicsContext.Po0Fss);
             InitializeStandardShaderDictionary("Po0-Co0", GraphicsContext.Po0Co0Vss, GraphicsContext.Po0Co0Fss);
+            InitializeStandardShaderDictionary("Po0-No0-Co0", GraphicsContext.Po0No0Co0Vss, GraphicsContext.Po0No0Co0Fss);
             InitializeStandardShaderDictionary("Po0-Uv0", GraphicsContext.Po0Uv0Vss, GraphicsContext.Po0Uv0Fss);
             InitializeStandardShaderDictionary("Po0-Co0-Uv0", GraphicsContext.Po0Co0Uv0Vss, GraphicsContext.Po0Co0Uv0Fss);
             InitializeStandardShaderDictionary("Po0-Uv0-Uv1", GraphicsContext.Po0Uv0Uv1Vss, GraphicsContext.Po0Uv0Uv1Fss);
@@ -509,7 +574,7 @@ void main()
 
         private const int DefaultVertexBufferElementCount = 32768;
 
-        private VertexBuffer _defaultVertexBuffer { get; set; }
+        //private VertexBuffer _defaultVertexBuffer { get; set; }
 
         private VertexBuffer _attachedVertexBuffer { get; set; }
 
@@ -869,12 +934,36 @@ void main()
         {
             var key = vertexFlag.StandardShaderDictionaryKey();
 
-            if (_standardShaderDictionary.ContainsKey(key.ToLowerInvariant()))
+            if (_standardShaderDictionary.ContainsKey(key))
             {
                 return _standardShaderDictionary[key];
             }
 
             throw new InvalidOperationException($"QueryShaderFor(VertexBuffer vertexBuffer) failed. Could not find a shader source for key: {key}.");
+        }
+
+        public string QueryStandardVertexShaderSource(VertexFlag vertexFlag)
+        {
+            var key = vertexFlag.StandardShaderDictionaryKey();
+
+            switch (key)
+            {
+                case "po0":
+                    return GraphicsContext.Po0Vss;
+                case "po0-co0":
+                    return GraphicsContext.Po0Co0Vss;
+                case "po0-uv0":
+                    return GraphicsContext.Po0Uv0Vss;
+                case "po0-co0-uv0":
+                    return GraphicsContext.Po0Co0Uv0Vss;
+                case "po0-uv0-uv1":
+                    return GraphicsContext.Po0Uv0Uv1Vss;
+                case "po0-co0-uv0-uv1":
+                    return GraphicsContext.Po0Co0Uv0Uv1Vss;
+                default:
+                    throw new InvalidOperationException($"QueryStandardVertexShaderSource(VertexFlag) failed. Could not find a vertex shader source for key: {key}.");
+
+            }
         }
 
         protected VertexBuffer QueryStandardVertexBuffer(VertexFlag vertexFlag)
@@ -1009,6 +1098,8 @@ void main()
 
             return shader;
         }
+
+
 
         private void TesselateGeometry()
         {
