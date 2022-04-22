@@ -20,6 +20,19 @@ namespace Scrblr.Core
 
         MouseState MouseState { get; set; }
 
+        //event Action LoadAction;
+        //event Action UnLoadAction;
+        //event Action<FrameEventArgs> UpdateAction;
+        //event Action<ResizeEventArgs> ResizeAction;
+        //event Action<MouseWheelEventArgs> MouseWheelAction;
+        //event Action<MouseButtonEventArgs> MouseUpAction;
+        //event Action<MouseButtonEventArgs> MouseDownAction;
+        //event Action<MouseMoveEventArgs> MouseMoveAction;
+        //event Action MouseLeaveAction;
+        //event Action MouseEnterAction;
+        //event Action<KeyboardKeyEventArgs> KeyDownAction;
+        //event Action<KeyboardKeyEventArgs> KeyUpAction;
+
         void Update(FrameEventArgs a);
 
         void Resize(ResizeEventArgs a);
