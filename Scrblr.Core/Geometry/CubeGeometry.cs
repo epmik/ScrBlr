@@ -40,7 +40,7 @@ namespace Scrblr.Core
         public CubeGeometry(float width, float height, float depth, Matrix4 modelMatrix)
             : base(GeometryType.Triangles, 36, modelMatrix)
         {
-
+            VertexFlags = VertexFlag.Position0 | VertexFlag.Normal0;
         }
 
         public CubeGeometry Width(float w)
