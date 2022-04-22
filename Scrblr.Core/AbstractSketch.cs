@@ -37,7 +37,7 @@ namespace Scrblr.Core
         protected MouseState MouseState { get { return _internalWindow.MouseState; } }
 
         public int FrameCount { get; private set; }
-        
+
         public double ElapsedTime { get; private set; }
 
         public int FramesPerSecond { get; private set; }
@@ -51,14 +51,14 @@ namespace Scrblr.Core
 
         private ProjectionMode _projectionMode = ProjectionMode.Perspective;
 
-        protected ProjectionMode ProjectionMode 
+        protected ProjectionMode ProjectionMode
         {
             get => _projectionMode;
-            set 
-            { 
+            set
+            {
                 _projectionMode = value;
-                
-                if(Camera != null)
+
+                if (Camera != null)
                 {
                     Camera.ProjectionMode = value;
                 }
@@ -160,6 +160,94 @@ namespace Scrblr.Core
 
         #endregion Constructors
 
+        private void Initialize()
+        {
+            if (_internalWindow != null)
+            {
+                return;
+            }
+
+            var title = GetSketchName();
+
+            var windowSize = CalculateWindowSize(FrustumWidth, FrustumHeight);
+
+            Width = windowSize.X;
+            Height = windowSize.Y;
+
+            var nativeWindowSettings = new NativeWindowSettings
+            {
+                Size = windowSize,
+                Title = title,
+                Flags = ContextFlags.ForwardCompatible, // This is needed to run on macos
+                NumberOfSamples = Samples,
+                DepthBits = DepthBits,
+                StencilBits = StencilBits,
+            };
+
+            _internalWindow = new GameWindow(GameWindowSettings.Default, nativeWindowSettings);
+
+            _internalWindow.Load += LoadInternal;
+            _internalWindow.Unload += UnLoadInternal;
+            _internalWindow.UpdateFrame += UpdateFrameInternal;
+            _internalWindow.RenderFrame += RenderFrameInternal;
+            _internalWindow.Resize += ResizeInternal;
+
+            _internalWindow.MouseWheel += MouseWheelInternal;
+            _internalWindow.MouseDown += MouseDownInternal;
+            _internalWindow.MouseUp += MouseUpInternal;
+            _internalWindow.MouseEnter += MouseEnterInternal;
+            _internalWindow.MouseLeave += MouseLeaveInternal;
+            _internalWindow.MouseMove += MouseMoveInternal;
+
+            _internalWindow.KeyDown += KeyDownInternal;
+            _internalWindow.KeyUp += KeyUpInternal;
+
+            _internalWindow.CenterWindow();
+            _internalWindow.Location = new Vector2i(_internalWindow.Location.X, 30);
+            _internalWindow.MousePosition = new Vector2(WindowWidth / 2, WindowHeight / 2);
+
+            //_internalWindow.MousePosition
+
+            _graphics = new GraphicsContext(WindowWidth, WindowHeight, DepthBits, stencilBits: StencilBits, samples: Samples);
+
+            Camera = new ScrollDragCamera
+            {
+                Width = FrustumWidth,
+                Height = FrustumHeight,
+                Near = 1f,
+                Far = 1000f,
+                ProjectionMode = ProjectionMode,
+                //Position = new Vector3(0, 0, 0),
+            };
+
+            AttachCamera(Camera, true, true);
+        }
+
+        //public Vector3 Project(Vector3 source, Matrix4 projection, Matrix4 view, Matrix4 world)
+        //{
+        //    Matrix4 matrix = Matrix4.Mult(Matrix4.Mult(world, view), projection);
+        //    Vector3 vector = Vector3.Transform(source, matrix);
+        //    float a = (((source.X * matrix.M14) + (source.Y * matrix.M24)) + (source.Z * matrix.M34)) + matrix.M44;
+
+        //    if (!WithinEpsilon(a, 1f))
+        //    {
+        //        vector = (Vector3)(vector / a);
+        //    }
+
+        //    vector.X = (((vector.X + 1f) * 0.5f) * this.Width) + this.X;
+        //    vector.Y = (((-vector.Y + 1f) * 0.5f) * this.Height) + this.Y;
+        //    vector.Z = (vector.Z * (Camera.Far - Camera.Near)) + Camera.Near;
+
+        //    return vector;
+        //}
+
+        protected void HideAndLockCursor()
+        {
+            //_internalWindow.CursorVisible = false;
+            //_internalWindow.CursorGrabbed = true;
+            _internalWindow.MousePosition = new Vector2(Width * 0.5f, Height * 0.5f);
+        }
+
         protected void QueryGraphicsCardCapabilities()
         {
             GL.GetInteger(GetPName.MajorVersion, out int majorVersion);
@@ -244,7 +332,7 @@ namespace Scrblr.Core
             var windowWidth = (int)(targetWindowHeight * frustumWidth / frustumHeight);
             var windowHeight = targetWindowHeight;
 
-            if(windowWidth > targetWindowWidth || windowHeight > targetWindowWidth)
+            if (windowWidth > targetWindowWidth || windowHeight > targetWindowWidth)
             {
                 windowWidth = targetWindowWidth;
                 windowHeight = (int)(targetWindowWidth * frustumHeight / frustumWidth);
@@ -281,66 +369,9 @@ namespace Scrblr.Core
             GC.Collect();
         }
 
-        public long CurrentTimeStamp() 
-        { 
-            return _timeStopWatch.ElapsedMilliseconds; 
-        }
-
-        private void Initialize()
+        public long CurrentTimeStamp()
         {
-            if(_internalWindow != null)
-            {
-                return;
-            }
-
-            var title = GetSketchName();
-
-            var windowSize = CalculateWindowSize(FrustumWidth, FrustumHeight);
-
-            Width = windowSize.X;
-            Height = windowSize.Y;
-
-            var nativeWindowSettings = new NativeWindowSettings
-            {
-                Size = windowSize,
-                Title = title,
-                Flags = ContextFlags.ForwardCompatible, // This is needed to run on macos
-                NumberOfSamples = Samples,
-                DepthBits = DepthBits,
-                StencilBits = StencilBits,
-            };
-
-            _internalWindow = new GameWindow(GameWindowSettings.Default, nativeWindowSettings);
-
-            _internalWindow.Load += LoadInternal;
-            _internalWindow.Unload += UnLoadInternal;
-            _internalWindow.UpdateFrame += UpdateFrameInternal;
-            _internalWindow.RenderFrame += RenderFrameInternal;
-            _internalWindow.Resize += ResizeInternal;
-
-            _internalWindow.MouseWheel += MouseWheelInternal;
-            _internalWindow.MouseDown += MouseDownInternal;
-            _internalWindow.MouseUp += MouseUpInternal;
-            _internalWindow.MouseEnter += MouseEnterInternal;
-            _internalWindow.MouseLeave += MouseLeaveInternal;
-            _internalWindow.MouseMove += MouseMoveInternal;
-
-            _internalWindow.KeyDown += KeyDownInternal;
-            _internalWindow.KeyUp += KeyUpInternal;
-
-            _graphics = new GraphicsContext(WindowWidth, WindowHeight,  DepthBits, stencilBits: StencilBits, samples: Samples);
-
-            Camera = new ScrollDragCamera
-            {
-                Width = FrustumWidth,
-                Height = FrustumHeight,
-                Near = 1f,
-                Far = 1000f,
-                ProjectionMode = ProjectionMode,
-                //Position = new Vector3(0, 0, 0),
-            };
-
-            AttachCamera(Camera, true, true);
+            return _timeStopWatch.ElapsedMilliseconds;
         }
 
         private List<IEventComponent> EventComponents = new List<IEventComponent>();
@@ -365,6 +396,16 @@ namespace Scrblr.Core
             // TODO differentiate between attached and active camera's
             _graphics.ActiveCamera(camera);
         }
+
+        //protected void BindMouseMoveEvent(Action<MouseMoveEventArgs> e)
+        //{
+        //    _internalWindow.MouseMove += e;
+        //}
+
+        //protected void UnBindMouseMoveEvent(Action<MouseMoveEventArgs> e)
+        //{
+        //    _internalWindow.MouseMove -= e;
+        //}
 
         private void LoadInternal()
         {
@@ -407,7 +448,7 @@ namespace Scrblr.Core
 
         private void PreUpdateFrameInternal(FrameEventArgs a)
         {
-            Diagnostics.Log($"Pre frame allocated managed memory - before garbage collection: {(GC.GetTotalMemory(false) / (1024 * 1024))} MB");
+            //Diagnostics.Log($"Pre frame allocated managed memory - before garbage collection: {(GC.GetTotalMemory(false) / (1024 * 1024))} MB");
             //Diagnostics.Log($"Allocated managed memory - after garbage collection: {(GC.GetTotalMemory(true) / (1024 * 1024))} MB");
 
             FrameCount++;
@@ -437,7 +478,7 @@ namespace Scrblr.Core
             }
         }
 
-        private void PostUpdateFrameInternal(FrameEventArgs e)
+        private void PostUpdateFrameInternal(FrameEventArgs a)
         {
         }
 
@@ -446,16 +487,16 @@ namespace Scrblr.Core
             Graphics.Reset();
         }
 
-        private void RenderFrameInternal(FrameEventArgs e)
+        private void RenderFrameInternal(FrameEventArgs a)
         {
-            PreRenderFrameInternal(e);
+            PreRenderFrameInternal(a);
 
             RenderAction();
 
-            PostRenderFrameInternal(e);
+            PostRenderFrameInternal(a);
         }
 
-        private void PreRenderFrameInternal(FrameEventArgs e)
+        private void PreRenderFrameInternal(FrameEventArgs a)
         {
             if(_saveNextFrame)
             {
@@ -468,7 +509,7 @@ namespace Scrblr.Core
             }
         }
 
-        private void PostRenderFrameInternal(FrameEventArgs e)
+        private void PostRenderFrameInternal(FrameEventArgs a)
         {
             if (AutoClearBuffers)
             {
@@ -492,7 +533,7 @@ namespace Scrblr.Core
 
             _internalWindow.SwapBuffers();
 
-            Diagnostics.Log($"Post frame allocated managed memory - before garbage collection: {(GC.GetTotalMemory(false) / (1024 * 1024))} MB");
+            //Diagnostics.Log($"Post frame allocated managed memory - before garbage collection: {(GC.GetTotalMemory(false) / (1024 * 1024))} MB");
         }
 
         private void UnLoadInternal()
