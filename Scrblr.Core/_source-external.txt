@@ -1,0 +1,42 @@
+﻿Project Unproject OpenTK
+https://github.com/jeske/SimpleScene/blob/master/SimpleScene/Util/OpenTKHelper.cs
+
+Unproject MouseCoords ( OpenGL / OpenTK ).
+https://stackoverflow.com/questions/41993124/unproject-mousecoords-opengl-opentk
+
+Projects a 3D vector from object space into screen space
+Converts a screen space point into a corresponding point in world space.
+https://gist.github.com/sixman9/871099/8d37734ba22737c69173c2e44eaa332f9c85bcde
+
+GluProject and gluUnProject code
+https://www.khronos.org/opengl/wiki/GluProject_and_gluUnProject_code
+
+OpenTK Ray Picking
+https://gamedev.stackexchange.com/questions/103483/opentk-ray-picking
+
+c# opentk - converting screen coords to world coords
+https://www.gamedev.net/forums/topic/640926-c-opentk-converting-screen-coords-to-world-coords/
+
+UnProject
+https://csharp.hotexamples.com/examples/-/global%253A%253AOpenTK.Vector3d/-/php-global%253a%253aopentk.vector3d-class-examples.html
+
+Creating an icosphere mesh in code
+http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
+
+IcoSphere
+https://github.com/jeske/SimpleScene/blob/master/SimpleScene/Util/IcoSphereCreator.cs
+
+Fusee
+https://github.com/FUSEEProjectTeam/Fusee/tree/master/src
+
+Fusee Frustum
+https://github.com/FUSEEProjectTeam/Fusee/blob/master/src/Math/Core/FrustumF.cs
+
+Fusee AABB
+https://github.com/FUSEEProjectTeam/Fusee/blob/master/src/Math/Core/AABBf.cs
+
+Fusee Plane
+https://github.com/FUSEEProjectTeam/Fusee/blob/master/src/Math/Core/PlaneF.cs
+
+Fusee Ray
+https://github.com/FUSEEProjectTeam/Fusee/blob/master/src/Math/Core/Rayf.cs
