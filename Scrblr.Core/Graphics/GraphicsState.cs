@@ -207,5 +207,12 @@ namespace Scrblr.Core
 
             SetState(enableFlag);
         }
+
+        public void Toggle(EnableFlag enableFlag)
+        {
+            _enableFlagBitArray[(int)enableFlag] = !_enableFlagBitArray[(int)enableFlag];
+
+            SetState(enableFlag);
+        }
     }
 }
