@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
+using System;
 
 namespace Scrblr.Core
 {
@@ -10,6 +11,7 @@ namespace Scrblr.Core
         {
             return (float)v * ByteToUnitSingleFactor;
         }
+
 
         // taken from equilinox source
         //public static float FastSin(float min, float max, float time)
