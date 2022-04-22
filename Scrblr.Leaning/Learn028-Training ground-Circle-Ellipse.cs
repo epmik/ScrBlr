@@ -46,6 +46,8 @@ namespace Scrblr.Leaning
             _renderMethodInfoArray = GetType()
                 .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(o => o.Name.StartsWith("Render") && o.Name.Length > 6).OrderBy(o => o.Name).ToArray();
+
+            ProjectionMode = ProjectionMode.Orthographic;
         }
 
         public void Load()
