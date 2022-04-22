@@ -213,6 +213,19 @@ namespace Scrblr.Core
 
         public MouseState MouseState { get; set; }
 
+        //public event Action LoadAction;
+        //public event Action UnLoadAction;
+        //public event Action<FrameEventArgs> UpdateAction;
+        //public event Action<ResizeEventArgs> ResizeAction;
+        //public event Action<MouseWheelEventArgs> MouseWheelAction;
+        //public event Action<MouseButtonEventArgs> MouseUpAction;
+        //public event Action<MouseButtonEventArgs> MouseDownAction;
+        //public event Action<MouseMoveEventArgs> MouseMoveAction;
+        //public event Action MouseLeaveAction;
+        //public event Action MouseEnterAction;
+        //public event Action<KeyboardKeyEventArgs> KeyDownAction;
+        //public event Action<KeyboardKeyEventArgs> KeyUpAction;
+
         public AbstractCamera()
         {
         }
@@ -220,51 +233,53 @@ namespace Scrblr.Core
         public virtual void Resize(ResizeEventArgs a)
         {
             AspectRatio = (float)a.Size.X / (float)a.Size.Y;
+
+            //ResizeAction?.Invoke(a);
         }
 
         public virtual void Update(FrameEventArgs a)
         {
-
+            //UpdateAction?.Invoke(a);
         }
 
         public virtual void KeyDown(KeyboardKeyEventArgs a)
         {
-
+            //KeyDownAction?.Invoke(a);
         }
 
         public virtual void KeyUp(KeyboardKeyEventArgs a)
         {
-
+            //KeyUpAction?.Invoke(a);
         }
 
         public virtual void MouseEnter()
         {
-            
+            //MouseEnterAction?.Invoke();
         }
 
         public virtual void MouseLeave()
         {
-
+            //MouseLeaveAction?.Invoke();
         }
 
         public virtual void MouseMove(MouseMoveEventArgs a)
         {
-
+            //MouseMoveAction?.Invoke(a);
         }
 
         public virtual void MouseUp(MouseButtonEventArgs a)
         {
-
+            //MouseUpAction?.Invoke(a);
         }
 
         public virtual void MouseDown(MouseButtonEventArgs a)
         {
-
+            //MouseDownAction?.Invoke(a);
         }
 
         public virtual void MouseWheel(MouseWheelEventArgs a)
         {
-
+            //MouseWheelAction?.Invoke(a);
         }
 
         public virtual Matrix4 ProjectionMatrix()
