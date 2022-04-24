@@ -200,7 +200,10 @@ namespace Scrblr.Core
         /// <param name="data">The data to set</param>
         public void Uniform(string name, int data)
         {
-            //GL.UseProgram(Handle);
+            if (!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
             GL.Uniform1(_uniformLocations[name], data);
         }
 
@@ -211,7 +214,10 @@ namespace Scrblr.Core
         /// <param name="data">The data to set</param>
         public void Uniform(string name, float data)
         {
-            //GL.UseProgram(Handle);
+            if (!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
             GL.Uniform1(_uniformLocations[name], data);
         }
 
@@ -221,14 +227,30 @@ namespace Scrblr.Core
         /// <param name="name">The name of the uniform</param>
         /// <param name="data">The data to set</param>
         /// <remarks>
-        ///   <para>
-        ///   The matrix is transposed before being sent to the shader.
-        ///   </para>
         /// </remarks>
         public void Uniform(string name, Matrix4 data)
         {
-            //GL.UseProgram(Handle);
+            if(!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
             GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+        }
+
+        /// <summary>
+        /// Set a uniform Matrix4 on this shader
+        /// </summary>
+        /// <param name="name">The name of the uniform</param>
+        /// <param name="data">The data to set</param>
+        /// <remarks>
+        /// </remarks>
+        public void Uniform(string name, Matrix3 data)
+        {
+            if (!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
+            GL.UniformMatrix3(_uniformLocations[name], true, ref data);
         }
 
         /// <summary>
@@ -238,7 +260,10 @@ namespace Scrblr.Core
         /// <param name="data">The data to set</param>
         public void Uniform(string name, Vector3 data)
         {
-            //GL.UseProgram(Handle);
+            if (!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
             GL.Uniform3(_uniformLocations[name], data);
         }
 
@@ -249,7 +274,10 @@ namespace Scrblr.Core
         /// <param name="data">The data to set</param>
         public void Uniform(string name, float x, float y, float z)
         {
-            //GL.UseProgram(Handle);
+            if (!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
             GL.Uniform3(_uniformLocations[name], x, y, z);
         }
 
@@ -260,7 +288,10 @@ namespace Scrblr.Core
         /// <param name="data">The data to set</param>
         public void Uniform(string name, Vector4 data)
         {
-            //GL.UseProgram(Handle);
+            if (!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
             GL.Uniform4(_uniformLocations[name], data);
         }
 
@@ -271,7 +302,10 @@ namespace Scrblr.Core
         /// <param name="data">The data to set</param>
         public void Uniform(string name, float x, float y, float z, float w)
         {
-            //GL.UseProgram(Handle);
+            if (!_uniformLocations.ContainsKey(name))
+            {
+                return;
+            }
             GL.Uniform4(_uniformLocations[name], x, y, z, w);
         }
 
