@@ -8,7 +8,7 @@ namespace Scrblr.Leaning
     {
         static void Main(string[] args)
         {
-            Sketch.Run<Learn031>();
+            Sketch.Run<Learn029>();
 
             Console.WriteLine("Closing in 5 seconds...");
 
