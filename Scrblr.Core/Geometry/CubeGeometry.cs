@@ -88,9 +88,9 @@ namespace Scrblr.Core
         private static readonly float[,] _normals = new float[,]
         {
             // front face
-            { 0f, 0f, -1f },
-            // back face
             { 0f, 0f, 1f },
+            // back face
+            { 0f, 0f, -1f },
             // right face
             { 1f, 0f, 0f },
             // left face
