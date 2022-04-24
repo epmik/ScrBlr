@@ -10,7 +10,6 @@
   <ItemGroup>
     <Compile Remove="Learn008-VertexBuffer-VertexBufferLayoutClass.cs" />
     <Compile Remove="Learn012.cs" />
-    <Compile Remove="Learn023-SaveFrame-GraphicsContext-MultiSample.cs" />
     <Compile Remove="Learn024-Mixed-Colored-Textered-Rendering.cs" />
     <Compile Remove="Learn024-Text-Font-Creation-Rendering.cs" />
     <Compile Remove="Learn025-FrameBuffer-Depth-Testing.cs" />
