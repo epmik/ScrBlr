@@ -268,6 +268,11 @@ namespace Scrblr.Core
             return (TGeometry)this;
         }
 
+        public TGeometry Color(Color4 color)
+        {
+            return Color(color.R, color.G, color.B, color.A);
+        }
+
         public TGeometry Color(int r, int g, int b, int a = 255) 
         {
             return Color(r * Utility.ByteToUnitSingleFactor, g * Utility.ByteToUnitSingleFactor, b * Utility.ByteToUnitSingleFactor, a * Utility.ByteToUnitSingleFactor);
