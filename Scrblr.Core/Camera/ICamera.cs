@@ -18,6 +18,7 @@ namespace Scrblr.Core
         float Top { get; }
         float Bottom { get; }
         float AspectRatio { get; }
+        Vector3 Position { get; }
 
         Matrix4 ProjectionMatrix();
 
