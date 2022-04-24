@@ -15,7 +15,7 @@ namespace Scrblr.Leaning
     [Sketch(Name = "Learn031-Training ground-Cube-Lighting")]
     public class Learn031 : AbstractSketch
     {
-        float _rotationDegreesPerSecond = 90, _degrees;
+        float _rotationDegreesPerSecond = 45, _degrees;
         Texture _gridNoTransparency, _gridWithTransparency, _smileyWithTransparency;
         FirstPersonCamera _firstPersonCamera;
 
@@ -68,61 +68,66 @@ namespace Scrblr.Leaning
             {
                 Graphics.ActiveCamera().ProjectionMode = Graphics.ActiveCamera().ProjectionMode.Next();
             }
+            if (a.Key == Keys.O)
+            {
+                Graphics.State.Toggle(EnableFlag.DepthTest);
+            }
         }
 
         public void Render()
         {
-            Graphics.ClearColor(128);
+            Graphics.ClearColor(0);
 
             var shader = Graphics.StandardShader(VertexFlag.Position0 | VertexFlag.Normal0 | VertexFlag.Color0);
 
-            //shader.Uniform("uLightPosition", new Vector3(8, 0, 0));
+            shader.Uniform("uLightPosition", new Vector4(0, 0, -1, 0));  // w == 0 == directional light, w == 1 ==  positional light
             shader.Uniform("uLightDiffuseColor", new Vector3(1f, 1f, 1f));
+            shader.Uniform("uLightAmbientStrength", 0.05f);
+            shader.Uniform("uLightAmbientColor", new Vector3(1f, 1f, 1f));
+            shader.Uniform("uViewPosition", Graphics.ActiveCamera().Position);
 
-            //Graphics.State.Enable(EnableFlag.BackFaceCulling);
+            Graphics.State.Enable(EnableFlag.BackFaceCulling);
             //Graphics.State.Disable(EnableFlag.FrontFaceCulling);
 
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.X);
             Graphics.Rotate(_degrees, Axis.Y);
-            Graphics.Rotate(_degrees, Axis.Z);
+            //Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(-0.75f, 0, -2);
-            Graphics.Cube().Color(0, 0, 128);
+            Graphics.Cube().Color(222, 71, 0);
             Graphics.PopMatrix();
 
 
 
 
-            //Graphics.State.Enable(EnableFlag.FrontFaceCulling);
-            //Graphics.State.Disable(EnableFlag.BackFaceCulling);
+            //shader.Uniform("uLightPosition", new Vector4(1, -1, 0, 0));  // 0 == directional light, 1 ==  positional light
+            //shader.Uniform("uLightDiffuseColor", new Vector3(1f, 0.25f, 0.5f));
+            //shader.Uniform("uLightAmbientStrength", 0.25f);
+            //shader.Uniform("uLightAmbientColor", new Vector3(0f, 0f, 1f));
 
-            //shader.Uniform("uLightPosition", new Vector3(8, 0, 0));
-            //shader.Uniform("uLightDiffuseColor", new Vector4(1f, 0f, 0f, 1f));
-
-            //Graphics.PushMatrix();
-            //Graphics.Rotate(_degrees, Axis.X);
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
             //Graphics.Rotate(_degrees, Axis.Y);
             //Graphics.Rotate(_degrees, Axis.Z);
-            //Graphics.Translate(0, 0, -4);
-            //Graphics.Cube().Color(0, 128, 0);
-            //Graphics.PopMatrix();
+            Graphics.Translate(0, 0, -4);
+            Graphics.Cube().Color(0, 0, 224);
+            Graphics.PopMatrix();
 
 
 
 
-            //Graphics.State.Enable(EnableFlag.BackFaceCulling);
-            //Graphics.State.Disable(EnableFlag.FrontFaceCulling);
+            //shader.Uniform("uLightPosition", new Vector4(1, -1, 0, 0));  // 0 == directional light, 1 ==  positional light
+            //shader.Uniform("uLightDiffuseColor", new Vector3(1f, 0.25f, 0.5f));
+            //shader.Uniform("uLightAmbientStrength", 0.25f);
+            //shader.Uniform("uLightAmbientColor", new Vector3(0f, 0f, 1f));
 
-            //shader.Uniform("uLightPosition", new Vector3(8, 0, 0));
-            //shader.Uniform("uLightDiffuseColor", new Vector4(1f, 0f, 0f, 1f));
-
-            //Graphics.PushMatrix();
+            Graphics.PushMatrix();
             //Graphics.Rotate(_degrees, Axis.X);
             //Graphics.Rotate(_degrees, Axis.Y);
-            //Graphics.Rotate(_degrees, Axis.Z);
-            //Graphics.Translate(0.75f, 0, -6);
-            //Graphics.Cube().Color(128, 0, 0);
-            //Graphics.PopMatrix();
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(0.75f, 0, -6);
+            Graphics.Cube().Color(42, 148, 1);
+            Graphics.PopMatrix();
         }
     }
 }
