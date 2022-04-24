@@ -90,6 +90,7 @@ namespace Scrblr.Core
 
         private bool _saveNextFrame { get; set; }
 
+        private GraphicsContext _saveMultiSampleFrameGraphicsContext;
         private GraphicsContext _saveFrameGraphicsContext;
 
         /// <summary>
@@ -504,7 +505,20 @@ namespace Scrblr.Core
                 {
                     CreateSaveFrameGraphicsContext();
 
-                    _saveFrameGraphicsContext.Bind();
+                    if(_saveMultiSampleFrameGraphicsContext != null)
+                    {
+                        // to save multi sampled images, we need 2 frame buffers
+                        // one multi sampled frame buffer to render the scene to
+                        // another normal frame buffer to blit the multi sampled frame buffer onto
+
+                        // bind the multi sampled frame buffer to render the scene to
+                        _saveMultiSampleFrameGraphicsContext.Bind();
+                    }
+                    else
+                    {
+                        _saveFrameGraphicsContext.Bind();
+                    }
+
                 }
             }
         }
@@ -522,7 +536,7 @@ namespace Scrblr.Core
             {
                 _saveNextFrame = false;
 
-                SaveFrame(_saveFrameGraphicsContext);
+                SaveSaveFrameGraphicsContext();
 
                 DisposeSaveFrameGraphicsContext();
 
@@ -541,6 +555,9 @@ namespace Scrblr.Core
             _saveFrameGraphicsContext?.Dispose();
             _saveFrameGraphicsContext = null;
 
+            _saveMultiSampleFrameGraphicsContext?.Dispose();
+            _saveMultiSampleFrameGraphicsContext = null;
+
             Graphics.Dispose();
 
             UnLoadAction?.Invoke();
@@ -553,11 +570,50 @@ namespace Scrblr.Core
             ResizeAction?.Invoke(a);
         }
 
-        private void SaveFrame(GraphicsContext graphics)
+        private void SaveSaveFrameGraphicsContext()
         {
-            graphics.Bind();
+            var graphics = _saveFrameGraphicsContext;
+
+            //if (_saveMultiSampleFrameGraphicsContext != null)
+            //{
+            //    // to save multi sampled images, we need 2 frame buffers
+            //    // one multi sampled frame buffer to render the scene to
+            //    // another normal frame buffer to blit the multi sampled frame buffer onto
+
+            //    // bind the multi sampled frame buffer to render the scene to
+            //    _saveMultiSampleFrameGraphicsContext.Bind();
+            //}
+            //else
+            //{
+            //    graphics.Bind();
+            //}
 
             GL.Flush();
+
+            if (_saveMultiSampleFrameGraphicsContext != null)
+            {
+                // to save multi sampled images, we need 2 frame buffers
+                // one multi sampled frame buffer to render the scene to
+                // another normal frame buffer to blit the multi sampled frame buffer onto
+
+                // bind the multi sampled frame buffer for reading
+                _saveMultiSampleFrameGraphicsContext.Bind(BindFlag.Read);
+
+                // bind the normal frame buffer for writing
+                graphics.Bind(BindFlag.Write);
+
+                // blit the multi sampled frame buffer to the normal frame buffer
+                GL.BlitFramebuffer(
+                    0, 0,
+                    _saveMultiSampleFrameGraphicsContext.Width, _saveMultiSampleFrameGraphicsContext.Height, 
+                    0, 0, 
+                    graphics.Width, graphics.Height, 
+                    ClearBufferMask.ColorBufferBit, 
+                    BlitFramebufferFilter.Linear);
+            }
+
+            // bind the normal frame buffer for reading
+            graphics.Bind(BindFlag.Read);
 
             using (var bitmap = new System.Drawing.Bitmap(graphics.Width, graphics.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
             {
@@ -615,10 +671,27 @@ namespace Scrblr.Core
                 Graphics.ColorBits,
                 Graphics.DepthBits,
                 Graphics.StencilBits,
-                1 /*Graphics.Samples*/);    // TODO multi sampling for frame buffer doesn't work
+                1);
 
             _saveFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
             _saveFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
+
+            if(Graphics.Samples > 1)
+            {
+                // to save multi sampled images, we need 2 frame buffers
+                // one multi sampled frame buffer to render the scene to
+                // another normal frame buffer to blit the multi sampled frame buffer onto
+                _saveMultiSampleFrameGraphicsContext = new GraphicsContext(
+                    width,
+                    height,
+                    Graphics.ColorBits,
+                    Graphics.DepthBits,
+                    Graphics.StencilBits,
+                    Graphics.Samples);
+
+                _saveMultiSampleFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
+                _saveMultiSampleFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
+            }
         }
 
         private void DisposeSaveFrameGraphicsContext()
@@ -630,6 +703,13 @@ namespace Scrblr.Core
                 _saveFrameGraphicsContext.Dispose();
 
                 _saveFrameGraphicsContext = null;
+            }
+
+            if (_saveMultiSampleFrameGraphicsContext != null)
+            {
+                _saveMultiSampleFrameGraphicsContext.Dispose();
+
+                _saveMultiSampleFrameGraphicsContext = null;
             }
         }
 
