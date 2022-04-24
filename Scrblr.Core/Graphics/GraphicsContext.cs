@@ -1024,11 +1024,26 @@ void main()
 
         #endregion Standard Shaders Functions
 
-        public void Bind()
+        public void Bind(BindFlag bindFlag = BindFlag.Default)
         {
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+            GL.BindFramebuffer(ToFramebufferTarget(bindFlag), Handle);
 
             GL.Viewport(0, 0, Width, Height);
+        }
+
+        private FramebufferTarget ToFramebufferTarget(BindFlag bindFlag)
+        {
+            if (bindFlag == BindFlag.Read)
+            {
+                return FramebufferTarget.ReadFramebuffer;
+            }
+
+            if (bindFlag == BindFlag.Write)
+            {
+                return FramebufferTarget.DrawFramebuffer;
+            }
+
+            return FramebufferTarget.Framebuffer;
         }
 
         public GraphicsState State { get; set; } = GraphicsState.DefaultState();
