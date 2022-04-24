@@ -74,11 +74,11 @@ namespace Scrblr.Core
             {
                 Position += RightVector * MoveSpeed * (float)ElapsedTime; // Right
             }
-            if (input.IsKeyDown(Keys.Space))
+            if (input.IsKeyDown(Keys.Q))
             {
                 Position += UpVector * MoveSpeed * (float)ElapsedTime; // Up
             }
-            if (input.IsKeyDown(Keys.LeftShift))
+            if (input.IsKeyDown(Keys.E))
             {
                 Position -= UpVector * MoveSpeed * (float)ElapsedTime; // Down
             }
