@@ -4,19 +4,23 @@
 TODO
 
 - multiple lights
+- line rendering
 - text/font rendering
-- GraphicsContext.Sphere() / SphereGeometry
 - postprocessing
 - 'easy' custom vertex buffer implementation
 - 'easy' custom shaders implementation
+- different blending modes for color and textures: use a specified mix value, use alpha channel, ...
+- screen resolution based circle/ellipse rendering
 
 // ---
 
 DONE
 
+- GraphicsContext.Sphere() / SphereGeometry - 20220424
 - basic lighting - 20220423
 - save multi sample frame buffer - 20220424
 - orthographic and perspective projection - 20220424
+- depth buffer visualization - 20220422
 - first person camera / movement - 20220420
 - GraphicsContext.Cube() - 20220418
 - GraphicsContext.Circle() / GraphicsContext.Ellipse() - 20220418
