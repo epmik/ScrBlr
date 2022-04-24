@@ -91,7 +91,9 @@ namespace Scrblr.Leaning
         {
             Graphics.ClearColor(128);
 
-            Graphics.State.Enable(EnableFlag.BackFaceCulling);
+            Graphics.State.Enable(EnableFlag.DepthTest);
+            Graphics.State.Disable(EnableFlag.BackFaceCulling);
+            Graphics.State.Disable(EnableFlag.FrontFaceCulling);
 
             var i = 0;
             var rowY = _rowStartY;
@@ -119,8 +121,6 @@ namespace Scrblr.Leaning
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube();
-                //.Color(53, 133, 0)
-                //.Texture(_gridNoTransparency);
             Graphics.PopMatrix();
         }
 
@@ -138,9 +138,6 @@ namespace Scrblr.Leaning
         private void RenderCube003(float x, float y)
         {
             Graphics.PushMatrix();
-            //Graphics.Rotate(_degrees, Axis.X);
-            //Graphics.Rotate(_degrees, Axis.Y);
-            //Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube().Width(0.50f).Color(128, 32, 128);
             Graphics.PopMatrix();
@@ -149,9 +146,6 @@ namespace Scrblr.Leaning
         private void RenderCube004(float x, float y)
         {
             Graphics.PushMatrix();
-            //Graphics.Rotate(_degrees, Axis.X);
-            //Graphics.Rotate(_degrees, Axis.Y);
-            //Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube().Height(0.5f).Color(0, 64, 225);
             Graphics.PopMatrix();
@@ -190,19 +184,63 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
+        private void RenderCube008(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
+            Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics.Cube()
+                .Color(64, 125, 255)
+                .Texture(_gridNoTransparency);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderCube009(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
+            Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics.Cube()
+                .Color(64, 125, 255)
+                .Texture(_gridWithTransparency);
+            Graphics.PopMatrix();
+        }
 
 
 
 
 
 
-        //private void RenderSphere001(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics.Sphere();
-        //    Graphics.PopMatrix();
-        //}
+
+        private void RenderSphere001(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y, -2f);
+            Graphics.Sphere();
+            Graphics.PopMatrix();
+        }
+
+        private void RenderSphere002(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y, -2f);
+            Graphics.Sphere().Color(12, 67, 5);
+            Graphics.PopMatrix();
+        }
+
+        private void RenderSphere003(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Translate(x, y, -2f);
+            Graphics.Sphere().Color(75, 31, 4).Subdivisions(3);
+            Graphics.PopMatrix();
+        }
+
+
 
         //private void RenderSphere002(float x, float y)
         //{
