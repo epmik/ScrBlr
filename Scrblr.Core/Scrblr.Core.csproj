@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <None Remove="_source-external.txt" />
+    <None Remove="_todo.txt" />
   </ItemGroup>
 
   <ItemGroup>

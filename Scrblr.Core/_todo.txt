@@ -1,0 +1,25 @@
+﻿
+// ---
+
+TODO
+
+- multiple lights
+- text/font rendering
+- GraphicsContext.Sphere() / SphereGeometry
+- postprocessing
+- 'easy' custom vertex buffer implementation
+- 'easy' custom shaders implementation
+
+// ---
+
+DONE
+
+- basic lighting - 20220423
+- save multi sample frame buffer - 20220424
+- orthographic and perspective projection - 20220424
+- first person camera / movement - 20220420
+- GraphicsContext.Cube() - 20220418
+- GraphicsContext.Circle() / GraphicsContext.Ellipse() - 20220418
+- GraphicsContext.Rectangle() / GraphicsContext.Quad() - 20220418
+
+// ---
