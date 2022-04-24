@@ -243,9 +243,9 @@ namespace Scrblr.Core
 
         protected void HideAndLockCursor()
         {
-            //_internalWindow.CursorVisible = false;
-            //_internalWindow.CursorGrabbed = true;
-            _internalWindow.MousePosition = new Vector2(Width * 0.5f, Height * 0.5f);
+            _internalWindow.CursorVisible = false;
+            _internalWindow.CursorGrabbed = true;
+            //_internalWindow.MousePosition = new Vector2(Width * 0.5f, Height * 0.5f);
         }
 
         protected void QueryGraphicsCardCapabilities()
