@@ -15,7 +15,7 @@ namespace Scrblr.Core
         /// <summary>
         /// default == Vector3(0, 0, 0)
         /// </summary>
-        public Vector3 Position = new Vector3(0, 0, 0);
+        public Vector3 Position { get; set; } = new Vector3(0, 0, 0);
 
         /// <summary>
         /// default look direction is along the negative z-axis Vector3(0, 0, -1)
