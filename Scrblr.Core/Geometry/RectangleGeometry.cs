@@ -1,6 +1,7 @@
 ﻿using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Scrblr.Core
 {
@@ -28,6 +29,7 @@ namespace Scrblr.Core
 
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RectangleGeometry Width(float w)
         {
             _width = w;
@@ -35,11 +37,27 @@ namespace Scrblr.Core
             return this;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RectangleGeometry Height(float h)
         {
             _height = h;
 
             return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public RectangleGeometry Size(float w, float h)
+        {
+            _width = w;
+            _height = h;
+
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public RectangleGeometry Size(float wh)
+        {
+            return Size(wh, wh);
         }
 
         // OpenGL, unlike other graphics API's, has its texture coordinate origin in the bottom-left corner of a texture. Other API's have this origin in the top left.
