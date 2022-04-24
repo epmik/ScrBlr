@@ -82,7 +82,7 @@ namespace Scrblr.Core
             return Points(ref points);
         }
 
-        public QuadGeometry Points(float[] points)
+        public QuadGeometry Points(params float[] points)
         {
             return Points(ref points);
         }
