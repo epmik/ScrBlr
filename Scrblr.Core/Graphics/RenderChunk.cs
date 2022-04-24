@@ -24,6 +24,8 @@ namespace Scrblr.Core
 
         public Matrix4 ViewMatrix;
 
+        public Vector3 ViewPosition;
+
         public GeometryType GeometryType;
 
         public int ElementIndex;
