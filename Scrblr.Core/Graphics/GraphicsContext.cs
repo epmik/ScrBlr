@@ -19,6 +19,8 @@ namespace Scrblr.Core
         #region Shader Sources
 
 
+
+
         internal const string Po0Vss = @"
 #version 330 core
 
@@ -32,26 +34,84 @@ namespace Scrblr.Core
 // location 7 - name iUv2
 // location 8 - name iUv3
 
+out vec3 ioPosition0;
+out vec4 ioColor0;
+
 layout(location = 0) in vec3 iPosition0;
 
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uModelViewProjectionMatrix;
+uniform mat3 uNormalMatrix;
 
 void main(void)
 {
-    gl_Position = vec4(iPosition0, 1.0) * uModelMatrix * uViewMatrix * uProjectionMatrix;
+    gl_Position = vec4(iPosition0, 1.0) * uModelViewProjectionMatrix;
+
+    // position in view space, used for specular lighting
+    ioPosition0 = vec3(uModelMatrix * vec4(iPosition0, 1.0));
+
+	ioColor0 = vec4(0, 0, 0, 1);
 }";
 
         internal const string Po0Fss = @"
 #version 330 core
 
+in vec3 ioPosition0;
+in vec4 ioColor0;
+
 out vec4 oColor0;
 
 void main()
 {
-    oColor0 = vec4(0, 0, 0, 1); 
+    oColor0 = ioColor0;
 }";
+
+
+
+
+
+        internal const string Po0No0Vss = @"
+#version 330 core
+
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 1) in vec3 iNormal0;
+
+out vec3 ioPosition0;
+out vec3 ioNormal0;
+out vec4 ioColor0;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uModelViewProjectionMatrix;
+uniform mat3 uNormalMatrix;
+
+void main(void)
+{
+    gl_Position = vec4(iPosition0, 1.0) * uModelViewProjectionMatrix;
+
+    // position in view space, used for specular lighting
+    ioPosition0 = vec3(uModelMatrix * vec4(iPosition0, 1.0));
+
+    ioNormal0 = normalize(iNormal0 * uNormalMatrix);
+
+	ioColor0 = vec4(0, 0, 0, 1);
+}";
+
 
 
 
@@ -97,6 +157,7 @@ void main()
 {
     oColor0 = ioColor0;
 }";
+
 
 
 
@@ -150,7 +211,7 @@ in vec4 ioColor0;
 
 out vec4 oColor0;
 
-//uniform int uLightCount;
+uniform int uLightCount;
 uniform vec4 uLightPosition;
 uniform vec3 uLightDiffuseColor;
 uniform float uLightAmbientStrength;
@@ -158,36 +219,191 @@ uniform vec3 uLightAmbientColor;
 
 uniform vec3 uViewPosition;
 
-const float zero_float = 0.0;
-const float one_float = 1.0;
-const vec3 zero_vec3 = vec3(0);
+//const float zero_float = 0.0;
+//const float one_float = 1.0;
+//const vec3 zero_vec3 = vec3(0);
 
 void main()
 {
-    float specularStrength = 0.20;
+    if(uLightCount > 0)
+    {
+        float specularStrength = 0.20;
     
-    int shininess = 256;
+        int shininess = 256;
 
-    vec3 ambient = uLightAmbientStrength * uLightAmbientColor;
+        vec3 ambient = uLightAmbientStrength * uLightAmbientColor;
 
-    bool lightIsDirectional = uLightPosition.w < one_float;
+        bool lightIsDirectional = uLightPosition.w < 1.0;
 
-    // vector from the fragment towards the light
-    vec3 lightDirection = normalize(lightIsDirectional ? vec3(-uLightPosition) : vec3(uLightPosition) - ioPosition0);  
+        // vector from the fragment towards the light
+        vec3 lightDirection = normalize(lightIsDirectional ? vec3(-uLightPosition) : vec3(uLightPosition) - ioPosition0);  
 
-    float diffuseFactor = max(dot(ioNormal0, lightDirection), 0.0);
+        float diffuseFactor = max(dot(ioNormal0, lightDirection), 0.0);
 
-    vec3 diffuse = diffuseFactor * uLightDiffuseColor;
+        vec3 diffuse = diffuseFactor * uLightDiffuseColor;
 
-    vec3 viewDirection = normalize(uViewPosition - ioPosition0);
+        vec3 viewDirection = normalize(uViewPosition - ioPosition0);
     
-    // negate the light direction so the vector points from the light to the fragment
-    vec3 reflectionDirection = reflect(-lightDirection, ioNormal0);
+        // negate the light direction so the vector points from the light to the fragment
+        vec3 reflectionDirection = reflect(-lightDirection, ioNormal0);
 
-    float specularFactor = pow(max(dot(viewDirection, reflectionDirection), 0.0), shininess);
-    vec3 specular = specularStrength * specularFactor * uLightDiffuseColor;
+        float specularFactor = pow(max(dot(viewDirection, reflectionDirection), 0.0), shininess);
+        vec3 specular = specularStrength * specularFactor * uLightDiffuseColor;
 
-    oColor0 = vec4(ambient + diffuse + specular, 1) * ioColor0;
+        oColor0 = vec4(ambient + diffuse + specular, 1) * ioColor0;
+    }
+    else
+    {
+        oColor0 = ioColor0;
+    }
+}";
+
+
+
+
+
+        internal const string Po0No0Uv0Vss = @"
+#version 330 core
+
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 1) in vec3 iNormal0;  
+layout(location = 5) in vec2 iUv0;
+
+out vec3 ioPosition0;
+out vec3 ioNormal0;
+out vec4 ioColor0;
+out vec2 ioUv0;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uModelViewProjectionMatrix;
+uniform mat3 uNormalMatrix;
+
+void main(void)
+{
+    gl_Position = vec4(iPosition0, 1.0) * uModelViewProjectionMatrix;
+
+    // position in view space, used for specular lighting
+    ioPosition0 = vec3(uModelMatrix * vec4(iPosition0, 1.0));
+
+    ioNormal0 = normalize(iNormal0 * uNormalMatrix);
+
+	ioColor0 = vec4(1, 1, 1, 1);
+    ioUv0 = iUv0;
+}";
+
+
+
+
+
+        internal const string Po0No0Co0Uv0Vss = @"
+#version 330 core
+
+// location 0 - name iPosition0
+// location 1 - name iNormal0
+// location 2 - name iNormal1
+// location 3 - name iColor0
+// location 4 - name iColor1
+// location 5 - name iUv0
+// location 6 - name iUv1
+// location 7 - name iUv2
+// location 8 - name iUv3
+
+layout(location = 0) in vec3 iPosition0;  
+layout(location = 1) in vec3 iNormal0;  
+layout(location = 3) in vec4 iColor0;
+layout(location = 5) in vec2 iUv0;
+
+out vec3 ioPosition0;
+out vec3 ioNormal0;
+out vec4 ioColor0;
+out vec2 ioUv0;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uModelViewProjectionMatrix;
+uniform mat3 uNormalMatrix;
+
+void main(void)
+{
+    gl_Position = vec4(iPosition0, 1.0) * uModelViewProjectionMatrix;
+
+    // position in view space, used for specular lighting
+    ioPosition0 = vec3(uModelMatrix * vec4(iPosition0, 1.0));
+
+    ioNormal0 = normalize(iNormal0 * uNormalMatrix);
+
+	ioColor0 = iColor0;
+    ioUv0 = iUv0;
+}";
+
+        internal const string Po0No0Co0Uv0Fss = @"
+#version 330 core
+
+in vec3 ioPosition0;
+in vec3 ioNormal0;
+in vec4 ioColor0;
+in vec2 ioUv0;
+
+out vec4 oColor0;
+
+uniform sampler2D uTexture0;
+
+uniform int uLightCount;
+uniform vec4 uLightPosition;
+uniform vec3 uLightDiffuseColor;
+uniform float uLightAmbientStrength;
+uniform vec3 uLightAmbientColor;
+
+uniform vec3 uViewPosition;
+
+void main()
+{
+    if(uLightCount > 0)
+    {
+        float specularStrength = 0.20;
+    
+        int shininess = 256;
+
+        vec3 ambient = uLightAmbientStrength * uLightAmbientColor;
+
+        bool lightIsDirectional = uLightPosition.w < 1.0;
+
+        // vector from the fragment towards the light
+        vec3 lightDirection = normalize(lightIsDirectional ? vec3(-uLightPosition) : vec3(uLightPosition) - ioPosition0);  
+
+        float diffuseFactor = max(dot(ioNormal0, lightDirection), 0.0);
+
+        vec3 diffuse = diffuseFactor * uLightDiffuseColor;
+
+        vec3 viewDirection = normalize(uViewPosition - ioPosition0);
+    
+        // negate the light direction so the vector points from the light to the fragment
+        vec3 reflectionDirection = reflect(-lightDirection, ioNormal0);
+
+        float specularFactor = pow(max(dot(viewDirection, reflectionDirection), 0.0), shininess);
+        vec3 specular = specularStrength * specularFactor * uLightDiffuseColor;
+
+        oColor0 = vec4(ambient + diffuse + specular, 1) * texture(uTexture0, ioUv0) * ioColor0;
+    }
+    else
+    {
+        oColor0 = texture(uTexture0, ioUv0) * ioColor0; 
+    }
 }";
 
 
@@ -420,6 +636,7 @@ void main()
                 renderChunk.Shader.Uniform("uProjectionMatrix", renderChunk.ProjectionMatrix);
                 renderChunk.Shader.Uniform("uModelViewMatrix", modelViewMatrix);
                 renderChunk.Shader.Uniform("uModelViewProjectionMatrix", modelViewProjectionMatrix);
+                renderChunk.Shader.Uniform("uViewPosition", renderChunk.ViewPosition);
 
                 if (renderChunk.VertexFlag.HasFlag(VertexFlag.Normal0) || renderChunk.VertexFlag.HasFlag(VertexFlag.Normal1))
                 {
@@ -472,6 +689,7 @@ void main()
             _renderChunks[_renderChunkCount].Shader = shader;
             _renderChunks[_renderChunkCount].VertexBuffer = vertexBuffer;
             _renderChunks[_renderChunkCount].ViewMatrix = camera.ViewMatrix();
+            _renderChunks[_renderChunkCount].ViewPosition = camera.Position;
             _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
             _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
             _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
@@ -496,12 +714,47 @@ void main()
             _standardShaderDictionary.Clear();
 
             InitializeStandardShaderDictionary("Po0", GraphicsContext.Po0Vss, GraphicsContext.Po0Fss);
+            InitializeStandardShaderDictionary("Po0-No0", GraphicsContext.Po0No0Vss, GraphicsContext.Po0No0Co0Fss);
             InitializeStandardShaderDictionary("Po0-Co0", GraphicsContext.Po0Co0Vss, GraphicsContext.Po0Co0Fss);
             InitializeStandardShaderDictionary("Po0-No0-Co0", GraphicsContext.Po0No0Co0Vss, GraphicsContext.Po0No0Co0Fss);
             InitializeStandardShaderDictionary("Po0-Uv0", GraphicsContext.Po0Uv0Vss, GraphicsContext.Po0Uv0Fss);
             InitializeStandardShaderDictionary("Po0-Co0-Uv0", GraphicsContext.Po0Co0Uv0Vss, GraphicsContext.Po0Co0Uv0Fss);
+            InitializeStandardShaderDictionary("Po0-No0-Uv0", GraphicsContext.Po0No0Uv0Vss, GraphicsContext.Po0No0Co0Uv0Fss);
+            InitializeStandardShaderDictionary("Po0-No0-Co0-Uv0", GraphicsContext.Po0No0Co0Uv0Vss, GraphicsContext.Po0No0Co0Uv0Fss);
             InitializeStandardShaderDictionary("Po0-Uv0-Uv1", GraphicsContext.Po0Uv0Uv1Vss, GraphicsContext.Po0Uv0Uv1Fss);
             InitializeStandardShaderDictionary("Po0-Co0-Uv0-Uv1", GraphicsContext.Po0Co0Uv0Uv1Vss, GraphicsContext.Po0Co0Uv0Uv1Fss);
+        }
+
+        public string QueryStandardVertexShaderSource(VertexFlag vertexFlag)
+        {
+            var key = vertexFlag.StandardShaderDictionaryKey();
+
+            switch (key)
+            {
+                case "po0":
+                    return GraphicsContext.Po0Vss;
+                case "po0-no0":
+                    return GraphicsContext.Po0No0Vss;
+                case "po0-co0":
+                    return GraphicsContext.Po0Co0Vss;
+                case "po0-no0-co0":
+                    return GraphicsContext.Po0No0Co0Vss;
+                case "po0-uv0":
+                    return GraphicsContext.Po0Uv0Vss;
+                case "po0-co0-uv0":
+                    return GraphicsContext.Po0Co0Uv0Vss;
+                case "po0-no0-uv0":
+                    return GraphicsContext.Po0No0Uv0Vss;
+                case "po0-no0-co0-uv0":
+                    return GraphicsContext.Po0No0Co0Uv0Vss;
+                case "po0-uv0-uv1":
+                    return GraphicsContext.Po0Uv0Uv1Vss;
+                case "po0-co0-uv0-uv1":
+                    return GraphicsContext.Po0Co0Uv0Uv1Vss;
+                default:
+                    throw new InvalidOperationException($"QueryStandardVertexShaderSource(VertexFlag) failed. Could not find a vertex shader source for key: {key}.");
+
+            }
         }
 
         private void InitializeStandardVertexBuffers()
@@ -982,30 +1235,6 @@ void main()
             throw new InvalidOperationException($"QueryShaderFor(VertexBuffer vertexBuffer) failed. Could not find a shader source for key: {key}.");
         }
 
-        public string QueryStandardVertexShaderSource(VertexFlag vertexFlag)
-        {
-            var key = vertexFlag.StandardShaderDictionaryKey();
-
-            switch (key)
-            {
-                case "po0":
-                    return GraphicsContext.Po0Vss;
-                case "po0-co0":
-                    return GraphicsContext.Po0Co0Vss;
-                case "po0-uv0":
-                    return GraphicsContext.Po0Uv0Vss;
-                case "po0-co0-uv0":
-                    return GraphicsContext.Po0Co0Uv0Vss;
-                case "po0-uv0-uv1":
-                    return GraphicsContext.Po0Uv0Uv1Vss;
-                case "po0-co0-uv0-uv1":
-                    return GraphicsContext.Po0Co0Uv0Uv1Vss;
-                default:
-                    throw new InvalidOperationException($"QueryStandardVertexShaderSource(VertexFlag) failed. Could not find a vertex shader source for key: {key}.");
-
-            }
-        }
-
         protected VertexBuffer QueryStandardVertexBuffer(VertexFlag vertexFlag)
         {
             // todo fix for multiple vertexbuffers
@@ -1237,6 +1466,20 @@ void main()
         public CubeGeometry Cube(float width, float height, float depth)
         {
             var g = new CubeGeometry(width, height, depth, ModelMatrix());
+
+            AddGeometry(g);
+
+            return g;
+        }
+
+        public SphereGeometry Sphere(SphereMode sphereMode = SphereMode.IcoSphere)
+        {
+            return Sphere(SphereGeometry.DefaultWidth, SphereGeometry.DefaultHeight, SphereGeometry.DefaultDepth, sphereMode);
+        }
+
+        public SphereGeometry Sphere(float width, float height, float depth, SphereMode sphereMode = SphereMode.IcoSphere)
+        {
+            var g = new SphereGeometry(width, height, depth, ModelMatrix(), sphereMode);
 
             AddGeometry(g);
 
