@@ -125,14 +125,19 @@ out vec4 ioColor0;
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uModelViewProjectionMatrix;
+uniform mat3 uNormalMatrix;
 
 void main(void)
 {
-    gl_Position = vec4(iPosition0, 1.0) * uModelMatrix * uViewMatrix * uProjectionMatrix;
+    gl_Position = vec4(iPosition0, 1.0) * uModelViewProjectionMatrix;
 
-    ioPosition0 = vec3(uModelMatrix * uViewMatrix * vec4(iPosition0, 1.0));
-//    ioNormal0 = normalize(iNormal0 * mat3(transpose(inverse(uModelMatrix * uViewMatrix))));
-    ioNormal0 = normalize(iNormal0 * mat3(uModelMatrix * uViewMatrix));
+    // position in view space, used for specular lighting
+    ioPosition0 = vec3(uModelMatrix * vec4(iPosition0, 1.0));
+
+    ioNormal0 = normalize(iNormal0 * uNormalMatrix);
+
 	ioColor0 = iColor0;
 }";
 
@@ -146,20 +151,43 @@ in vec4 ioColor0;
 out vec4 oColor0;
 
 //uniform int uLightCount;
-uniform vec3 uLightPosition;
+uniform vec4 uLightPosition;
 uniform vec3 uLightDiffuseColor;
+uniform float uLightAmbientStrength;
+uniform vec3 uLightAmbientColor;
+
+uniform vec3 uViewPosition;
+
+const float zero_float = 0.0;
+const float one_float = 1.0;
+const vec3 zero_vec3 = vec3(0);
 
 void main()
 {
-    vec3 lightDirection = normalize(uLightPosition - ioPosition0);  
+    float specularStrength = 0.20;
+    
+    int shininess = 256;
 
-    float diff = max(dot(ioNormal0, lightDirection), 0.0);
+    vec3 ambient = uLightAmbientStrength * uLightAmbientColor;
 
-    //vec3 diffuse = diff * uLightDiffuseColor;
+    bool lightIsDirectional = uLightPosition.w < one_float;
 
-    //vec4 result = vec4(diffuse, 1) * ioColor0;
+    // vector from the fragment towards the light
+    vec3 lightDirection = normalize(lightIsDirectional ? vec3(-uLightPosition) : vec3(uLightPosition) - ioPosition0);  
 
-    oColor0 = vec4(uLightDiffuseColor * diff, 1);
+    float diffuseFactor = max(dot(ioNormal0, lightDirection), 0.0);
+
+    vec3 diffuse = diffuseFactor * uLightDiffuseColor;
+
+    vec3 viewDirection = normalize(uViewPosition - ioPosition0);
+    
+    // negate the light direction so the vector points from the light to the fragment
+    vec3 reflectionDirection = reflect(-lightDirection, ioNormal0);
+
+    float specularFactor = pow(max(dot(viewDirection, reflectionDirection), 0.0), shininess);
+    vec3 specular = specularStrength * specularFactor * uLightDiffuseColor;
+
+    oColor0 = vec4(ambient + diffuse + specular, 1) * ioColor0;
 }";
 
 
@@ -382,11 +410,23 @@ void main()
             {
                 var renderChunk = _renderChunks[c];
 
+                var modelViewMatrix = Matrix4.Mult(renderChunk.ModelMatrix, renderChunk.ViewMatrix);
+                var modelViewProjectionMatrix = Matrix4.Mult(modelViewMatrix, renderChunk.ProjectionMatrix);
+
                 renderChunk.Shader.Use();
 
+                renderChunk.Shader.Uniform("uModelMatrix", renderChunk.ModelMatrix);
                 renderChunk.Shader.Uniform("uViewMatrix", renderChunk.ViewMatrix);
                 renderChunk.Shader.Uniform("uProjectionMatrix", renderChunk.ProjectionMatrix);
-                renderChunk.Shader.Uniform("uModelMatrix", renderChunk.ModelMatrix);
+                renderChunk.Shader.Uniform("uModelViewMatrix", modelViewMatrix);
+                renderChunk.Shader.Uniform("uModelViewProjectionMatrix", modelViewProjectionMatrix);
+
+                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Normal0) || renderChunk.VertexFlag.HasFlag(VertexFlag.Normal1))
+                {
+                    // remove any scaling from the model matrix by transposing the inverted matrix and taking only the upper 3x3 part
+                    // see: http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
+                    renderChunk.Shader.Uniform("uNormalMatrix", new Matrix3(Matrix4.Transpose(Matrix4.Invert(renderChunk.ModelMatrix))));
+                }
 
                 if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv0))
                 {
