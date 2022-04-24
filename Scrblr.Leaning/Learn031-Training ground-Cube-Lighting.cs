@@ -80,11 +80,11 @@ namespace Scrblr.Leaning
 
             var shader = Graphics.StandardShader(VertexFlag.Position0 | VertexFlag.Normal0 | VertexFlag.Color0);
 
+            shader.Uniform("uLightCount", 1);
             shader.Uniform("uLightPosition", new Vector4(0, 0, -1, 0));  // w == 0 == directional light, w == 1 ==  positional light
             shader.Uniform("uLightDiffuseColor", new Vector3(1f, 1f, 1f));
             shader.Uniform("uLightAmbientStrength", 0.05f);
             shader.Uniform("uLightAmbientColor", new Vector3(1f, 1f, 1f));
-            shader.Uniform("uViewPosition", Graphics.ActiveCamera().Position);
 
             Graphics.State.Enable(EnableFlag.BackFaceCulling);
             //Graphics.State.Disable(EnableFlag.FrontFaceCulling);
