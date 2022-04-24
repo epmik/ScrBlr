@@ -432,7 +432,7 @@ namespace Scrblr.Core
                 _internalWindow.Close();
             }
 
-            if (_internalWindow.KeyboardState.IsKeyDown(Keys.S))
+            if (_internalWindow.KeyboardState.IsKeyDown(Keys.F5))
             {
                 _saveFrame = true;
             }
