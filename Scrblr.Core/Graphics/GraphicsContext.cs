@@ -1435,6 +1435,15 @@ void main()
             return Circle(CircleGeometry.DefaultRadius);
         }
 
+        public LineGeometry Line()
+        {
+            var g = new LineGeometry(ModelMatrix());
+
+            AddGeometry(g);
+
+            return g;
+        }
+
         public CircleGeometry Circle(float radius)
         {
             var g = new CircleGeometry(radius, ModelMatrix());
