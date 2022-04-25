@@ -256,7 +256,7 @@ namespace Scrblr.Core
             return AddTransform<TGeometry>(TransformType.Rotation, axis, MathHelper.DegreesToRadians(degrees));
         }
 
-        public TGeometry Color(float r, float g, float b, float a = 1f) 
+        public virtual TGeometry Color(float r, float g, float b, float a = 1f) 
         {
             VertexFlags = VertexFlags.AddFlag(VertexFlag.Color0);
 
