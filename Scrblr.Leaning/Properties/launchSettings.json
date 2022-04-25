@@ -2,7 +2,7 @@
   "profiles": {
     "Scrblr.Leaning": {
       "commandName": "Project",
-      "workingDirectory": "D:\\Steven\\Atelier\\Scrblr\\Scrblr.Leaning"
+      "workingDirectory": "$(ProjectDir)"
     }
   }
 }
