@@ -43,13 +43,13 @@ namespace Scrblr.Core
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
 
-            if (ColorBits != null && ColorBits > 0)
+            if (ColorBits > 0)
             {
                 _colorAttachmentHandle = GL.GenTexture();
 
                 GL.BindTexture(OpenGlTextureTarget(), _colorAttachmentHandle);
 
-                if (Samples == null || Samples <= 1)
+                if (Samples <= 1)
                 {
                     GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, Width, Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
                 }
@@ -69,13 +69,13 @@ namespace Scrblr.Core
                 GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, OpenGlTextureTarget(), _colorAttachmentHandle, 0);
             }
 
-            if (DepthBits != null && DepthBits > 0)
+            if (DepthBits > 0)
             {
                 _depthAttachmentHandle = GL.GenRenderbuffer();
 
                 GL.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, _depthAttachmentHandle);
 
-                if (Samples == null || Samples <= 1)
+                if (Samples <= 1)
                 {
                     GL.RenderbufferStorage(RenderbufferTarget.RenderbufferExt, RenderbufferStorageDepthComponent(), Width, Height);
                 }
@@ -85,13 +85,13 @@ namespace Scrblr.Core
                 }
             }
 
-            if (StencilBits != null && StencilBits > 0)
+            if (StencilBits > 0)
             {
                 _stencilAttachmentHandle = GL.GenRenderbuffer();
 
                 GL.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, _stencilAttachmentHandle);
 
-                if (Samples == null || Samples <= 1)
+                if (Samples <= 1)
                 {
                     GL.RenderbufferStorage(RenderbufferTarget.RenderbufferExt, RenderbufferStorageStencil(), Width, Height);
                 }
