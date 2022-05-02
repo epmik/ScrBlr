@@ -694,32 +694,32 @@ void main()
                 renderBatch.Shader.Uniform("uModelViewProjectionMatrix", modelViewProjectionMatrix);
                 renderBatch.Shader.Uniform("uViewPosition", renderBatch.ViewPosition);
 
-                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Normal0) || renderBatch.VertexFlag.HasFlag(VertexFlag.Normal1))
+                if (renderBatch.VertexFlags.HasFlag(VertexFlag.Normal0) || renderBatch.VertexFlags.HasFlag(VertexFlag.Normal1))
                 {
                     // remove any scaling from the model matrix by transposing the inverted matrix and taking only the upper 3x3 part
                     // see: http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
                     renderBatch.Shader.Uniform("uNormalMatrix", new Matrix3(Matrix4.Transpose(Matrix4.Invert(renderBatch.ModelMatrix))));
                 }
 
-                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Uv0))
+                if (renderBatch.VertexFlags.HasFlag(VertexFlag.Uv0))
                 {
                     renderBatch.Texture0.UnitAndBind(TextureUnit.Texture0);
                     renderBatch.Shader.Uniform("uTexture0", 0);
                 }
 
-                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Uv1))
+                if (renderBatch.VertexFlags.HasFlag(VertexFlag.Uv1))
                 {
                     renderBatch.Texture1.UnitAndBind(TextureUnit.Texture1);
                     renderBatch.Shader.Uniform("uTexture1", 1);
                 }
 
-                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Uv2) || renderBatch.VertexFlag.HasFlag(VertexFlag.Uv3))
+                if (renderBatch.VertexFlags.HasFlag(VertexFlag.Uv2) || renderBatch.VertexFlags.HasFlag(VertexFlag.Uv3))
                 {
                     Diagnostics.Warn("Waring FlushRenderChunks(). VertexFlag.Uv2 and VertexFlag.Uv3 are not yet supported.");
                 }
 
                 renderBatch.VertexBuffer.Bind();
-                renderBatch.VertexBuffer.EnableElements(renderBatch.VertexFlag);
+                renderBatch.VertexBuffer.EnableElements(renderBatch.VertexFlags);
 
                 GL.DrawArrays((PrimitiveType)renderBatch.GeometryType, renderBatch.ElementIndex, renderBatch.ElementCount);
             }
