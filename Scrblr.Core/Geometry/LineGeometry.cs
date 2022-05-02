@@ -8,14 +8,21 @@ namespace Scrblr.Core
     {
         public const float DefaultWidth = 1f;
 
-        private Color4 _defaultColor = new Color4(0f, 0f, 0f, 1f);
-        private float _defaultWidth = 0.1f;
+        private Color4 _currentColor = new Color4(0f, 0f, 0f, 1f);
+        private float _currentWidth = 0.1f;
+
+        private enum ConnectionType
+        {
+            From,
+            To,
+        }
 
         private class Connection
         {
             public Vector3 Point;
             public Color4 Color;
             public float Width;
+            public ConnectionType ConnectionType;
         }
 
         private List<Connection> _connections;
@@ -60,7 +67,7 @@ namespace Scrblr.Core
 
             _connections = new List<Connection>();
 
-            _connections.Add(new Connection { Point = new Vector3(0f, 0f, 0f), Color = _defaultColor, Width = _defaultWidth });
+            _connections.Add(new Connection { Point = new Vector3(0f, 0f, 0f), Color = _currentColor, Width = _currentWidth, ConnectionType = ConnectionType.From });
         }
 
         ///// <summary>
@@ -136,94 +143,139 @@ namespace Scrblr.Core
         //    return uvs;
         //}
 
+        public override RenderBatch[] ToRenderBatch(GraphicsContext graphicsContext, GraphicsState graphicsState, Shader shader, VertexBuffer vertexBuffer, ICamera camera)
+        {
+            var normal = Vector3.UnitZ;
+
+            var modelMatrix = ModelMatrix();
+            var viewMatrix = camera.ViewMatrix();
+            var projectionMatrix = camera.ProjectionMatrix();
+
+            var renderBatches = new List<RenderBatch>();
+
+            var vertexCount = 0;
+
+            for (var i = 0; i < _connections.Count - 1; i++)
+            {
+                var from = _connections[i];
+                var to = _connections[i + 1];
+
+                if (from.ConnectionType == ConnectionType.From && to.ConnectionType == ConnectionType.From)
+                {
+                    continue;
+                }
+
+                var direction = to.Point - from.Point;
+
+                var forward = normal;
+
+                var right = Vector3.Normalize(Vector3.Cross(direction, forward));
+
+                var offsetFrom = right * from.Width * 0.5f;
+
+                var fromLeft = from.Point - offsetFrom;
+                var fromright = from.Point + offsetFrom;
+
+                var offsetTo = right * to.Width * 0.5f;
+
+                var toLeft = to.Point - offsetTo;
+                var toRight = to.Point + offsetTo;
+
+                vertexBuffer.WriteFixed(VertexFlag.Position0, fromright.X, fromright.Y, fromright.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Normal0, forward.X, forward.Y, forward.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Color0, from.Color.R, from.Color.G, from.Color.B, from.Color.A);
+                vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
+
+                vertexBuffer.WriteFixed(VertexFlag.Position0, fromLeft.X, fromLeft.Y, fromLeft.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Normal0, forward.X, forward.Y, forward.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Color0, from.Color.R, from.Color.G, from.Color.B, from.Color.A);
+                vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
+
+                vertexBuffer.WriteFixed(VertexFlag.Position0, toLeft.X, toLeft.Y, toLeft.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Normal0, forward.X, forward.Y, forward.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Color0, to.Color.R, to.Color.G, to.Color.B, to.Color.A);
+                vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
+
+                vertexBuffer.WriteFixed(VertexFlag.Position0, fromright.X, fromright.Y, fromright.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Normal0, forward.X, forward.Y, forward.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Color0, from.Color.R, from.Color.G, from.Color.B, from.Color.A);
+                vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
+
+                vertexBuffer.WriteFixed(VertexFlag.Position0, toLeft.X, toLeft.Y, toLeft.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Normal0, forward.X, forward.Y, forward.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Color0, to.Color.R, to.Color.G, to.Color.B, to.Color.A);
+                vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
+
+                vertexBuffer.WriteFixed(VertexFlag.Position0, toRight.X, toRight.Y, toRight.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Normal0, forward.X, forward.Y, forward.Z);
+                vertexBuffer.WriteFixed(VertexFlag.Color0, to.Color.R, to.Color.G, to.Color.B, to.Color.A);
+                vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
+
+                vertexCount += 6;
+
+                if (i + 2 == _connections.Count || _connections[i + 2].ConnectionType == ConnectionType.From)
+                {
+                    renderBatches.Add(new RenderBatch
+                    {
+                        State = graphicsState,
+                        Shader = shader,
+                        VertexBuffer = vertexBuffer,
+                        ViewMatrix = viewMatrix,
+                        ViewPosition = camera.Position,
+                        ProjectionMatrix = projectionMatrix,
+                        ModelMatrix = modelMatrix,
+                        GeometryType = GeometryType.Triangles,
+                        ElementCount = vertexCount,
+                        ElementIndex = vertexBuffer.UsedElements() - vertexCount,
+                        Texture0 = _texture0,
+                        Texture1 = _texture1,
+                        Texture2 = _texture2,
+                        VertexFlags = VertexFlags,
+                    });
+
+                    vertexCount = 0;
+                }
+            }
+
+            return renderBatches.ToArray();
+        }
+
         public override void WriteToVertexBuffer(VertexBuffer vertexBuffer)
         {
-            //var points = CalculatePoints();
-            //var uvs = CalculateUvs();
-
-            //for (var i = 0; i < points.GetLength(0); i++)
-            //{
-            //    vertexBuffer.WriteFixed(VertexFlag.Position0, new float[] { points[i, 0], points[i, 1], points[i, 2] });
-
-            //    vertexBuffer.WriteFixed(VertexFlag.Normal0, DefaultNormal);
-
-            //    vertexBuffer.WriteFixed(VertexFlag.Color0, ref _color);
-
-            //    vertexBuffer.WriteFixed(VertexFlag.Uv0, new float[] { uvs[i, 0], uvs[i, 1] });
-
-            //    vertexBuffer.WriteFixed(VertexFlag.Uv1, new float[] { uvs[i, 0], uvs[i, 1] });
-
-            //    vertexBuffer.WriteDefaultValuesUntil(VertexFlag.Position0);
-            //}
         }
 
         public LineGeometry From(float x, float y, float z = 0f)
         {
-            if(_connections.Count == 1)
+            if(_connections[_connections.Count - 1].ConnectionType == ConnectionType.From)
             {
-                _connections[0].Point.X = x;
-                _connections[0].Point.Y = y;
-                _connections[0].Point.Z = z;
+                _connections.RemoveAt(_connections.Count - 1);
             }
-            else
-            {
-                var i = _connections.Count - 1;
 
-                var previousColor = _connections[i].Color;
-                var previousWidth = _connections[i].Width;
-
-                _connections.Add(new Connection { Point = new Vector3(x, y, z), Color = previousColor, Width = previousWidth });
-            }
+            _connections.Add(new Connection { Point = new Vector3(x, y, z), Color = _currentColor, Width = _currentWidth, ConnectionType = ConnectionType.From });
 
             return this;
         }
 
         public LineGeometry To(float x, float y, float z = 0f)
         {
-            var i = _connections.Count - 1;
-
-            var previousColor = _connections[i].Color;
-            var previousWidth = _connections[i].Width;
-
-            _connections.Add(new Connection { Point = new Vector3(x, y, z), Color = previousColor, Width = previousWidth });
+            _connections.Add(new Connection { Point = new Vector3(x, y, z), Color = _currentColor, Width = _currentWidth, ConnectionType = ConnectionType.To });
 
             return this;
         }
 
         public override LineGeometry Color(float r, float g, float b, float a = 1f)
         {
-            if(_connections.Count == 0)
-            {
-                _defaultColor.R = r;
-                _defaultColor.G = g;
-                _defaultColor.B = b;
-                _defaultColor.A = a;
-
-                return this;
-            }
-
-            var i = _connections.Count - 1;
-
-            _connections[i].Color.R = r;
-            _connections[i].Color.G = g;
-            _connections[i].Color.B = b;
-            _connections[i].Color.A = a;
+            _currentColor.R = r;
+            _currentColor.G = g;
+            _currentColor.B = b;
+            _currentColor.A = a;
 
             return this;
         }
 
         public LineGeometry Width(float w)
         {
-            if (_connections.Count == 0)
-            {
-                _defaultWidth = w;
-
-                return this;
-            }
-
-            var i = _connections.Count - 1;
-
-            _connections[i].Width = w;
+            _currentWidth = w;
 
             return this;
         }
@@ -234,7 +286,7 @@ namespace Scrblr.Core
             var firstColor = _connections[0].Color;
             var firstWidth = _connections[0].Width;
 
-            _connections.Add(new Connection { Point = firstPoint, Color = firstColor, Width = firstWidth });
+            _connections.Add(new Connection { Point = firstPoint, Color = firstColor, Width = firstWidth, ConnectionType = ConnectionType.To });
 
             return this;
         }
