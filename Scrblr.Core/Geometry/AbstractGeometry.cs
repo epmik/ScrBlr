@@ -34,7 +34,7 @@ namespace Scrblr.Core
         /// <param name="viewMatrix"></param>
         /// <param name="projectionMatrix"></param>
         /// <returns></returns>
-        public virtual int VertexCount(Matrix4 modelMatrix, Matrix4 viewMatrix, Matrix4 projectionMatrix)
+        public int VertexCount(Matrix4 modelMatrix, Matrix4 viewMatrix, Matrix4 projectionMatrix)
         {
             return VertexCount(ref modelMatrix, ref viewMatrix, ref projectionMatrix);
         }
@@ -111,6 +111,37 @@ namespace Scrblr.Core
         public Texture _texture1;
         public Texture _texture2;
         public Texture _texture3;
+
+        public virtual RenderBatch[] ToRenderBatch(GraphicsContext graphicsContext, GraphicsState graphicsState, Shader shader, VertexBuffer vertexBuffer, ICamera camera)
+        {
+            var modelMatrix = ModelMatrix();
+            var viewMatrix = camera.ViewMatrix();
+            var projectionMatrix = camera.ProjectionMatrix();
+
+            var vertexCount = VertexCount(ref modelMatrix, ref viewMatrix, ref projectionMatrix);
+
+            WriteToVertexBuffer(vertexBuffer);
+
+            return new[] {
+                new RenderBatch
+                {
+                    State = graphicsState,
+                    Shader = shader,
+                    VertexBuffer = vertexBuffer,
+                    ViewMatrix = viewMatrix,
+                    ViewPosition = camera.Position,
+                    ProjectionMatrix = projectionMatrix,
+                    ModelMatrix = modelMatrix,
+                    GeometryType = GeometryType,
+                    ElementCount = vertexCount,
+                    ElementIndex = vertexBuffer.UsedElements() - vertexCount,
+                    Texture0 = _texture0,
+                    Texture1 = _texture1,
+                    Texture2 = _texture2,
+                    VertexFlags = VertexFlags,
+                }
+            };
+        }
 
         public abstract void WriteToVertexBuffer(VertexBuffer vertexBuffer);
 
@@ -322,9 +353,9 @@ namespace Scrblr.Core
             return (TGeometry)this;
         }
 
-        public virtual void Dispose()
+        public override void Dispose()
         {
-            
+            base.Dispose();
         }
     }
 }
