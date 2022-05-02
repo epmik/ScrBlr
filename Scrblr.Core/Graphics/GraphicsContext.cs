@@ -1631,6 +1631,74 @@ void main()
             return g;
         }
 
+        public Vector2 WorldToScreen(Vector3 world, ref Matrix4 viewProjectionMatrix, int width, int height)
+        {
+            Vector4 pos = new Vector4(world, 1f) * viewProjectionMatrix;
+
+            pos /= pos.W;
+            pos.Y = -pos.Y;
+
+            Vector2 screenSize = new Vector2(width, height);
+            Vector2 screenCenter = screenSize / 2f;
+
+            return screenCenter + pos.Xy * screenSize / 2f;
+        }
+
+        public Vector2 WorldToScreen(Vector3 world, ref Matrix4 viewMatrix, ref Matrix4 projectionMatrix, int width, int height)
+        {
+            var viewProjectionMatrix = Matrix4.Mult(viewMatrix, projectionMatrix);
+            
+            return WorldToScreen(world, ref viewProjectionMatrix, width, height);
+        }
+
+        public Vector2 WorldToScreen(Vector3 world, Matrix4 viewMatrix, Matrix4 projectionMatrix, int width, int height)
+        {
+            return WorldToScreen(world, ref viewMatrix, ref projectionMatrix, width, height);
+        }
+
+        //public Vector3 getRayFromScreenSpace(const vec2 & pos)
+        //{
+        //    mat4 invMat = inverse(m_glData.getPerspective() * m_glData.getView());
+        //    vec4 near = vec4((pos.x - Constants::m_halfScreenWidth) / Constants::m_halfScreenWidth, -1 * (pos.y - Constants::m_halfScreenHeight) / Constants::m_halfScreenHeight, -1, 1.0);
+        //    vec4 far = vec4((pos.x - Constants::m_halfScreenWidth) / Constants::m_halfScreenWidth, -1 * (pos.y - Constants::m_halfScreenHeight) / Constants::m_halfScreenHeight, 1, 1.0);
+        //    vec4 nearResult = invMat * near;
+        //    vec4 farResult = invMat * far;
+        //    nearResult /= nearResult.w;
+        //    farResult /= farResult.w;
+        //    vec3 dir = vec3(farResult - nearResult);
+        //    return normalize(dir);
+        //}
+
+        //// winX and winY will be the corners of your screen in pixels
+        //// winZ is a number in [0,1] which will specify where between zNear and zFar
+        //// 
+        //int glhUnProjectf(float winx, float winy, float winz, float* modelview, float* projection, int* viewport, float* objectCoordinate)
+        //    {
+        //        // Transformation matrices
+        //        float m[16], A[16];
+        //        float in[4], out[4];
+        //        // Calculation for inverting a matrix, compute projection x modelview
+        //        // and store in A[16]
+        //        MultiplyMatrices4by4OpenGL_FLOAT(A, projection, modelview);
+        //        // Now compute the inverse of matrix A
+        //        if (glhInvertMatrixf2(A, m) == 0)
+        //            return 0;
+        //  // Transformation of normalized coordinates between -1 and 1
+        //  in[0]= (winx - (float)viewport[0]) / (float)viewport[2] * 2.0 - 1.0;
+        //  in[1]= (winy - (float)viewport[1]) / (float)viewport[3] * 2.0 - 1.0;
+        //  in[2]= 2.0 * winz - 1.0;
+        //  in[3]= 1.0;
+        //        // Objects coordinates
+        //        MultiplyMatrixByVector4by4OpenGL_FLOAT(out, m, in);
+        //        if (out[3]== 0.0)
+        //     return 0;
+        //  out[3]= 1.0 /out[3];
+        //        objectCoordinate[0] =out[0]*out[3];
+        //        objectCoordinate[1] =out[1]*out[3];
+        //        objectCoordinate[2] =out[2]*out[3];
+        //        return 1;
+        //    }
+
         //public TGeometry CreateGeometry<TGeometry>(GeometryType geometryType) where TGeometry : AbstractGeometry, new()
         //{
         //    return CreateGeometry<TGeometry>(geometryType, ModelMatrix());
