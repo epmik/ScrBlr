@@ -615,93 +615,199 @@ void main()
 
         #endregion Shader Sources
 
-        private void FlushRenderChunks()
+        //private void FlushRenderChunks()
+        //{
+        //    if (!State.IsEnabled(EnableFlag.Rendering))
+        //    {
+        //        return;
+        //    }
+
+        //    for (var c = 0; c < _renderChunkCount; c++)
+        //    {
+        //        var renderChunk = _renderChunks[c];
+
+        //        var modelViewMatrix = Matrix4.Mult(renderChunk.ModelMatrix, renderChunk.ViewMatrix);
+        //        var modelViewProjectionMatrix = Matrix4.Mult(modelViewMatrix, renderChunk.ProjectionMatrix);
+
+        //        renderChunk.Shader.Use();
+
+        //        renderChunk.Shader.Uniform("uModelMatrix", renderChunk.ModelMatrix);
+        //        renderChunk.Shader.Uniform("uViewMatrix", renderChunk.ViewMatrix);
+        //        renderChunk.Shader.Uniform("uProjectionMatrix", renderChunk.ProjectionMatrix);
+        //        renderChunk.Shader.Uniform("uModelViewMatrix", modelViewMatrix);
+        //        renderChunk.Shader.Uniform("uModelViewProjectionMatrix", modelViewProjectionMatrix);
+        //        renderChunk.Shader.Uniform("uViewPosition", renderChunk.ViewPosition);
+
+        //        if (renderChunk.VertexFlag.HasFlag(VertexFlag.Normal0) || renderChunk.VertexFlag.HasFlag(VertexFlag.Normal1))
+        //        {
+        //            // remove any scaling from the model matrix by transposing the inverted matrix and taking only the upper 3x3 part
+        //            // see: http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
+        //            renderChunk.Shader.Uniform("uNormalMatrix", new Matrix3(Matrix4.Transpose(Matrix4.Invert(renderChunk.ModelMatrix))));
+        //        }
+
+        //        if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv0))
+        //        {
+        //            renderChunk.Texture0.UnitAndBind(TextureUnit.Texture0);
+        //            renderChunk.Shader.Uniform("uTexture0", 0);
+        //        }
+
+        //        if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv1))
+        //        {
+        //            renderChunk.Texture1.UnitAndBind(TextureUnit.Texture1);
+        //            renderChunk.Shader.Uniform("uTexture1", 1);
+        //        }
+
+        //        if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv2) || renderChunk.VertexFlag.HasFlag(VertexFlag.Uv3))
+        //        {
+        //            Diagnostics.Warn("Waring FlushRenderChunks(). VertexFlag.Uv2 and VertexFlag.Uv3 are not yet supported.");
+        //        }
+
+        //        renderChunk.VertexBuffer.Bind();
+        //        renderChunk.VertexBuffer.EnableElements(renderChunk.VertexFlag);
+
+        //        GL.DrawArrays((PrimitiveType)renderChunk.GeometryType, renderChunk.ElementIndex, renderChunk.ElementCount);
+        //    }
+        //}
+
+        private void FlushRenderBatches()
         {
-            if (!State.IsEnabled(EnableFlag.Rendering))
+            for (var c = 0; c < _renderBatchCount; c++)
             {
-                return;
-            }
+                var renderBatch = _renderBatches[c];
 
-            for (var c = 0; c < _renderChunkCount; c++)
-            {
-                var renderChunk = _renderChunks[c];
+                if (!renderBatch.State.IsEnabled(EnableFlag.Rendering))
+                {
+                    continue;
+                }
 
-                var modelViewMatrix = Matrix4.Mult(renderChunk.ModelMatrix, renderChunk.ViewMatrix);
-                var modelViewProjectionMatrix = Matrix4.Mult(modelViewMatrix, renderChunk.ProjectionMatrix);
+                renderBatch.State.SetState();
 
-                renderChunk.Shader.Use();
+                var modelViewMatrix = Matrix4.Mult(renderBatch.ModelMatrix, renderBatch.ViewMatrix);
+                var modelViewProjectionMatrix = Matrix4.Mult(modelViewMatrix, renderBatch.ProjectionMatrix);
 
-                renderChunk.Shader.Uniform("uModelMatrix", renderChunk.ModelMatrix);
-                renderChunk.Shader.Uniform("uViewMatrix", renderChunk.ViewMatrix);
-                renderChunk.Shader.Uniform("uProjectionMatrix", renderChunk.ProjectionMatrix);
-                renderChunk.Shader.Uniform("uModelViewMatrix", modelViewMatrix);
-                renderChunk.Shader.Uniform("uModelViewProjectionMatrix", modelViewProjectionMatrix);
-                renderChunk.Shader.Uniform("uViewPosition", renderChunk.ViewPosition);
+                renderBatch.Shader.Use();
 
-                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Normal0) || renderChunk.VertexFlag.HasFlag(VertexFlag.Normal1))
+                renderBatch.Shader.Uniform("uModelMatrix", renderBatch.ModelMatrix);
+                renderBatch.Shader.Uniform("uViewMatrix", renderBatch.ViewMatrix);
+                renderBatch.Shader.Uniform("uProjectionMatrix", renderBatch.ProjectionMatrix);
+                renderBatch.Shader.Uniform("uModelViewMatrix", modelViewMatrix);
+                renderBatch.Shader.Uniform("uModelViewProjectionMatrix", modelViewProjectionMatrix);
+                renderBatch.Shader.Uniform("uViewPosition", renderBatch.ViewPosition);
+
+                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Normal0) || renderBatch.VertexFlag.HasFlag(VertexFlag.Normal1))
                 {
                     // remove any scaling from the model matrix by transposing the inverted matrix and taking only the upper 3x3 part
                     // see: http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
-                    renderChunk.Shader.Uniform("uNormalMatrix", new Matrix3(Matrix4.Transpose(Matrix4.Invert(renderChunk.ModelMatrix))));
+                    renderBatch.Shader.Uniform("uNormalMatrix", new Matrix3(Matrix4.Transpose(Matrix4.Invert(renderBatch.ModelMatrix))));
                 }
 
-                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv0))
+                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Uv0))
                 {
-                    renderChunk.Texture0.UnitAndBind(TextureUnit.Texture0);
-                    renderChunk.Shader.Uniform("uTexture0", 0);
+                    renderBatch.Texture0.UnitAndBind(TextureUnit.Texture0);
+                    renderBatch.Shader.Uniform("uTexture0", 0);
                 }
 
-                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv1))
+                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Uv1))
                 {
-                    renderChunk.Texture1.UnitAndBind(TextureUnit.Texture1);
-                    renderChunk.Shader.Uniform("uTexture1", 1);
+                    renderBatch.Texture1.UnitAndBind(TextureUnit.Texture1);
+                    renderBatch.Shader.Uniform("uTexture1", 1);
                 }
 
-                if (renderChunk.VertexFlag.HasFlag(VertexFlag.Uv2) || renderChunk.VertexFlag.HasFlag(VertexFlag.Uv3))
+                if (renderBatch.VertexFlag.HasFlag(VertexFlag.Uv2) || renderBatch.VertexFlag.HasFlag(VertexFlag.Uv3))
                 {
                     Diagnostics.Warn("Waring FlushRenderChunks(). VertexFlag.Uv2 and VertexFlag.Uv3 are not yet supported.");
                 }
 
-                renderChunk.VertexBuffer.Bind();
-                renderChunk.VertexBuffer.EnableElements(renderChunk.VertexFlag);
+                renderBatch.VertexBuffer.Bind();
+                renderBatch.VertexBuffer.EnableElements(renderBatch.VertexFlag);
 
-                GL.DrawArrays((PrimitiveType)renderChunk.GeometryType, renderChunk.ElementIndex, renderChunk.ElementCount);
+                GL.DrawArrays((PrimitiveType)renderBatch.GeometryType, renderBatch.ElementIndex, renderBatch.ElementCount);
             }
+
+            _renderBatchCount = 0;
         }
 
-        protected void InsertRenderBatchAndWriteToVertexBuffer(AbstractGeometry geometry)
+        //protected void InsertRenderBatchAndWriteToVertexBuffer(AbstractGeometry geometry)
+        //{
+        //    var shader = QueryShader(geometry);
+        //    var vertexBuffer = QueryVertexBuffer(geometry);
+
+        //    var camera = ActiveCamera();
+
+        //    var vertexCount = geometry.VertexCount(geometry.ModelMatrix(), camera.ViewMatrix(), camera.ProjectionMatrix());
+
+        //    if (!vertexBuffer.CanWriteElements(vertexCount) || _renderChunkCount + 1 >= _maxRenderChunks)
+        //    {
+        //        Flush();
+        //    }
+
+        //    geometry.WriteToVertexBuffer(vertexBuffer);
+
+        //    // todo: is this all needed? why not store just the Geometry object?
+        //    _renderChunks[_renderChunkCount].Shader = shader;
+        //    _renderChunks[_renderChunkCount].VertexBuffer = vertexBuffer;
+        //    _renderChunks[_renderChunkCount].ViewMatrix = camera.ViewMatrix();
+        //    _renderChunks[_renderChunkCount].ViewPosition = camera.Position;
+        //    _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
+        //    _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
+        //    _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
+        //    _renderChunks[_renderChunkCount].ElementCount = vertexCount;
+        //    _renderChunks[_renderChunkCount].ElementIndex = vertexBuffer.UsedElements() - vertexCount;
+        //    _renderChunks[_renderChunkCount].Texture0 = geometry._texture0;
+        //    _renderChunks[_renderChunkCount].Texture1 = geometry._texture1;
+        //    _renderChunks[_renderChunkCount].Texture2 = geometry._texture2;
+        //    _renderChunks[_renderChunkCount].Texture3 = geometry._texture3;
+        //    _renderChunks[_renderChunkCount].VertexFlag = geometry.VertexFlags;
+
+        //    _renderChunkCount++;
+        //}
+
+        protected void CreateRenderBatchesAndWriteToVertexBuffer(AbstractGeometry geometry)
         {
             var shader = QueryShader(geometry);
             var vertexBuffer = QueryVertexBuffer(geometry);
-
             var camera = ActiveCamera();
 
-            var vertexCount = geometry.VertexCount(geometry.ModelMatrix(), camera.ViewMatrix(), camera.ProjectionMatrix());
+            var renderBatches = geometry.ToRenderBatch(this, State, shader, vertexBuffer, camera);
 
-            if (!vertexBuffer.CanWriteElements(vertexCount) || _renderChunkCount + 1 >= _maxRenderChunks)
+            for(var i = 0; i < renderBatches.Length; i++)
             {
-                Flush();
+                _renderBatches[_renderBatchCount++] = renderBatches[i];
+
+                if(_renderBatchCount == _maxRenderBatchCount)
+                {
+                    FlushRenderBatches();
+                }
             }
 
-            geometry.WriteToVertexBuffer(vertexBuffer);
 
-            // todo: is this all needed? why not store just the Geometry object?
-            _renderChunks[_renderChunkCount].Shader = shader;
-            _renderChunks[_renderChunkCount].VertexBuffer = vertexBuffer;
-            _renderChunks[_renderChunkCount].ViewMatrix = camera.ViewMatrix();
-            _renderChunks[_renderChunkCount].ViewPosition = camera.Position;
-            _renderChunks[_renderChunkCount].ProjectionMatrix = camera.ProjectionMatrix();
-            _renderChunks[_renderChunkCount].ModelMatrix = geometry.ModelMatrix();
-            _renderChunks[_renderChunkCount].GeometryType = geometry.GeometryType;
-            _renderChunks[_renderChunkCount].ElementCount = vertexCount;
-            _renderChunks[_renderChunkCount].ElementIndex = vertexBuffer.UsedElements() - vertexCount;
-            _renderChunks[_renderChunkCount].Texture0 = geometry._texture0;
-            _renderChunks[_renderChunkCount].Texture1 = geometry._texture1;
-            _renderChunks[_renderChunkCount].Texture2 = geometry._texture2;
-            _renderChunks[_renderChunkCount].Texture3 = geometry._texture3;
-            _renderChunks[_renderChunkCount].VertexFlag = geometry.VertexFlags;
 
-            _renderChunkCount++;
+            //var vertexCount = geometry.VertexCount(geometry.ModelMatrix(), camera.ViewMatrix(), camera.ProjectionMatrix());
+
+            //if (!vertexBuffer.CanWriteElements(vertexCount) || _renderBatchCount + 1 >= _maxRenderBatchCount)
+            //{
+            //    Flush();
+            //}
+
+            //geometry.WriteToVertexBuffer(vertexBuffer);
+
+            //_renderBatches[_renderBatchCount].State = State;
+            //_renderBatches[_renderBatchCount].Shader = shader;
+            //_renderBatches[_renderBatchCount].VertexBuffer = vertexBuffer;
+            //_renderBatches[_renderBatchCount].ViewMatrix = camera.ViewMatrix();
+            //_renderBatches[_renderBatchCount].ViewPosition = camera.Position;
+            //_renderBatches[_renderBatchCount].ProjectionMatrix = camera.ProjectionMatrix();
+            //_renderBatches[_renderBatchCount].ModelMatrix = geometry.ModelMatrix();
+            //_renderBatches[_renderBatchCount].GeometryType = geometry.GeometryType;
+            //_renderBatches[_renderBatchCount].ElementCount = vertexCount;
+            //_renderBatches[_renderBatchCount].ElementIndex = vertexBuffer.UsedElements() - vertexCount;
+            //_renderBatches[_renderBatchCount].Texture0 = geometry._texture0;
+            //_renderBatches[_renderBatchCount].Texture1 = geometry._texture1;
+            //_renderBatches[_renderBatchCount].Texture2 = geometry._texture2;
+            //_renderBatches[_renderBatchCount].Texture3 = geometry._texture3;
+            //_renderBatches[_renderBatchCount].VertexFlag = geometry.VertexFlags;
+
+            //_renderBatchCount++;
         }
 
         private void InitializeStandardShaderDictionary()
@@ -779,14 +885,23 @@ void main()
 
         #region Fields and Properties
 
+        ///// <summary>
+        ///// default == 256
+        ///// </summary>
+        //private int _maxRenderChunks = 256;
+
+        //private int _renderChunkCount;
+
+        //private RenderChunk[] _renderChunks;
+
         /// <summary>
         /// default == 256
         /// </summary>
-        private int _maxRenderChunks = 256;
+        private int _maxRenderBatchCount = 256;
 
-        private int _renderChunkCount;
+        private int _renderBatchCount;
 
-        private RenderChunk[] _renderChunks;
+        private RenderBatch[] _renderBatches;
 
 
         /// <summary>
@@ -799,14 +914,14 @@ void main()
         private AbstractGeometry[] _geometry;
 
 
-        /// <summary>
-        /// default == 4096
-        /// </summary>
-        private int _maxTesselatedGeometryCount = 4096;
+        ///// <summary>
+        ///// default == 4096
+        ///// </summary>
+        //private int _maxTesselatedGeometryCount = 4096;
 
-        private int _tesselatedGeometryCount;
+        //private int _tesselatedGeometryCount;
 
-        private AbstractGeometry[] _tesselatedGeometry;
+        //private AbstractGeometry[] _tesselatedGeometry;
 
         // todo implement default camera instead of relying on the camera provided by AbstractSketch
         private ICamera _activeCamera { get; set; }
@@ -1111,16 +1226,23 @@ void main()
         {
             InitializeStandardShaderDictionary();
 
-            _renderChunks = new RenderChunk[_maxRenderChunks];
+            //_renderChunks = new RenderChunk[_maxRenderChunks];
 
-            for (var i = 0; i < _maxRenderChunks; i++)
+            //for (var i = 0; i < _maxRenderChunks; i++)
+            //{
+            //    _renderChunks[i] = new RenderChunk();
+            //}
+
+            _renderBatches = new RenderBatch[_maxRenderBatchCount];
+
+            for (var i = 0; i < _maxRenderBatchCount; i++)
             {
-                _renderChunks[i] = new RenderChunk();
+                _renderBatches[i] = new RenderBatch();
             }
 
             _geometry = new AbstractGeometry[_maxGeometryCount];
 
-            _tesselatedGeometry = new AbstractGeometry[_maxTesselatedGeometryCount];
+            //_tesselatedGeometry = new AbstractGeometry[_maxTesselatedGeometryCount];
 
             InitializeStandardVertexBuffers();
 
@@ -1138,17 +1260,19 @@ void main()
                 _standardVertexBufferArray[i].Clear();
             }
 
-            ResetRenderChunks();
+            //ResetRenderChunks();
+
+            _renderBatchCount = 0;
 
             ResetGeometry();
 
-            ResetTesselatedGeometry();
+            //ResetTesselatedGeometry();
         }
 
-        private void ResetRenderChunks()
-        {
-            _renderChunkCount = 0;
-        }
+        //private void ResetRenderChunks()
+        //{
+        //    _renderChunkCount = 0;
+        //}
 
         #endregion Reset
 
@@ -1156,11 +1280,15 @@ void main()
 
         public void Flush()
         {
-            TesselateGeometry();
+            //TesselateGeometry();
 
-            GeometryToRenderChunks();
+            //GeometryToRenderChunks();
 
-            FlushRenderChunks();
+            GeometryToRenderBatches();
+
+            //FlushRenderChunks();
+
+            FlushRenderBatches();
 
             Reset();
         }
@@ -1385,28 +1513,36 @@ void main()
 
 
 
-        private void TesselateGeometry()
+        //private void TesselateGeometry()
+        //{
+        //    if (_geometryCount == 0)
+        //    {
+        //        return;
+        //    }
+
+        //    // todo
+        //}
+
+        //private void GeometryToRenderChunks()
+        //{
+        //    GeometryToRenderChunks(_geometry, _geometryCount);
+
+        //    //GeometryToRenderChunks(_tesselatedGeometry, _tesselatedGeometryCount);
+        //}
+
+        //private void GeometryToRenderChunks(AbstractGeometry[] geometry, int count)
+        //{
+        //    for (var i = 0; i < count; i++)
+        //    {
+        //        InsertRenderBatchAndWriteToVertexBuffer(geometry[i]);
+        //    }
+        //}
+
+        private void GeometryToRenderBatches()
         {
-            if (_geometryCount == 0)
+            for (var i = 0; i < _geometryCount; i++)
             {
-                return;
-            }
-
-            // todo
-        }
-
-        private void GeometryToRenderChunks()
-        {
-            GeometryToRenderChunks(_geometry, _geometryCount);
-
-            GeometryToRenderChunks(_tesselatedGeometry, _tesselatedGeometryCount);
-        }
-
-        private void GeometryToRenderChunks(AbstractGeometry[] geometry, int count)
-        {
-            for (var i = 0; i < count; i++)
-            {
-                InsertRenderBatchAndWriteToVertexBuffer(geometry[i]);
+                CreateRenderBatchesAndWriteToVertexBuffer(_geometry[i]);
             }
         }
 
@@ -1535,16 +1671,16 @@ void main()
             _geometryCount = 0;
         }
 
-        protected void ResetTesselatedGeometry()
-        {
-            for (var i = 0; i < _tesselatedGeometryCount; i++)
-            {
-                _tesselatedGeometry[i].Dispose();
-                _tesselatedGeometry[i] = null;
-            }
+        //protected void ResetTesselatedGeometry()
+        //{
+        //    for (var i = 0; i < _tesselatedGeometryCount; i++)
+        //    {
+        //        _tesselatedGeometry[i].Dispose();
+        //        _tesselatedGeometry[i] = null;
+        //    }
 
-            _tesselatedGeometryCount = 0;
-        }
+        //    _tesselatedGeometryCount = 0;
+        //}
 
         #endregion Geometry Functions
 
