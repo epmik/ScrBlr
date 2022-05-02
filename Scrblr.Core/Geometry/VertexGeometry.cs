@@ -14,8 +14,6 @@ namespace Scrblr.Core
 
         public int VertexSize { get { return _vertices.Length; } }
 
-        public int _vertexCount;
-
         #endregion Fields and Properties
 
         #region Constructors
