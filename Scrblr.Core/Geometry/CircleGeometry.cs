@@ -66,7 +66,7 @@ namespace Scrblr.Core
         /// <summary>
         /// When AutoSegments is set to true, then VertexCount is determined by the screen resolution
         /// </summary>
-        public override int VertexCount(Matrix4 modelMatrix, Matrix4 viewMatrix, Matrix4 projectionMatrix)
+        public override int VertexCount(ref Matrix4 modelMatrix, ref Matrix4 viewMatrix, ref Matrix4 projectionMatrix)
         {
             return (_segments == 0 ? DefaultSegments : _segments) + 2;
         }
