@@ -94,10 +94,6 @@ void main()
 
         private FirstPersonCamera _camera;
 
-        private bool _firstMove = true;
-
-        private Vector2 _lastPos;
-
         private VertexBuffer20220413 _vertexBuffer;
 
         private Random _random = new Random(0);
