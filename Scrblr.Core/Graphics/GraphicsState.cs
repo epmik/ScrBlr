@@ -78,114 +78,86 @@ namespace Scrblr.Core
             return new GraphicsState(_default);
         }
 
-        public static GraphicsState EmptyState()
-        {
-            return new GraphicsState();
-        }
-
         public void SetState()
         {
-            foreach(var enableFlag in _enableFlagArray)
-            {
-                SetState(enableFlag);
-            }
+            SetState(this);
         }
 
-        private void SetState(EnableFlag enableFlag)
+        public static void SetState(GraphicsState state)
         {
-            switch (enableFlag)
+            if (state.IsEnabled(EnableFlag.DepthTest))
             {
-                case EnableFlag.Rendering:
-                    break;
-                case EnableFlag.DepthTest:
-                    if (_enableFlagBitArray[(int)EnableFlag.DepthTest])
-                    {
-                        GL.Enable(EnableCap.DepthTest);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.DepthTest);
-                    }
-                    break;
-                case EnableFlag.StencilTest:
-                    if (_enableFlagBitArray[(int)EnableFlag.StencilTest])
-                    {
-                        GL.Enable(EnableCap.StencilTest);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.StencilTest);
-                    }
-                    break;
-                case EnableFlag.Texturing:
-                    if (_enableFlagBitArray[(int)EnableFlag.Texturing])
-                    {
-                        GL.Enable(EnableCap.Texture2D);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.Texture2D);
-                    }
-                    break;
-                case EnableFlag.Blending:
-                    if (_enableFlagBitArray[(int)EnableFlag.Blending])
-                    {
-                        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-                        GL.Enable(EnableCap.Blend);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.Blend);
-                    }
-                    break;
-                case EnableFlag.MultiSampling:
-                    if (_enableFlagBitArray[(int)EnableFlag.MultiSampling])
-                    {
-                        GL.Enable(EnableCap.Multisample);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.Multisample);
-                    }
-                    break;
-                case EnableFlag.ClearBuffers:
-                    break;
-                case EnableFlag.FrontFaceCulling:
-                case EnableFlag.BackFaceCulling:
-                    if (_enableFlagBitArray[(int)EnableFlag.FrontFaceCulling] && _enableFlagBitArray[(int)EnableFlag.BackFaceCulling])
-                    {
-                        GL.CullFace(CullFaceMode.FrontAndBack);
-                        GL.Enable(EnableCap.CullFace);
-                    }
-                    else if (_enableFlagBitArray[(int)EnableFlag.FrontFaceCulling])
-                    {
-                        GL.CullFace(CullFaceMode.Front);
-                        GL.Enable(EnableCap.CullFace);
-                    }
-                    else if (_enableFlagBitArray[(int)EnableFlag.BackFaceCulling])
-                    {
-                        GL.CullFace(CullFaceMode.Back);
-                        GL.Enable(EnableCap.CullFace);
-                    }
-                    else
-                    {
-                        GL.Disable(EnableCap.CullFace);
-                    }
-                    break;
-                case EnableFlag.ClockWiseFace:
-                    if (_enableFlagBitArray[(int)EnableFlag.ClockWiseFace])
-                    {
-                        GL.FrontFace(FrontFaceDirection.Cw);
-                    }
-                    else
-                    {
-                        GL.FrontFace(FrontFaceDirection.Ccw);
-                    }
-                    break;
-                case EnableFlag.Lighting:
-                    break;
-                default:
-                    throw new NotImplementedException();
+                GL.Enable(EnableCap.DepthTest);
+            }
+            else
+            {
+                GL.Disable(EnableCap.DepthTest);
+            }
+
+            if (state.IsEnabled(EnableFlag.StencilTest))
+            {
+                GL.Enable(EnableCap.StencilTest);
+            }
+            else
+            {
+                GL.Disable(EnableCap.StencilTest);
+            }
+
+            if (state.IsEnabled(EnableFlag.Texturing))
+            {
+                GL.Enable(EnableCap.Texture2D);
+            }
+            else
+            {
+                GL.Disable(EnableCap.Texture2D);
+            }
+
+            if (state.IsEnabled(EnableFlag.Blending))
+            {
+                GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                GL.Enable(EnableCap.Blend);
+            }
+            else
+            {
+                GL.Disable(EnableCap.Blend);
+            }
+
+            if (state.IsEnabled(EnableFlag.MultiSampling))
+            {
+                GL.Enable(EnableCap.Multisample);
+            }
+            else
+            {
+                GL.Disable(EnableCap.Multisample);
+            }
+
+            if (state.IsEnabled(EnableFlag.FrontFaceCulling) && state.IsEnabled(EnableFlag.BackFaceCulling))
+            {
+                GL.CullFace(CullFaceMode.FrontAndBack);
+                GL.Enable(EnableCap.CullFace);
+            }
+            else if (state.IsEnabled(EnableFlag.FrontFaceCulling))
+            {
+                GL.CullFace(CullFaceMode.Front);
+                GL.Enable(EnableCap.CullFace);
+            }
+            else if (state.IsEnabled(EnableFlag.BackFaceCulling))
+            {
+                GL.CullFace(CullFaceMode.Back);
+                GL.Enable(EnableCap.CullFace);
+            }
+            else
+            {
+                GL.Disable(EnableCap.CullFace);
+            }
+
+            if (state.IsEnabled(EnableFlag.ClockWiseFace))
+            {
+                GL.FrontFace(FrontFaceDirection.Cw);
+            }
+            else
+            {
+                GL.FrontFace(FrontFaceDirection.Ccw);
             }
         }
 
@@ -193,7 +165,7 @@ namespace Scrblr.Core
         {
             _enableFlagBitArray[(int)enableFlag] = true;
 
-            SetState(enableFlag);
+            SetState(this);
         }
 
         public bool IsEnabled(EnableFlag enableFlag)
@@ -205,14 +177,14 @@ namespace Scrblr.Core
         {
             _enableFlagBitArray[(int)enableFlag] = false;
 
-            SetState(enableFlag);
+            SetState(this);
         }
 
         public void Toggle(EnableFlag enableFlag)
         {
             _enableFlagBitArray[(int)enableFlag] = !_enableFlagBitArray[(int)enableFlag];
 
-            SetState(enableFlag);
+            SetState(this);
         }
     }
 }
