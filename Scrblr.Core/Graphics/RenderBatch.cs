@@ -37,6 +37,6 @@ namespace Scrblr.Core
 
         public Texture Texture3;
 
-        public VertexFlag VertexFlag;
+        public VertexFlag VertexFlags;
     }
 }
