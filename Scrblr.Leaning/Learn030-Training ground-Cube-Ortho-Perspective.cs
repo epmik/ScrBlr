@@ -69,6 +69,13 @@ namespace Scrblr.Leaning
             }
         }
 
+        public void MouseMove(MouseMoveEventArgs a)
+        {
+            var screen = Graphics.WorldToScreen(new Vector3(0, 0, -2), Graphics.ActiveCamera().ViewMatrix(), Graphics.ActiveCamera().ProjectionMatrix(), Width, Height);
+
+            Diagnostics.Log(screen.X + " | " + screen.Y);
+        }
+
         public void Render()
         {
             Graphics.ClearColor(128);
