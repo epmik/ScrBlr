@@ -113,18 +113,18 @@ namespace Scrblr.Leaning
             }
         }
 
-        //private void RenderLines000(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines000(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                ;
+            Graphics.PopMatrix();
+        }
 
         private void RenderLines001(float x, float y)
         {
@@ -140,147 +140,168 @@ namespace Scrblr.Leaning
             Graphics.PopMatrix();
         }
 
-        //private void RenderLines002(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines002(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .From(-0.5f, 0.5f)
+                .To(0.5f, -0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
 
-        //private void RenderLines003(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        .Color(255, 0, 0)
-        //        .Width(0.2f)
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines003(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(255, 0, 0)
+                .Width(0.2f)
+                .From(0.5f, 0.5f)
+                .To(-0.5f, -0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
 
-        //private void RenderLines004(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        .Color(255, 0, 0)
-        //        .Width(0.2f)
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines004(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(255, 0, 0)
+                .Width(0.05f)
+                .From(0.0f, 0.0f)
+                .To(0.5f,  0.5f)
+                .From(0.0f, 0.0f)
+                .To(0.5f, -0.5f)
+                .From(0.0f, 0.0f)
+                .To(-0.5f, -0.5f)
+                .From(0.0f, 0.0f)
+                .To(-0.5f, 0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
 
-        //private void RenderLines005(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        .Color(0, 0, 255)
-        //        .Width(0.2f)
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines005(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(255, 0, 0)
+                .Width(0.05f)
+                .From(0.0f, 0.0f)
+                .To(0.5f, 0.5f)
+                .Color(0, 255, 0)
+                .From(0.0f, 0.0f)
+                .To(0.5f, -0.5f)
+                .Color(255, 255, 0)
+                .From(0.0f, 0.0f)
+                .To(-0.5f, -0.5f)
+                .Color(255, 0, 255)
+                .From(0.0f, 0.0f)
+                .To(-0.5f, 0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
 
-        //private void RenderLines006(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        .Color(255, 255, 255)
-        //        .Width(0.1f)
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        .ToFirst()
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines006(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(0, 0, 255)
+                .Width(0.01f)
+                .From(0.0f, 0.0f)
+                .To( 0.5f,  0.5f)
+                .To( 0.5f, -0.5f)
+                .To(-0.5f, -0.5f)
+                .To(-0.5f,  0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
 
-        //private void RenderLines007(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        .Color(0, 128, 255)
-        //        .Width(0.5f)
-        //        .From(-0.5f, 0.5f)
-        //        .Color(255, 0, 255)
-        //        .Width(0.1f)
-        //        .To(-0.5f, -0.5f)
-        //        .Color(64, 128, 255)
-        //        .Width(0.5f)
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines007(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(0, 0, 255)
+                .Width(0.01f)
+                .From(0.0f, 0.0f)
+                .Width(0.05f)
+                .To(0.5f, 0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
 
-        //private void RenderLines008(float x, float y)
-        //{
-        //    Graphics.PushMatrix();
-        //    //Graphics.Rotate(_degrees, Axis.X);
-        //    //Graphics.Rotate(_degrees, Axis.Y);
-        //    //Graphics.Rotate(_degrees, Axis.Z);
-        //    Graphics.Translate(x, y, -2f);
-        //    Graphics
-        //        .Line()
-        //        .Color(0, 128, 255)
-        //        .Width(0.5f)
-                
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-                
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-                
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
+        private void RenderLines008(float x, float y)
+        {
+            Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(0, 0, 255)
+                .Width(0.01f)
+                .From(0.0f, 0.0f)
+                .Width(0.05f)
+                .To(0.5f, 0.5f)
+                .Width(0.75f)
+                .To(0.5f, -0.5f)
+                .Width(0.01f)
+                .To(-0.5f, -0.5f)
+                .Width(0.25f)
+                .To(-0.5f, 0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
 
-        //        .From(-0.5f, 0.5f)
-        //        .To(-0.5f, -0.5f)
-        //        ;
-        //    Graphics.PopMatrix();
-        //}
+        private void RenderLines009(float x, float y)
+        {
+            Graphics.PushMatrix();
+            //Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            //Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(255)
+                .From(0.5f, 0.5f)
+                .Width(0.75f)
+                .Color(128)
+                .To(0.5f, -0.5f)
+                .Width(0.1f)
+                .Color(0)
+                .To(-0.5f, -0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
     }
 }
