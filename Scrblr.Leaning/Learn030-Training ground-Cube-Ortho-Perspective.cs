@@ -71,9 +71,9 @@ namespace Scrblr.Leaning
 
         public void MouseMove(MouseMoveEventArgs a)
         {
-            var screen = Graphics.WorldToScreen(new Vector3(0, 0, -2), Graphics.ActiveCamera().ViewMatrix(), Graphics.ActiveCamera().ProjectionMatrix(), Width, Height);
+            var screen = Graphics.ModelToScreenSpace(new Vector3(0, 0, -2), Matrix4.Identity, Graphics.ActiveCamera().ViewMatrix(), Graphics.ActiveCamera().ProjectionMatrix(), Width, Height);
 
-            Diagnostics.Log(screen.X + " | " + screen.Y);
+            Diagnostics.Log((int)screen.X + " | " + (int)screen.Y);
         }
 
         public void Render()

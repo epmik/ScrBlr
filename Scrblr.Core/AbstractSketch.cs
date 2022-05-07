@@ -28,7 +28,9 @@ namespace Scrblr.Core
         public float FrustumHeight { get; private set; } = DefaultFrustumHeight;
         public Dimensions Dimension { get; private set; } = Dimensions.Two;
 
+
         protected ScrollDragCamera Camera;
+
 
         public int WindowWidth { get { return Width; } }
 
@@ -49,21 +51,21 @@ namespace Scrblr.Core
         /// </summary>
         protected bool AutoClearBuffers { get; set; } = true;
 
-        private ProjectionMode _projectionMode = ProjectionMode.Perspective;
+        //private ProjectionMode _projectionMode = ProjectionMode.Perspective;
 
-        protected ProjectionMode ProjectionMode
-        {
-            get => _projectionMode;
-            set
-            {
-                _projectionMode = value;
+        //protected ProjectionMode ProjectionMode
+        //{
+        //    get => _projectionMode;
+        //    set
+        //    {
+        //        _projectionMode = value;
 
-                if (Camera != null)
-                {
-                    Camera.ProjectionMode = value;
-                }
-            }
-        }
+        //        if (Camera != null)
+        //        {
+        //            Camera.ProjectionMode = value;
+        //        }
+        //    }
+        //}
 
         #region Public Event Handlers
 
@@ -211,17 +213,25 @@ namespace Scrblr.Core
 
             _graphics = new GraphicsContext(WindowWidth, WindowHeight, DepthBits, stencilBits: StencilBits, samples: Samples);
 
-            Camera = new ScrollDragCamera
+            var camera = new ScrollDragCamera
             {
                 Width = FrustumWidth,
                 Height = FrustumHeight,
                 Near = 1f,
                 Far = 1000f,
-                ProjectionMode = ProjectionMode,
-                //Position = new Vector3(0, 0, 0),
+                ProjectionMode = ProjectionMode.Perspective,
             };
 
-            AttachCamera(Camera, true, true);
+            AttachCamera(camera, true, true);
+        }
+
+        protected Vector2 ModelToScreenSpace(Vector3 position)
+        {
+            var modelMatrix = Graphics.ModelMatrix();
+            var viewMatrix = Graphics.ActiveCamera().ViewMatrix();
+            var projectionMatrix = Graphics.ActiveCamera().ProjectionMatrix();
+
+            return Graphics.ModelToScreenSpace(position, ref modelMatrix, ref viewMatrix, ref projectionMatrix, Width, Height);
         }
 
         //public Vector3 Project(Vector3 source, Matrix4 projection, Matrix4 view, Matrix4 world)

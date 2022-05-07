@@ -1631,9 +1631,9 @@ void main()
             return g;
         }
 
-        public Vector2 WorldToScreen(Vector3 world, ref Matrix4 viewProjectionMatrix, int width, int height)
+        public Vector2 ModelToScreenSpace(Vector3 position, ref Matrix4 modelViewProjectionMatrix, int width, int height)
         {
-            Vector4 pos = new Vector4(world, 1f) * viewProjectionMatrix;
+            Vector4 pos = new Vector4(position, 1f) * modelViewProjectionMatrix;
 
             pos /= pos.W;
             pos.Y = -pos.Y;
@@ -1644,16 +1644,16 @@ void main()
             return screenCenter + pos.Xy * screenSize / 2f;
         }
 
-        public Vector2 WorldToScreen(Vector3 world, ref Matrix4 viewMatrix, ref Matrix4 projectionMatrix, int width, int height)
+        public Vector2 ModelToScreenSpace(Vector3 position, ref Matrix4 modelMatrix, ref Matrix4 viewMatrix, ref Matrix4 projectionMatrix, int width, int height)
         {
-            var viewProjectionMatrix = Matrix4.Mult(viewMatrix, projectionMatrix);
+            var modelViewProjectionMatrix = Matrix4.Mult(modelMatrix, Matrix4.Mult(viewMatrix, projectionMatrix));
             
-            return WorldToScreen(world, ref viewProjectionMatrix, width, height);
+            return ModelToScreenSpace(position, ref modelViewProjectionMatrix, width, height);
         }
 
-        public Vector2 WorldToScreen(Vector3 world, Matrix4 viewMatrix, Matrix4 projectionMatrix, int width, int height)
+        public Vector2 ModelToScreenSpace(Vector3 position, Matrix4 modelMatrix, Matrix4 viewMatrix, Matrix4 projectionMatrix, int width, int height)
         {
-            return WorldToScreen(world, ref viewMatrix, ref projectionMatrix, width, height);
+            return ModelToScreenSpace(position, ref modelMatrix, ref viewMatrix, ref projectionMatrix, width, height);
         }
 
         //public Vector3 getRayFromScreenSpace(const vec2 & pos)
