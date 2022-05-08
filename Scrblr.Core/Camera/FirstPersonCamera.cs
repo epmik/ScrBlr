@@ -59,12 +59,12 @@ namespace Scrblr.Core
 
             if (input.IsKeyDown(Keys.W))
             {
-                Position += LookVector * MoveSpeed * (float)ElapsedTime; // Forward
+                Position += DirectionVector * MoveSpeed * (float)ElapsedTime; // Forward
             }
 
             if (input.IsKeyDown(Keys.S))
             {
-                Position -= LookVector * MoveSpeed * (float)ElapsedTime; // Backwards
+                Position -= DirectionVector * MoveSpeed * (float)ElapsedTime; // Backwards
             }
             if (input.IsKeyDown(Keys.A))
             {
@@ -103,19 +103,20 @@ namespace Scrblr.Core
         {
             base.MouseWheel(a);
 
-            Position += a.Offset.Y * ScrollSpeed * LookVector * MoveSpeed * (float)ElapsedTime; // forward/backwards
+            Position += a.Offset.Y * ScrollSpeed * DirectionVector * MoveSpeed * (float)ElapsedTime; // forward/backwards
         }
 
         private void UpdateVectors()
         {
-            LookVector.X = MathF.Cos(_pitch) * MathF.Cos(_yaw);
-            LookVector.Y = MathF.Sin(_pitch);
-            LookVector.Z = MathF.Cos(_pitch) * MathF.Sin(_yaw);
+            DirectionVector = new Vector3(
+                MathF.Cos(_pitch) * MathF.Cos(_yaw),
+                MathF.Sin(_pitch),
+                MathF.Cos(_pitch) * MathF.Sin(_yaw));
 
-            LookVector = Vector3.Normalize(LookVector);
+            DirectionVector = Vector3.Normalize(DirectionVector);
 
-            RightVector = Vector3.Normalize(Vector3.Cross(LookVector, Vector3.UnitY));
-            UpVector = Vector3.Normalize(Vector3.Cross(RightVector, LookVector));
+            RightVector = Vector3.Normalize(Vector3.Cross(DirectionVector, Vector3.UnitY));
+            UpVector = Vector3.Normalize(Vector3.Cross(RightVector, DirectionVector));
         }
     }
 }

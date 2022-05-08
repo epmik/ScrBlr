@@ -15,4 +15,9 @@ namespace Scrblr.Core
                 matrix.M41, matrix.M42, matrix.M43, matrix.M44);
         }
     }
+
+    //public partial struct Matrix4
+    //{
+
+    //}
 }

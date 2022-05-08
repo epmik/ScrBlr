@@ -43,6 +43,15 @@ namespace Scrblr.Core
             VertexFlags = VertexFlag.Position0 | VertexFlag.Normal0;
         }
 
+        public CubeGeometry Size(float s)
+        {
+            _width = s;
+            _height = s;
+            _depth = s;
+
+            return this;
+        }
+
         public CubeGeometry Width(float w)
         {
             _width = w;

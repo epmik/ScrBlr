@@ -20,22 +20,22 @@ namespace Scrblr.Core
         /// <summary>
         /// default look direction is along the negative z-axis Vector3(0, 0, -1)
         /// </summary>
-        public Vector3 LookVector = new Vector3(0, 0, -1);
+        public Vector3 DirectionVector { get; set; } = new Vector3(0, 0, -1);
 
         /// <summary>
         /// default forward direction is along the negative z-axis Vector3(0, 0, -1)
         /// </summary>
-        public Vector3 ForwardVector = new Vector3(0, 0, -1);
+        public Vector3 ForwardVector { get; set; } = new Vector3(0, 0, -1);
 
         /// <summary>
         /// default up direction is along the positive y-axis Vector3(0, 1, 0)
         /// </summary>
-        public Vector3 UpVector = new Vector3(0, 1, 0);
+        public Vector3 UpVector { get; set; } = new Vector3(0, 1, 0);
 
         /// <summary>
         /// default right direction is along the positive x-axis Vector3(1, 0, 0)
         /// </summary>
-        public Vector3 RightVector = new Vector3(1, 0, 0);
+        public Vector3 RightVector { get; set; } = new Vector3(1, 0, 0);
 
         /// <summary>
         /// Must be specified in angles, default == 1f
@@ -175,12 +175,12 @@ namespace Scrblr.Core
         }
 
         /// <summary>
-        /// default Math.PI / 2 or 90 degrees
+        /// default MathF.PI * 0.25f or 45 degrees
         /// </summary>
-        private float _fov = (float)(Math.PI / 2);
+        private float _fov = MathF.PI * 0.25f;
 
         /// <summary>
-        /// Field of view in degrees, default == 90
+        /// Field of view in degrees, default == 45
         /// <para>
         /// Changing the field of view also changes the Left/Right/Width and Top/Bottom/Height properties
         /// </para>
@@ -297,7 +297,7 @@ namespace Scrblr.Core
         {
             return Matrix4.LookAt(
                 Position, 
-                Position + LookVector, 
+                Position + DirectionVector, 
                 UpVector);
         }
     }

@@ -12,6 +12,38 @@ namespace Scrblr.Core
             return (float)v * ByteToUnitSingleFactor;
         }
 
+        public static Matrix4 ObjectLookAtMatrix(Vector3 eye, Vector3 target)
+        {
+            Vector3 direction = Vector3.Normalize(target - eye);
+            Vector3 up = Vector3.UnitY;
+            
+            if (MathF.Abs(direction.X) < 0.00001f && MathF.Abs(direction.Z) < 0.00001f)
+            {
+                if (direction.Y > 0)
+                    up = new Vector3(0, 0, -1.0f);
+                else
+                    up = new Vector3(0, 0, 1.0f);
+            }
+
+            return ObjectLookAtMatrix(eye, target, Vector3.Normalize(up));
+        }
+
+        public static Matrix4 ObjectLookAtMatrix(Vector3 eye, Vector3 target, Vector3 up)
+        {
+            Vector3 direction = Vector3.Normalize(target - eye);
+            Vector3 right = Vector3.Normalize(Vector3.Cross(up, direction));
+            
+            up = Vector3.Normalize(Vector3.Cross(direction, right));
+
+            return new Matrix4(
+                new Vector4(right.X, right.Y, right.Z, 0.0f),
+                new Vector4(up.X, up.Y, up.Z, 0.0f),
+                new Vector4(direction.X, direction.Y, direction.Z, 0.0f),
+                new Vector4(eye.X, eye.Y, eye.Z, 1.0f));
+
+            //return Matrix4.Invert(Matrix4.LookAt(eye, target, up));
+        }
+
 
         // taken from equilinox source
         //public static float FastSin(float min, float max, float time)

@@ -1117,6 +1117,16 @@ void main()
             Translate(vector.X, vector.Y, vector.Z);
         }
 
+        public void Transform(Matrix4 transform)
+        {
+            Transform(ref transform);
+        }
+
+        public void Transform(ref Matrix4 transform)
+        {
+            _modelMatrixStack[_modelMatrixStackIndex] = transform;
+        }
+
         public void Scale(float scale)
         {
             Scale(scale, scale, scale);
@@ -1144,6 +1154,13 @@ void main()
         public void Scale(ref Vector2 v)
         {
             Scale(v.X, v.Y, 1f);
+        }
+
+        public void RotateTo(Vector3 target)
+        {
+            var translation = _modelMatrixStack[_modelMatrixStackIndex].ExtractTranslation();
+
+            _modelMatrixStack[_modelMatrixStackIndex] = Utility.ObjectLookAtMatrix(translation, target);
         }
 
         public void Rotate(float degrees, Vector3 axis)
