@@ -45,6 +45,8 @@ namespace Scrblr.Leaning
             };
 
             AttachCamera(_firstPersonCamera, true, true);
+
+            HideAndLockCursor();
         }
 
         public void UnLoad()
@@ -117,12 +119,14 @@ namespace Scrblr.Leaning
             }
             if(_renderCube)
             {
-                Graphics.Cube()
-                    .Texture(_gridWithTransparency);
+                Graphics.Cube();
+                    //.Texture(_gridWithTransparency);
             }
             else
             {
-                Graphics.Circle();
+                Graphics.Circle().Color(255, 0, 0, 128);
+                
+                Graphics.Circle().Color(255, 0, 255, 128);
             }
             Graphics.PopMatrix();
 
