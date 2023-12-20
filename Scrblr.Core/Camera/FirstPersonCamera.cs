@@ -10,6 +10,11 @@ namespace Scrblr.Core
 {
     public class FirstPersonCamera : AbstractCamera
     {
+        //public FirstPersonCamera()
+        //{
+        //    //MouseMoveAction += InternalMouseMove;
+        //}
+
         // x-axis rotation
         private float _pitch;
 
@@ -48,39 +53,49 @@ namespace Scrblr.Core
 
         private bool _firstMouseMove = true;
 
+        public bool AllowRotation = true;
+
+        public bool AllowMovement = true;
+
         public override void Update(FrameEventArgs a)
         {
             base.Update(a);
 
-            var ElapsedTime = a.Time;
+            if (AllowMovement)
+            {
+                var ElapsedTime = a.Time;
 
-            var input = KeyboardState;
+                var input = KeyboardState;
 
+                if (input.IsKeyDown(Keys.W))
+                {
+                    Position += ForwardVector * MoveSpeed * (float)ElapsedTime; // Forward
+                }
 
-            if (input.IsKeyDown(Keys.W))
-            {
-                Position += DirectionVector * MoveSpeed * (float)ElapsedTime; // Forward
-            }
+                if (input.IsKeyDown(Keys.S))
+                {
+                    Position -= ForwardVector * MoveSpeed * (float)ElapsedTime; // Backwards
+                }
 
-            if (input.IsKeyDown(Keys.S))
-            {
-                Position -= DirectionVector * MoveSpeed * (float)ElapsedTime; // Backwards
-            }
-            if (input.IsKeyDown(Keys.A))
-            {
-                Position -= RightVector * MoveSpeed * (float)ElapsedTime; // Left
-            }
-            if (input.IsKeyDown(Keys.D))
-            {
-                Position += RightVector * MoveSpeed * (float)ElapsedTime; // Right
-            }
-            if (input.IsKeyDown(Keys.Q))
-            {
-                Position += UpVector * MoveSpeed * (float)ElapsedTime; // Up
-            }
-            if (input.IsKeyDown(Keys.E))
-            {
-                Position -= UpVector * MoveSpeed * (float)ElapsedTime; // Down
+                if (input.IsKeyDown(Keys.A))
+                {
+                    Position -= RightVector * MoveSpeed * (float)ElapsedTime; // Left
+                }
+
+                if (input.IsKeyDown(Keys.D))
+                {
+                    Position += RightVector * MoveSpeed * (float)ElapsedTime; // Right
+                }
+
+                if (input.IsKeyDown(Keys.Q))
+                {
+                    Position -= UpVector * MoveSpeed * (float)ElapsedTime; // Down
+                }
+
+                if (input.IsKeyDown(Keys.E))
+                {
+                    Position += UpVector * MoveSpeed * (float)ElapsedTime; // Up
+                }
             }
         }
 
@@ -95,15 +110,21 @@ namespace Scrblr.Core
                 return;
             }
 
-            Yaw += a.DeltaX * MouseMoveSensitivity;
-            Pitch -= a.DeltaY * MouseMoveSensitivity;
+            if(AllowRotation)
+            {
+                Yaw += a.DeltaX * MouseMoveSensitivity;
+                Pitch -= a.DeltaY * MouseMoveSensitivity;
+            }
         }
 
         public override void MouseWheel(MouseWheelEventArgs a)
         {
             base.MouseWheel(a);
 
-            Position += a.Offset.Y * ScrollSpeed * DirectionVector * MoveSpeed * (float)ElapsedTime; // forward/backwards
+            if (AllowMovement)
+            {
+                Position += a.Offset.Y * ScrollSpeed * DirectionVector * MoveSpeed * (float)ElapsedTime; // forward/backwards
+            }
         }
 
         private void UpdateVectors()
@@ -115,8 +136,15 @@ namespace Scrblr.Core
 
             DirectionVector = Vector3.Normalize(DirectionVector);
 
-            RightVector = Vector3.Normalize(Vector3.Cross(DirectionVector, Vector3.UnitY));
-            UpVector = Vector3.Normalize(Vector3.Cross(RightVector, DirectionVector));
+            ForwardVector = new Vector3(
+                MathF.Cos(_yaw),
+                0f,
+                MathF.Sin(_yaw));
+
+            ForwardVector = Vector3.Normalize(ForwardVector);
+            RightVector = Vector3.Normalize(Vector3.Cross(DirectionVector, UpVector));
+
+            //UpVector = Vector3.Normalize(Vector3.Cross(RightVector, DirectionVector));
         }
     }
 }

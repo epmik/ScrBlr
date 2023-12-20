@@ -1,0 +1,20 @@
+OpenGL 4 for C#/.NET Tutorials
+https://github.com/giawa/opengl4tutorials
+
+LearnOpenTK
+https://opentk.net/learn/
+
+OpenTK Tutorials (OpenGL/C#)
+https://www.letsdevelopgames.com/2022/02/opentk-notes-openglc.html
+
+OpenGL 4 with OpenTK in C#
+https://dreamstatecoding.blogspot.com/2017/01/opengl-4-with-opentk-in-c-part-1.html
+
+https://learnopengl.com/Introduction
+
+The OpenGL® Programming Guide 9th Edition
+https://github.com/openglredbook/examples
+
+Programming books
+https://github.com/kurong00/GameProgramBooks/tree/master
+

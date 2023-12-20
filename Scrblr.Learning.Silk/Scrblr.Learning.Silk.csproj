@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\BlenderFileReader.cs" />
+    <Compile Remove="Learn001-BufferData-DrawElements.cs" />
+    <Compile Remove="Learn001-BufferData-Position.cs" />
+    <Compile Remove="Learn002-BufferData-DrawArrays.cs" />
+    <Compile Remove="Learn002-BufferData-Position.cs" />
+    <Compile Remove="Learn003-BufferSubData-DrawArrays.cs" />
+    <Compile Remove="Learn004-BufferSubData-DrawArrays-Interleaved.cs" />
+    <Compile Remove="Learn004-BufferSubData-DrawArrays-Position-UniformColor.cs" />
+    <Compile Remove="Learn005-BufferSubData-DrawArrays-Position-Color-Interleaved.cs" />
+    <Compile Remove="Learn006-BufferSubData-DrawArrays-Position-Color-Seperated.cs" />
+    <Compile Remove="Learn007-BufferSubData-DrawArrays-Position-Color-Interleaved-Transforms.cs" />
+    <Compile Remove="Learn007-Model-View-Projection.cs" />
+    <Compile Remove="Learn010-ObjParser.cs" />
+    <Compile Remove="Learn012-BlendFileParser.cs" />
+    <Compile Remove="Shader20220413.cs" />
+    <Compile Remove="_Program.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\.resources\**">
+        <Link>.resources\%(RecursiveDir)\%(Filename)%(Extension)</Link>
+        <TargetPath>.resources\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Silk.NET.Assimp" Version="2.20.0" />
+    <PackageReference Include="StbImageSharp" Version="2.27.13" />
+    <PackageReference Include="StirlingLabs.Assimp.Net" Version="23.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Scrblr.Core.Silk\Scrblr.Core.Silk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="StirlingLabs.assimp.native.win-x64" Version="5.2.5.4" />
+  </ItemGroup>
+
+</Project>

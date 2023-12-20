@@ -48,7 +48,7 @@ namespace Scrblr.Leaning
                 .Where(o => o.Name.StartsWith("Render") && o.Name.Length > 6).OrderBy(o => o.Name).ToArray();
         }
 
-        public void Load()
+        void Load()
         {
             _gridNoTransparency = new Texture("resources/textures/orange-white-1024x1024.jpg");
 
@@ -70,14 +70,14 @@ namespace Scrblr.Leaning
             //AttachCamera(firstPersonCamera, true, true);
         }
 
-        public void UnLoad()
+        void UnLoad()
         {
             _gridNoTransparency.Dispose();
             _gridWithTransparency.Dispose();
             _smileyWithTransparency.Dispose();
         }
 
-        public void Update()
+        void Update()
         {
             _degrees += (float)(_rotationDegreesPerSecond * ElapsedTime);
 
@@ -87,7 +87,7 @@ namespace Scrblr.Leaning
             }
         }
 
-        public void Render()
+        void Render()
         {
             Graphics.ClearColor(128);
 
@@ -127,8 +127,8 @@ namespace Scrblr.Leaning
         private void RenderCube002(float x, float y)
         {
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
-            Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees + 45, Axis.X);
+            Graphics.Rotate(_degrees - 45, Axis.Y);
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube(1f, 0.5f, 0.25f).Color(225, 0, 128);
@@ -154,7 +154,7 @@ namespace Scrblr.Leaning
         private void RenderCube005(float x, float y)
         {
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees + 90, Axis.Y);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube().Depth(0.5f).Color(64, 125, 255);
             Graphics.PopMatrix();
@@ -163,9 +163,9 @@ namespace Scrblr.Leaning
         private void RenderCube006(float x, float y)
         {
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
-            Graphics.Rotate(_degrees, Axis.Y);
-            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Rotate(_degrees - 125, Axis.X);
+            Graphics.Rotate(_degrees + 89, Axis.Y);
+            Graphics.Rotate(_degrees + 15, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube()
                 .Texture(_gridNoTransparency);
@@ -175,9 +175,9 @@ namespace Scrblr.Leaning
         private void RenderCube007(float x, float y)
         {
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
+            Graphics.Rotate(_degrees - 28, Axis.X);
             Graphics.Rotate(_degrees, Axis.Y);
-            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Rotate(_degrees - 156, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube()
                 .Texture(_gridWithTransparency);
@@ -188,7 +188,7 @@ namespace Scrblr.Leaning
         {
             Graphics.PushMatrix();
             Graphics.Rotate(_degrees, Axis.X);
-            Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees + 63, Axis.Y);
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube()
@@ -200,8 +200,8 @@ namespace Scrblr.Leaning
         private void RenderCube009(float x, float y)
         {
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
-            Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees - 25, Axis.X);
+            Graphics.Rotate(_degrees - 128, Axis.Y);
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y, -2f);
             Graphics.Cube()

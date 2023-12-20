@@ -936,6 +936,13 @@ void main()
             _activeCamera = camera;
         }
 
+        public void AutoPositionCamera()
+        {
+            var a = (180f - _activeCamera.Fov) * 0.5f;
+            var d = _activeCamera.ProjectionMode == ProjectionMode.Orthographic ? _activeCamera.Far - _activeCamera.Near : (float)Math.Tan(MathHelper.DegreesToRadians(a)) * (_activeCamera.Width * 0.5f);
+            _activeCamera.Position = new Vector3(0.0f, 0.0f, d);
+        }
+
         private static int GraphicsContextCount { get; set; }
 
         public static GraphicsContext Default { get; set; }

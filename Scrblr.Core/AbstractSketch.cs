@@ -20,6 +20,8 @@ namespace Scrblr.Core
 
         private GraphicsContext _graphics;
 
+        private IRandomGenerator _defaultRandomGenerator;
+
         public GraphicsContext Graphics => _graphics;
 
         private const float DefaultFrustumWidth = 2f;
@@ -29,7 +31,7 @@ namespace Scrblr.Core
         public Dimensions Dimension { get; private set; } = Dimensions.Two;
 
 
-        protected ScrollDragCamera Camera;
+        //protected ScrollDragCamera Camera;
 
 
         public int WindowWidth { get { return Width; } }
@@ -157,6 +159,7 @@ namespace Scrblr.Core
         public AbstractSketch(float width, float height)
             : base(0, 0)
         {
+            _defaultRandomGenerator = new RandomGenerator(); 
             FrustumWidth = width;
             FrustumHeight = height;
         }
@@ -721,6 +724,51 @@ namespace Scrblr.Core
 
                 _saveMultiSampleFrameGraphicsContext = null;
             }
+        }
+
+        public int RandomSeed()
+        {
+            return _defaultRandomGenerator.Seed();
+        }
+
+        public int RandomSeed(int seed)
+        {
+            return _defaultRandomGenerator.ReSeed(seed);
+        }
+
+        public float Random()
+        {
+            return Random(0f, 1f);
+        }
+
+        public float Random(float max)
+        {
+            return Random(0, max);
+        }
+
+        public float Random(float min, float max)
+        {
+            return _defaultRandomGenerator.Value(min, max);
+        }
+
+        public double Random(double max)
+        {
+            return Random(0, max);
+        }
+
+        public double Random(double min, double max)
+        {
+            return _defaultRandomGenerator.Value(min, max);
+        }
+
+        public int Random(int max)
+        {
+            return Random(0, max);
+        }
+
+        public int Random(int min, int max)
+        {
+            return _defaultRandomGenerator.Value(min, max);
         }
 
         private string GetSketchName()

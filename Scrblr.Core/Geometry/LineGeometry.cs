@@ -27,33 +27,6 @@ namespace Scrblr.Core
 
         private List<Connection> _connections;
 
-        //public LineGeometry Radius(float radius)
-        //{
-        //    _radius = radius;
-            
-        //    return this;
-        //}
-
-        //public LineGeometry Segments(int segments)
-        //{
-        //    if(segments < 3)
-        //    {
-        //        throw new ArgumentOutOfRangeException("segments");
-        //    }
-
-        //    _segments = segments;
-
-        //    return this;
-        //}
-
-        //public LineGeometry AutoSegments(bool autoSegments)
-        //{
-        //    // TODO number of segments dependent on the size of the circle in screen space
-        //    _segments = autoSegments ? 0 : _segments;
-
-        //    return this;
-        //}
-
         public LineGeometry()
             : this(Matrix4.Identity)
         {
@@ -69,79 +42,6 @@ namespace Scrblr.Core
 
             _connections.Add(new Connection { Point = new Vector3(0f, 0f, 0f), Color = _currentColor, Width = _currentWidth, ConnectionType = ConnectionType.From });
         }
-
-        ///// <summary>
-        ///// When AutoSegments is set to true, then VertexCount is determined by the screen resolution
-        ///// </summary>
-        //public override int VertexCount(Matrix4 modelMatrix, Matrix4 viewMatrix, Matrix4 projectionMatrix)
-        //{
-        //    return (_segments == 0 ? DefaultSegments : _segments) + 2;
-        //}
-
-        //private float[,] CalculatePoints()
-        //{
-        //    var segments = _segments == 0 ? DefaultSegments : _segments;
-
-        //    // we're creating a triangle fan
-        //    // +2 for the center point and duplicated endpoint
-        //    var points = new float[segments + 2, 3];
-
-        //    // center point
-        //    points[0, 0] = _position.X;
-        //    points[0, 1] = _position.Y;
-        //    points[0, 2] = _position.Z;
-
-        //    var step = Math.PI * 2 / (double)segments;
-        //    var radians = Math.PI * 0.5;
-
-        //    for (var i = 1; i < segments + 1; i++)
-        //    {
-        //        points[i, 0] = (float)(Math.Cos(radians) * _radius);
-        //        points[i, 1] = (float)(Math.Sin(radians) * _radius);
-        //        points[i, 2] = 0f;
-
-        //        radians += step;
-        //    }
-
-        //    // close last triangle, duplicate first point on circle
-        //    points[segments + 1, 0] = points[1, 0];
-        //    points[segments + 1, 1] = points[1, 1];
-        //    points[segments + 1, 2] = points[1, 2];
-
-        //    return points;
-        //}
-
-        //private float[,] CalculateUvs()
-        //{
-        //    var segments = _segments == 0 ? DefaultSegments : _segments;
-
-        //    var radius = 0.5;
-
-        //    // we're creating a triangle fan
-        //    // +2 for the center point and duplicated endpoint
-        //    var uvs = new float[segments + 2, 2];
-
-        //    var step = Math.PI * 2 / (double)segments;
-        //    var radians = Math.PI * 0.5;
-
-        //    // center point
-        //    uvs[0, 0] = 0.5f;
-        //    uvs[0, 1] = 0.5f;
-
-        //    for (var i = 1; i < segments + 1; i++)
-        //    {
-        //        uvs[i, 0] = (float)((Math.Cos(radians) * radius) + 0.5);
-        //        uvs[i, 1] = (float)((Math.Sin(radians) * radius) + 0.5);
-
-        //        radians += step;
-        //    }
-
-        //    // close last triangle, duplicate first point on circle
-        //    uvs[segments + 1, 0] = uvs[1, 0];
-        //    uvs[segments + 1, 1] = uvs[1, 1];
-
-        //    return uvs;
-        //}
 
         public override RenderBatch[] ToRenderBatch(GraphicsContext graphicsContext, GraphicsState graphicsState, Shader shader, VertexBuffer vertexBuffer, ICamera camera)
         {

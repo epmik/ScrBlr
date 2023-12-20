@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Scrblr.Leaning": {
+      "commandName": "Project",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}

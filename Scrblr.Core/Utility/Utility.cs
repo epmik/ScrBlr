@@ -7,6 +7,11 @@ namespace Scrblr.Core
     {
         public const float ByteToUnitSingleFactor = 0.0039215686274509803921568627451f; // 1/255
 
+        public static double DegreesToRadians(double degrees)
+        {
+            return (0.01745329251994329576923690768489) * degrees;
+        }
+
         public static float ToUnitSingle(int v)
         {
             return (float)v * ByteToUnitSingleFactor;

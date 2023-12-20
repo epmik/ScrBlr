@@ -38,10 +38,13 @@ namespace Scrblr.Leaning
                 AspectRatio = FrustumWidth / FrustumHeight,
                 Near = 1f,
                 Far = 1000f,
-                //Position = new Vector3(0, 0, 2),
+                AllowRotation = false,
             };
 
             AttachCamera(_firstPersonCamera, true, true);
+
+            _firstPersonCamera.MouseDownAction += CameraMouseDown;
+            _firstPersonCamera.MouseUpAction += CameraMouseUp;
         }
 
         public void UnLoad()
@@ -74,6 +77,22 @@ namespace Scrblr.Leaning
             var screen = Graphics.ModelToScreenSpace(new Vector3(0, 0, -2), Matrix4.Identity, Graphics.ActiveCamera().ViewMatrix(), Graphics.ActiveCamera().ProjectionMatrix(), Width, Height);
 
             Diagnostics.Log((int)screen.X + " | " + (int)screen.Y);
+        }
+
+        public void CameraMouseDown(MouseButtonEventArgs a)
+        {
+            if((int)a.Button == (int)MouseButton.Left)
+            {
+                _firstPersonCamera.AllowRotation = true;
+            }
+        }
+
+        public void CameraMouseUp(MouseButtonEventArgs a)
+        {
+            if ((int)a.Button == (int)MouseButton.Left)
+            {
+                _firstPersonCamera.AllowRotation = false;
+            }
         }
 
         public void Render()

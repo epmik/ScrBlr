@@ -21,7 +21,7 @@ namespace Scrblr.Core
         float Height { get; set; }
         float AspectRatio { get; }
         float DepthRatio { get; }
-        Vector3 Position { get; }
+        Vector3 Position { get; set; }
         Vector3 DirectionVector { get; }
         Vector3 ForwardVector { get; }
         Vector3 UpVector { get; }

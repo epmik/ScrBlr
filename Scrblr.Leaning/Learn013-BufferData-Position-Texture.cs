@@ -108,8 +108,8 @@ void main()
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-            using (System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap("resources/textures/orange-white-2048x2048.jpg"))
-            //using (System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap("resources/textures/orange-transparent-2048x2048.png"))
+            using (System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap("resources/textures/orange-white-1024x1024.jpg"))
+            //using (System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap("resources/textures/orange-transparent-1024x1024.png"))
             //using (System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap("resources/textures/smiley-transparent-1024x1024.png"))
             {
                 bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);

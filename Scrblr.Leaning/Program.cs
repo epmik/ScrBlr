@@ -8,11 +8,11 @@ namespace Scrblr.Leaning
     {
         static void Main(string[] args)
         {
-            Sketch.Run<Learn036>();
+            Sketch.Run<Learn001>();
 
-            Console.WriteLine("Closing in 5 seconds...");
+            Console.WriteLine("Closing in 2 seconds...");
 
-            Thread.Sleep(5000);
+            Thread.Sleep(2000);
         }
     }
 }

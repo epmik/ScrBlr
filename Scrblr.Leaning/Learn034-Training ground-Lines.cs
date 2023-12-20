@@ -57,17 +57,6 @@ namespace Scrblr.Leaning
             _smileyWithTransparency = new Texture("resources/textures/smiley-transparent-1024x1024.png");
 
             Graphics.ActiveCamera().ProjectionMode = ProjectionMode.Orthographic;
-
-            //var firstPersonCamera = new FirstPersonCamera
-            //{
-            //    Fov = 90f,
-            //    AspectRatio = FrustumWidth / FrustumHeight,
-            //    Near = 1f,
-            //    Far = 1000f,
-            //    //Position = new Vector3(0, 0, 2),
-            //};
-
-            //AttachCamera(firstPersonCamera, true, true);
         }
 
         public void UnLoad()
@@ -262,7 +251,7 @@ namespace Scrblr.Leaning
         private void RenderLines008(float x, float y)
         {
             Graphics.PushMatrix();
-            Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.X);
             //Graphics.Rotate(_degrees, Axis.Y);
             Graphics.Rotate(_degrees, Axis.Z);
             Graphics.Translate(x, y, -2f);
@@ -286,6 +275,30 @@ namespace Scrblr.Leaning
         private void RenderLines009(float x, float y)
         {
             Graphics.PushMatrix();
+            Graphics.Rotate(_degrees, Axis.X);
+            //Graphics.Rotate(_degrees, Axis.Y);
+            Graphics.Rotate(_degrees, Axis.Z);
+            Graphics.Translate(x, y, -2f);
+            Graphics
+                .Line()
+                .Color(0, 0, 255)
+                .Width(0.01f)
+                .From(0.0f, 0.0f)
+                .Width(0.05f)
+                .To(0.5f, 0.5f)
+                .Width(0.75f)
+                .To(0.5f, -0.5f)
+                .Width(0.1f)
+                .To(-0.5f, -0.5f)
+                .Width(0.25f)
+                .To(-0.5f, 0.5f)
+                ;
+            Graphics.PopMatrix();
+        }
+
+        private void RenderLines010(float x, float y)
+        {
+            Graphics.PushMatrix();
             //Graphics.Rotate(_degrees, Axis.X);
             //Graphics.Rotate(_degrees, Axis.Y);
             //Graphics.Rotate(_degrees, Axis.Z);
@@ -294,7 +307,7 @@ namespace Scrblr.Leaning
                 .Line()
                 .Color(255)
                 .From(0.5f, 0.5f)
-                .Width(0.75f)
+                .Width(0.5f)
                 .Color(128)
                 .To(0.5f, -0.5f)
                 .Width(0.1f)
