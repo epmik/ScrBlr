@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace Scrblr.Leaning
+namespace Scrblr.Learning
 {
     public static class Utility
     {

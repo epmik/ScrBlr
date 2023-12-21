@@ -4,7 +4,7 @@ using StbImageSharp;
 using System.IO;
 using Silk.NET.OpenGL;
 
-namespace Scrblr.LearnOpenTK
+namespace Scrblr.Learning
 {
     // A simple class meant to help create shaders.
     public class Texture

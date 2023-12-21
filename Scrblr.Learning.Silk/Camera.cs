@@ -4,9 +4,8 @@ using System.Text;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
 using System.Numerics;
-using Scrblr.Leaning;
 
-namespace Scrblr.LearnOpenTK
+namespace Scrblr.Learning
 {
     // A simple class meant to help create shaders.
     public class Camera

@@ -1,7 +1,7 @@
 ﻿using Scrblr.Core;
 using System.Reflection;
 
-namespace Scrblr.LearnOpenTK
+namespace Scrblr.Learning
 {
     class Program
     {

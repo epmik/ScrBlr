@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Scrblr.Learning.Silk
+namespace Scrblr.Learning
 {
     internal class GLTFObject
     {
@@ -164,11 +164,11 @@ namespace Scrblr.Learning.Silk
         {
             switch(flag)
             {
-                case Silk.ExportScene.Flag.Vertices:
+                case Learning.ExportScene.Flag.Vertices:
                     return "POSITION";
-                case Silk.ExportScene.Flag.Uv0:
+                case Learning.ExportScene.Flag.Uv0:
                     return "TEXCOORD_0";
-                case Silk.ExportScene.Flag.Normals:
+                case Learning.ExportScene.Flag.Normals:
                     return "NORMAL";
                 default:
                     throw new NotImplementedException();

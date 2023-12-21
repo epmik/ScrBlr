@@ -6,7 +6,7 @@ using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Input;
 
-namespace Scrblr.LearnOpenTK
+namespace Scrblr.Learning
 {
     public class SilkSketch : IDisposable
     {

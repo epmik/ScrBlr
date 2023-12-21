@@ -7,7 +7,7 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 
-namespace Scrblr.Learning.Silk
+namespace Scrblr.Learning
 {
     internal class ObjParser
     {
@@ -25,11 +25,11 @@ namespace Scrblr.Learning.Silk
 
                 var mesh = new ExportScene.Mesh();
 
-                exportResult.Meshes = new Silk.ExportScene.Mesh[] { mesh };
+                exportResult.Meshes = new Learning.ExportScene.Mesh[] { mesh };
 
                 foreach (var flag in setting.Flags)
                 {
-                    mesh.VertexSize += (uint)(flag == Scrblr.Learning.Silk.ExportScene.Flag.Uv0 ? 2 : 3);
+                    mesh.VertexSize += (uint)(flag == Scrblr.Learning.ExportScene.Flag.Uv0 ? 2 : 3);
                 }
 
                 var pool = new float[Faces.Count * 3][];
@@ -47,19 +47,19 @@ namespace Scrblr.Learning.Silk
                         {
                             switch (flag)
                             {
-                                case Scrblr.Learning.Silk.ExportScene.Flag.Vertices:
+                                case Scrblr.Learning.ExportScene.Flag.Vertices:
                                     var v = Vertices[faceIndex.VertexIndex - 1];
                                     temp[i++] = v.X;
                                     temp[i++] = v.Y;
                                     temp[i++] = v.Z;
                                     break;
-                                case Scrblr.Learning.Silk.ExportScene.Flag.Normals:
+                                case Scrblr.Learning.ExportScene.Flag.Normals:
                                     var n = Normals[faceIndex.NormalIndex - 1];
                                     temp[i++] = n.X;
                                     temp[i++] = n.Y;
                                     temp[i++] = n.Z;
                                     break;
-                                case Scrblr.Learning.Silk.ExportScene.Flag.Uv0:
+                                case Scrblr.Learning.ExportScene.Flag.Uv0:
                                     var u = Uvws[faceIndex.UvwIndex - 1];
                                     temp[i++] = u.X;
                                     temp[i++] = u.Y;

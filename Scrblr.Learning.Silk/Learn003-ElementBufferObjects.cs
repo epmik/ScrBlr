@@ -3,7 +3,7 @@ using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
 
-namespace Scrblr.LearnOpenTK
+namespace Scrblr.Learning
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.

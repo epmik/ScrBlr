@@ -3,14 +3,14 @@ using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using System.Numerics;
+using Scrblr.Leaning;
+using static Scrblr.LearnOpenTK.Learn999BlenderFileReader;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using System;
-using System.Drawing;
-using System.Reflection;
 
 
-namespace Scrblr.Learning
+namespace Scrblr.LearnOpenTK
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
@@ -39,10 +39,20 @@ namespace Scrblr.Learning
         // so check out the web version for a good demonstration of what this does.
         private Matrix4x4 _projection;
 
+        private Vector3 modelPosition = new Vector3(0, 0, 0);
+        private Vector3 modelPositionOffsetPerSecond = new Vector3(1, 0, 0);
+
+        private Vector3 viewPosition = new Vector3(0, 0, -3);
+        private Vector3 viewPositionOffsetPerSecond = new Vector3(0, 0, -2);
+
         // We need an instance of the new camera class so it can manage the view and projection matrix code.
         // We also need a boolean set to true to detect whether or not the mouse has been moved for the first time.
         // Finally, we add the last position of the mouse so we can calculate the mouse offset easily.
         private Camera _camera;
+
+        private bool _firstMove = true;
+
+        private Vector2 _lastPos;
 
         private Vector2D<int> WindowCenter = new Vector2D<int>();
 
@@ -138,12 +148,31 @@ void main()
 
             //var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/plane-001.gltf");
             var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/cube-001.gltf");
-            //var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/scene-001.gltf");
 
-            //var mesh = sceneGLTF.Meshes[0];
+            var mesh = sceneGLTF.Meshes[0];
 
-            var vertexCount = sceneGLTF.TotalMeshVertexCount();
-            var indiceCount = sceneGLTF.TotalMeshIndexCount();
+            var indiceCount = (uint)(mesh.FaceCount * 3);
+
+            var _vertices = new float[mesh.VertexCount * 3];
+
+            var index = 0;
+            foreach(var v in mesh.Vertices)
+            {
+                _vertices[index++] = v.X;
+                _vertices[index++] = v.Y;
+                _vertices[index++] = v.Z;
+            }
+
+            var _indices = new uint[indiceCount];
+
+            index = 0;
+            foreach (var f in mesh.Faces)
+            {
+                foreach (var indice in f.Indices)
+                {
+                    _indices[index++] = (uint)indice;
+                }
+            }
 
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -152,19 +181,49 @@ void main()
 
             _vertexBufferObject = GL.GenBuffer();
 
+            var size = _vertices.Length * sizeof(float) + _vertices.Length * sizeof(float) + _vertices.Length * sizeof(float);
+            var offset = 0;
+
             GL.BindBuffer(GLEnum.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertexCount * 3 * sizeof(float)), IntPtr.Zero, BufferUsageARB.StaticDraw); //Setting buffer data.
+            GL.BufferData(BufferTargetARB.ArrayBuffer, (nuint)size, IntPtr.Zero, BufferUsageARB.StaticDraw); //Setting buffer data.
+
+            fixed (void* v = &_vertices[0])
+            {
+                size = _vertices.Length * sizeof(float);
+
+                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)offset, (nuint)size, v);
+                offset += size;
+
+                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)offset, (nuint)size, v);
+                offset += size;
+
+                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)offset, (nuint)size, v);
+                offset += size;
+            }
 
             _elementBufferObject = GL.GenBuffer();
 
+            size = _indices.Length * sizeof(uint) + _indices.Length * sizeof(uint) + _indices.Length * sizeof(uint);
+            offset = 0;
+
             GL.BindBuffer(GLEnum.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(indiceCount * sizeof(uint)), IntPtr.Zero, BufferUsageARB.StaticDraw); //Setting buffer data.
+            GL.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)size, IntPtr.Zero, BufferUsageARB.StaticDraw); //Setting buffer data.
 
+            fixed (void* i = &_indices[0])
+            {
+                size = _indices.Length * sizeof(uint);
 
+                GL.BufferSubData(GLEnum.ElementArrayBuffer, (nint)offset, (nuint)size, i);
+                offset += size;
 
+                GL.BufferSubData(GLEnum.ElementArrayBuffer, (nint)offset, (nuint)size, i);
+                offset += size;
 
-            _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource); 
-            _shader.Use();
+                GL.BufferSubData(GLEnum.ElementArrayBuffer, (nint)offset, (nuint)size, i);
+                offset += size;
+            }
+
+            _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource); _shader.Use();
 
             //var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
             //GL.EnableVertexAttribArray(texCoordLocation);
@@ -192,70 +251,29 @@ void main()
                 Offset = 0
             });
 
-
-            uint arrayBufferBytesWritten = 0;
-            uint elementArrayBufferBytesWritten = 0;
-            uint index = 0;
-
-            var random = new Random();
-
-            foreach (var c in sceneGLTF.RootNode.Children)
+            _VAOBatch.Batches.Add(new Batch
             {
-                if(!c.HasMeshes)
-                {
-                    continue;
-                }
+                Start = 0,
+                Count = indiceCount,
+            });
 
-                foreach(var i in c.MeshIndices)
-                {
-                    var m = sceneGLTF.Meshes[i];
+            _VAOBatch.Batches[_VAOBatch.Batches.Count - 1].Uniforms.Add("uColor", new Vector4(1f, 0f, 0f, 1f));
 
-                    WriteMeshToBuffersBufferSubData(
-                        m,
-                        _vertexArrayObject,
-                        _vertexBufferObject,
-                        _elementBufferObject,
-                        arrayBufferBytesWritten,
-                        elementArrayBufferBytesWritten,
-                        out arrayBufferBytesWritten,
-                        out elementArrayBufferBytesWritten);
+            _VAOBatch.Batches.Add(new Batch
+            {
+                Start = indiceCount,
+                Count = indiceCount,
+            });
 
-                    var b = new Batch
-                    {
-                        Start = index,
-                        Count = m.TotalMeshIndexCount(),
-                    };
+            _VAOBatch.Batches[_VAOBatch.Batches.Count - 1].Uniforms.Add("uColor", new Vector4(1f, 1f, 0f, 1f));
 
-                    _VAOBatch.Batches.Add(b);
+            _VAOBatch.Batches.Add(new Batch
+            {
+                Start = indiceCount + indiceCount,
+                Count = indiceCount,
+            });
 
-                    index += b.Count;
-
-                    b.Model = ToMatrix4x4(c.Transform);
-
-                    b.Uniforms.Add("uColor", new Vector4(
-                        (float)random.NextDouble(),
-                        (float)random.NextDouble(),
-                        (float)random.NextDouble(),
-                        1f));
-                }
-            }
-
-
-            //_VAOBatch.Batches.Add(new Batch
-            //{
-            //    Start = 0,
-            //    Count = indiceCount,
-            //});
-
-            //_VAOBatch.Batches[_VAOBatch.Batches.Count - 1].Uniforms.Add("uColor", new Vector4(1f, 1f, 0f, 1f));
-
-            //_VAOBatch.Batches.Add(new Batch
-            //{
-            //    Start = 0,
-            //    Count = indiceCount,
-            //});
-
-            //_VAOBatch.Batches[_VAOBatch.Batches.Count - 1].Uniforms.Add("uColor", new Vector4(1f, 0f, 1f, 1f));
+            _VAOBatch.Batches[_VAOBatch.Batches.Count - 1].Uniforms.Add("uColor", new Vector4(1f, 0f, 1f, 1f));
 
             GL.BindVertexArray(0);
             GL.BindBuffer(GLEnum.ArrayBuffer, 0);
@@ -271,22 +289,13 @@ void main()
 
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
-            _camera = new Camera(Vector3.UnitZ * 9, window.Size.X / (float)window.Size.Y);
+            _camera = new Camera(Vector3.UnitZ * 3, window.Size.X / (float)window.Size.Y);
 
             HideCursor();
 
             //ConfineCursor();
 
             CenterCursor();
-        }
-
-        private Matrix4x4 ToMatrix4x4(Assimp.Matrix4x4 m)
-        {
-            return new Matrix4x4(
-                m.A1, m.A2, m.A3, m.A4,
-                m.B1, m.B2, m.B3, m.B4,
-                m.C1, m.C2, m.C3, m.C4,
-                m.D1, m.D2, m.D3, m.D4);
         }
 
         protected void OnUpdateFrame(double elapsedTime)
@@ -338,94 +347,9 @@ void main()
             _camera.Pitch -= deltaY * sensitivity; // Reversed since y-coordinates range from bottom to top
             //}
 
-            //_VAOBatch.Batches[0].Model = Matrix4x4.CreateRotationX((float)Utility.DegreesToRadians(angle));
-            //_VAOBatch.Batches[1].Model = Matrix4x4.CreateRotationY((float)Utility.DegreesToRadians(angle)) * Matrix4x4.CreateTranslation(new Vector3(2, 0, 0));
-            //_VAOBatch.Batches[2].Model = Matrix4x4.CreateRotationZ((float)Utility.DegreesToRadians(angle)) * Matrix4x4.CreateTranslation(new Vector3(-2, 0, 0));
-        }
-
-        private unsafe void WriteMeshToBuffersBufferSubData(
-            Assimp.Mesh mesh,
-            uint vao,
-            uint vbo,
-            uint ebo,
-            uint arrayBufferOffset,
-            uint elementArrayBufferOffset,
-            out uint arrayBufferBytesWritten,
-            out uint elementArrayBufferBytesWritten)
-        {
-            arrayBufferBytesWritten = 0;
-            elementArrayBufferBytesWritten = 0;
-
-            GL.BindVertexArray(vao);
-
-            GL.BindBuffer(GLEnum.ArrayBuffer, vbo);
-            GL.BindBuffer(GLEnum.ElementArrayBuffer, ebo);
-
-            var floatSize = (uint)sizeof(float);
-
-            // README Instancing
-            // https://learnopengl.com/Advanced-OpenGL/Instancing
-
-
-            // README GL.MapBuffer example
-            // https://github.com/Airstriker/VBO-OpenTK-Example/blob/master/VBO/T08_VBO.cs
-
-            // README OpenTK read depth buffer to array
-            // https://stackoverflow.com/questions/69883630/opentk-read-depth-buffer-to-array
-
-
-            // README efficiently writing/streaming data to the GPU
-            // see https://gamedev.stackexchange.com/a/87078
-            // or
-            // https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming
-
-            for (var i = 0; i < mesh.Vertices.Count; i++)
-            {
-                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)arrayBufferOffset, (nuint)floatSize, mesh.Vertices[i].X);
-                arrayBufferBytesWritten += floatSize;
-                arrayBufferOffset += floatSize;
-
-                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)arrayBufferOffset, (nuint)floatSize, mesh.Vertices[i].Y);
-                arrayBufferBytesWritten += floatSize;
-                arrayBufferOffset += floatSize;
-
-                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)arrayBufferOffset, (nuint)floatSize, mesh.Vertices[i].Z);
-                arrayBufferBytesWritten += floatSize;
-                arrayBufferOffset += floatSize;
-            }
-
-            var uintSize = (uint)sizeof(uint);
-
-            for (var f = 0; f < mesh.Faces.Count; f++)
-            {
-                for (var i = 0; i < mesh.Faces[f].Indices.Count; i++)
-                {
-                    GL.BufferSubData(GLEnum.ElementArrayBuffer, (nint)elementArrayBufferOffset, (nuint)uintSize, mesh.Faces[f].Indices[i]);
-
-                    elementArrayBufferBytesWritten += uintSize;
-                    elementArrayBufferOffset += uintSize;
-                }
-            }
-        }
-
-        private void MeasureExecutionTimeProperties(
-            out bool isHighResolution,
-            out long frequency,
-            out long nanosecPerTick)
-        {
-            isHighResolution = System.Diagnostics.Stopwatch.IsHighResolution;
-            frequency = System.Diagnostics.Stopwatch.Frequency;
-            nanosecPerTick = (1000L * 1000L * 1000L) / frequency;
-        }
-
-        private void MeasureExecutionTimeStart()
-        {
-            System.Diagnostics.Stopwatch.StartNew();
-        }
-
-        private void MeasureExecutionTimeStop()
-        {
-
+            _VAOBatch.Batches[0].Model = Matrix4x4.CreateRotationX((float)Utility.DegreesToRadians(angle));
+            _VAOBatch.Batches[1].Model = Matrix4x4.CreateRotationY((float)Utility.DegreesToRadians(angle)) * Matrix4x4.CreateTranslation(new Vector3(3, 0, 0));
+            _VAOBatch.Batches[2].Model = Matrix4x4.CreateRotationZ((float)Utility.DegreesToRadians(angle)) * Matrix4x4.CreateTranslation(new Vector3(-3, 0, 0));
         }
 
         protected unsafe void OnRenderFrame(double elapsedTime)

@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Scrblr.Learning.Silk
+namespace Scrblr.Learning
 {
     internal class BlendFile
     {

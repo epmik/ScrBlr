@@ -7,7 +7,7 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 
-namespace Scrblr.Learning.Silk
+namespace Scrblr.Learning
 {
     public class ExportScene
     {

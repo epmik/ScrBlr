@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <RootNamespace>Scrblr.Learning</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,7 @@
     <Compile Remove="Learn012-BlendFileParser.cs" />
     <Compile Remove="Shader20220413.cs" />
     <Compile Remove="_Program.cs" />
+    <Compile Remove="__Learn999-BlenderFileReader.cs" />
   </ItemGroup>
 
   <ItemGroup>
