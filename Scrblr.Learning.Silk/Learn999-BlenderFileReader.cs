@@ -9,7 +9,6 @@ using System;
 using System.Drawing;
 using System.Reflection;
 
-
 namespace Scrblr.Learning
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
@@ -136,9 +135,9 @@ void main()
             Keyboard.KeyUp += KeyUp;
             Keyboard.KeyChar += KeyChar;
 
-            //var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/plane-001.gltf");
-            var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/cube-001.gltf");
-            //var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/scene-001.gltf");
+            var sceneGLTF1 = new Assimp.AssimpContext().ImportFile($".resources/plane-001.gltf");
+            var sceneGLTF2 = new Assimp.AssimpContext().ImportFile($".resources/cube-001.gltf");
+            var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/scene-003.gltf");
 
             //var mesh = sceneGLTF.Meshes[0];
 
@@ -163,7 +162,7 @@ void main()
 
 
 
-            _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource); 
+            _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource);
             _shader.Use();
 
             //var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
@@ -192,70 +191,20 @@ void main()
                 Offset = 0
             });
 
-
             uint arrayBufferBytesWritten = 0;
             uint elementArrayBufferBytesWritten = 0;
             uint index = 0;
 
-            var random = new Random();
-
-            foreach (var c in sceneGLTF.RootNode.Children)
-            {
-                if(!c.HasMeshes)
-                {
-                    continue;
-                }
-
-                foreach(var i in c.MeshIndices)
-                {
-                    var m = sceneGLTF.Meshes[i];
-
-                    WriteMeshToBuffersBufferSubData(
-                        m,
-                        _vertexArrayObject,
-                        _vertexBufferObject,
-                        _elementBufferObject,
-                        arrayBufferBytesWritten,
-                        elementArrayBufferBytesWritten,
-                        out arrayBufferBytesWritten,
-                        out elementArrayBufferBytesWritten);
-
-                    var b = new Batch
-                    {
-                        Start = index,
-                        Count = m.TotalMeshIndexCount(),
-                    };
-
-                    _VAOBatch.Batches.Add(b);
-
-                    index += b.Count;
-
-                    b.Model = ToMatrix4x4(c.Transform);
-
-                    b.Uniforms.Add("uColor", new Vector4(
-                        (float)random.NextDouble(),
-                        (float)random.NextDouble(),
-                        (float)random.NextDouble(),
-                        1f));
-                }
-            }
-
-
-            //_VAOBatch.Batches.Add(new Batch
-            //{
-            //    Start = 0,
-            //    Count = indiceCount,
-            //});
-
-            //_VAOBatch.Batches[_VAOBatch.Batches.Count - 1].Uniforms.Add("uColor", new Vector4(1f, 1f, 0f, 1f));
-
-            //_VAOBatch.Batches.Add(new Batch
-            //{
-            //    Start = 0,
-            //    Count = indiceCount,
-            //});
-
-            //_VAOBatch.Batches[_VAOBatch.Batches.Count - 1].Uniforms.Add("uColor", new Vector4(1f, 0f, 1f, 1f));
+            WriteNodeToBuffersRecursive(
+                sceneGLTF,
+                _vertexArrayObject,
+                _vertexBufferObject,
+                _elementBufferObject,
+                index,
+                arrayBufferBytesWritten,
+                elementArrayBufferBytesWritten,
+                out arrayBufferBytesWritten,
+                out elementArrayBufferBytesWritten);
 
             GL.BindVertexArray(0);
             GL.BindBuffer(GLEnum.ArrayBuffer, 0);
@@ -278,15 +227,6 @@ void main()
             //ConfineCursor();
 
             CenterCursor();
-        }
-
-        private Matrix4x4 ToMatrix4x4(Assimp.Matrix4x4 m)
-        {
-            return new Matrix4x4(
-                m.A1, m.A2, m.A3, m.A4,
-                m.B1, m.B2, m.B3, m.B4,
-                m.C1, m.C2, m.C3, m.C4,
-                m.D1, m.D2, m.D3, m.D4);
         }
 
         protected void OnUpdateFrame(double elapsedTime)
@@ -338,12 +278,230 @@ void main()
             _camera.Pitch -= deltaY * sensitivity; // Reversed since y-coordinates range from bottom to top
             //}
 
+            foreach(var b in _VAOBatch.Batches)
+            {
+                b.Model = Matrix4x4.CreateRotationX((float)Utility.DegreesToRadians(angle)) * b.Origin;
+            }
+
             //_VAOBatch.Batches[0].Model = Matrix4x4.CreateRotationX((float)Utility.DegreesToRadians(angle));
             //_VAOBatch.Batches[1].Model = Matrix4x4.CreateRotationY((float)Utility.DegreesToRadians(angle)) * Matrix4x4.CreateTranslation(new Vector3(2, 0, 0));
             //_VAOBatch.Batches[2].Model = Matrix4x4.CreateRotationZ((float)Utility.DegreesToRadians(angle)) * Matrix4x4.CreateTranslation(new Vector3(-2, 0, 0));
         }
 
-        private unsafe void WriteMeshToBuffersBufferSubData(
+        protected unsafe void OnRenderFrame(double elapsedTime)
+        {
+            GL.Enable(GLEnum.DepthTest);
+            GL.Enable(GLEnum.CullFace);
+            GL.CullFace(GLEnum.Back);
+            GL.FrontFace(FrontFaceDirection.Ccw);   // FrontFaceDirection.Ccw == default
+
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            // see binding/ubinding https://www.songho.ca/opengl/gl_vbo.html
+            GL.BindVertexArray(_VAOBatch.VAO);
+            GL.BindBuffer(GLEnum.ArrayBuffer, _VAOBatch.VBO);
+            GL.BindBuffer(GLEnum.ElementArrayBuffer, _VAOBatch.EBO);
+
+            foreach (var atribute in _VAOBatch.Attributes)
+            {
+                var vertexLocation = _shader.GetAttribLocation(atribute.Name);
+                GL.EnableVertexAttribArray(vertexLocation);
+                GL.VertexAttribPointer(vertexLocation, atribute.Count, atribute.Type, false, atribute.Stride, (void*)atribute.Offset);
+            }
+
+            _view = _camera.GetViewMatrix();
+
+            //_texture.Use(TextureUnit.Texture0);
+            //_texture2.Use(TextureUnit.Texture1);
+
+            _shader.Use();
+
+            _shader.SetMatrix4("view", _view);
+            _shader.SetMatrix4("projection", _projection);
+
+            foreach (var batch in _VAOBatch.Batches)
+            {
+                _shader.Uniform("model", batch.Model);
+
+                foreach (var uniform in batch.Uniforms)
+                {
+                    _shader.Uniform(uniform.Key, uniform.Value);
+                }
+
+                GL.DrawRangeElements(GLEnum.Triangles, (uint)batch.Start, (uint)(batch.Start + batch.Count), (uint)batch.Count, GLEnum.UnsignedInt, (void*)0);
+            }
+
+            // see binding/ubinding https://www.songho.ca/opengl/gl_vbo.html
+
+            foreach (var atribute in _VAOBatch.Attributes)
+            {
+                var vertexLocation = _shader.GetAttribLocation(atribute.Name);
+                GL.DisableVertexAttribArray(vertexLocation);
+            }
+
+            GL.BindVertexArray(0);
+            GL.BindBuffer(GLEnum.ArrayBuffer, 0);
+            GL.BindBuffer(GLEnum.ElementArrayBuffer, 0);
+        }
+
+        private Matrix4x4 ToMatrix4x4(Assimp.Matrix4x4 m)
+        {
+            //return new Matrix4x4(
+            //    m.A1, m.A2, m.A3, m.A4,
+            //    m.B1, m.B2, m.B3, m.B4,
+            //    m.C1, m.C2, m.C3, m.C4,
+            //    m.D1, m.D2, m.D3, m.D4);
+
+            return new Matrix4x4(
+                m.A1, m.B1, m.C1, m.D1,
+                m.A2, m.B2, m.C2, m.D2,
+                m.A3, m.B3, m.C3, m.D3,
+                m.A4, m.B4, m.C4, m.D4);
+        }
+
+        private uint WriteNodeToBuffersRecursive(Assimp.Scene scene,
+            uint vao,
+            uint vbo,
+            uint ebo,
+            uint index,
+            uint arrayBufferOffset,
+            uint elementArrayBufferOffset,
+            out uint arrayBufferBytesWritten,
+            out uint elementArrayBufferBytesWritten)
+        {
+            index = WriteNodeToBuffersRecursive(
+                    scene.RootNode,
+                    scene,
+                    vao,
+                    vbo,
+                    ebo,
+                    index,
+                    arrayBufferOffset,
+                    elementArrayBufferOffset,
+                    out arrayBufferBytesWritten,
+                    out elementArrayBufferBytesWritten);
+
+            return index;
+        }
+
+        private uint WriteNodeToBuffersRecursive(
+            Assimp.Node node,
+            Assimp.Scene scene,
+            uint vao,
+            uint vbo,
+            uint ebo,
+            uint index,
+            uint arrayBufferOffset,
+            uint elementArrayBufferOffset,
+            out uint arrayBufferBytesWritten,
+            out uint elementArrayBufferBytesWritten)
+        {
+            arrayBufferBytesWritten = 0;
+            elementArrayBufferBytesWritten = 0;
+
+            if (node == null)
+            {
+                return index;
+            }
+
+            if(node.HasMeshes)
+            {
+                index = WriteNodeToBuffers(
+                    node, 
+                    scene, 
+                    vao, 
+                    vbo, 
+                    ebo,
+                    index,
+                    arrayBufferOffset,
+                    elementArrayBufferOffset,
+                    out arrayBufferBytesWritten,
+                    out elementArrayBufferBytesWritten);
+
+                arrayBufferOffset += arrayBufferBytesWritten;
+                elementArrayBufferOffset += elementArrayBufferBytesWritten;
+            }
+
+            if(node.HasChildren)
+            {
+                foreach(var child in node.Children)
+                {
+                    index = WriteNodeToBuffersRecursive(
+                        child,
+                        scene,
+                        vao,
+                        vbo,
+                        ebo,
+                        index,
+                        arrayBufferOffset,
+                        elementArrayBufferOffset,
+                        out arrayBufferBytesWritten,
+                        out elementArrayBufferBytesWritten);
+                }
+            }
+
+            return index;
+        }
+
+        private uint WriteNodeToBuffers(
+            Assimp.Node node, 
+            Assimp.Scene scene,
+            uint vao,
+            uint vbo,
+            uint ebo,
+            uint index,
+            uint arrayBufferOffset,
+            uint elementArrayBufferOffset,
+            out uint arrayBufferBytesWritten,
+            out uint elementArrayBufferBytesWritten)
+        {
+            arrayBufferBytesWritten = 0;
+            elementArrayBufferBytesWritten = 0;
+
+            if (!node.HasMeshes)
+            {
+                return index;
+            }
+
+            foreach (var i in node.MeshIndices)
+            {
+                var m = scene.Meshes[i];
+
+                WriteMeshToBuffers(
+                    m,
+                    _vertexArrayObject,
+                    _vertexBufferObject,
+                    _elementBufferObject,
+                    arrayBufferOffset,
+                    elementArrayBufferOffset,
+                    out arrayBufferBytesWritten,
+                    out elementArrayBufferBytesWritten);
+
+                var b = new Batch
+                {
+                    Start = index,
+                    Count = m.TotalMeshIndexCount(),
+                };
+
+                _VAOBatch.Batches.Add(b);
+
+                b.Origin = ToMatrix4x4(node.Transform);
+
+                var random = new Random();
+
+                b.Uniforms.Add("uColor", new Vector4(
+                    (float)random.NextDouble(),
+                    (float)random.NextDouble(),
+                    (float)random.NextDouble(),
+                    1f));
+
+                index += b.Count;
+            }
+
+            return index;
+        }
+
+        private unsafe void WriteMeshToBuffers(
             Assimp.Mesh mesh,
             uint vao,
             uint vbo,
@@ -428,87 +586,6 @@ void main()
 
         }
 
-        protected unsafe void OnRenderFrame(double elapsedTime)
-        {
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            // see binding/ubinding https://www.songho.ca/opengl/gl_vbo.html
-            GL.BindVertexArray(_VAOBatch.VAO);
-            GL.BindBuffer(GLEnum.ArrayBuffer, _VAOBatch.VBO);
-            GL.BindBuffer(GLEnum.ElementArrayBuffer, _VAOBatch.EBO);
-
-            foreach(var atribute in _VAOBatch.Attributes)
-            {
-                var vertexLocation = _shader.GetAttribLocation(atribute.Name);
-                GL.EnableVertexAttribArray(vertexLocation);
-                GL.VertexAttribPointer(vertexLocation, atribute.Count, atribute.Type, false, atribute.Stride, (void*)atribute.Offset);
-            }
-
-            _view = _camera.GetViewMatrix();
-
-            //_texture.Use(TextureUnit.Texture0);
-            //_texture2.Use(TextureUnit.Texture1);
-            _shader.Use();
-
-            _shader.SetMatrix4("view", _view);
-            _shader.SetMatrix4("projection", _projection);
-
-            foreach(var batch in _VAOBatch.Batches)
-            {
-                _shader.Uniform("model", batch.Model);
-
-                foreach (var uniform in batch.Uniforms)
-                {
-                    _shader.Uniform(uniform.Key, uniform.Value);
-                }
-
-                GL.DrawRangeElements(GLEnum.Triangles, (uint)batch.Start, (uint)(batch.Start + batch.Count), (uint)batch.Count, GLEnum.UnsignedInt, (void*)0);
-            }
-
-
-
-            //var model = Matrix4x4.CreateRotationX((float)Utility.DegreesToRadians(angle));
-            //model *= Matrix4x4.CreateTranslation(modelPosition);
-
-            //_shader.SetMatrix4("model", model);
-            //_shader.SetVector4("uColor", new Vector4(1f, 0f, 0f, 1f));
-
-            ////GL.DrawElements(GLEnum.Triangles, (uint)(3), GLEnum.UnsignedInt, (void*)0);
-            //GL.DrawRangeElements(GLEnum.Triangles, (uint)(0), (uint)(6), (uint)(6), GLEnum.UnsignedInt, (void*)0);
-
-
-
-            //model = Matrix4x4.Identity * Matrix4x4.CreateRotationZ((float)Utility.DegreesToRadians(angle));
-            //model *= Matrix4x4.CreateTranslation(new Vector3(2, 0, 0));
-
-            //_shader.SetMatrix4("model", model); 
-            //_shader.SetVector4("uColor", new Vector4(1f, 0f, 1f, 1f));
-
-            //GL.DrawRangeElements(GLEnum.Triangles, (uint)(6), (uint)(12), (uint)(6), GLEnum.UnsignedInt, (void*)0);
-
-
-
-            //model = Matrix4x4.Identity * Matrix4x4.CreateRotationY((float)Utility.DegreesToRadians(angle));
-            //model *= Matrix4x4.CreateTranslation(new Vector3(-2, 0, 0));
-
-            //_shader.SetMatrix4("model", model);
-            //_shader.SetVector4("uColor", new Vector4(1f, 1f, 0f, 1f));
-
-            //GL.DrawRangeElements(GLEnum.Triangles, (uint)(12), (uint)(18), (uint)(3), GLEnum.UnsignedInt, (void*)0);
-
-            // see binding/ubinding https://www.songho.ca/opengl/gl_vbo.html
-
-            foreach (var atribute in _VAOBatch.Attributes)
-            {
-                var vertexLocation = _shader.GetAttribLocation(atribute.Name);
-                GL.DisableVertexAttribArray(vertexLocation);
-            }
-
-            GL.BindVertexArray(0);
-            GL.BindBuffer(GLEnum.ArrayBuffer, 0);
-            GL.BindBuffer(GLEnum.ElementArrayBuffer, 0);
-        }
-
         public class VertexAttribute
         {
             public string Name;
@@ -534,6 +611,8 @@ void main()
             public uint Start;
             //public uint End;
             public uint Count;
+
+            public Matrix4x4 Origin = Matrix4x4.Identity;
 
             public Matrix4x4 Model = Matrix4x4.Identity;
 
