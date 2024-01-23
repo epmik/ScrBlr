@@ -3,15 +3,13 @@ using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using System.Numerics;
-using Scrblr.Leaning;
 using Scrblr.Core;
-using Scrblr.Learning.Silk;
 
-namespace Scrblr.LearnOpenTK
+namespace Scrblr.Learning
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
-    public class Learn012BlendFileParser : SilkSketch
+    public class Learn012AssimpScene : SilkSketch
     {
         private uint _elementBufferObject;
 
@@ -20,10 +18,6 @@ namespace Scrblr.LearnOpenTK
         private uint _vertexArrayObject;
 
         private Shader _shader;
-
-        private Texture _texture;
-
-        private Texture _texture2;
 
         float angle = 20f;
         float angleRotationPerSecond = 45f;
@@ -52,17 +46,15 @@ namespace Scrblr.LearnOpenTK
 
         private Vector2D<int> WindowCenter = new Vector2D<int>();
 
-        private uint indexCount = 6;
+        private uint indiceTotal;
 
         string vertexShaderSource = @"
 #version 330 core
 
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec3 aNormal;
-layout(location = 2) in vec2 aTexCoord;
 
 out vec3 normal;
-out vec2 texCoord;
 out vec3 fragPos;
 
 uniform mat4 model;
@@ -73,7 +65,6 @@ void main(void)
 {
     gl_Position = vec4(aPosition, 1.0) * model * view * projection;
     normal = aNormal * mat3(transpose(inverse(model)));
-    texCoord = aTexCoord;
     fragPos = vec3(vec4(aPosition, 1.0) * model);
 }
 ";
@@ -86,13 +77,10 @@ uniform vec3 objectColor; //The color of the object.
 uniform vec3 lightColor; //The color of the light.
 uniform vec3 lightPos; //The position of the light.
 uniform vec3 viewPos; //The position of the view and/or of the player.
-uniform sampler2D texture0;
-uniform sampler2D texture1;
 
 out vec4 outputColor;
 
 in vec3 normal;
-in vec2 texCoord;
 in vec3 fragPos;
 
 void main()
@@ -124,13 +112,11 @@ void main()
     ////and makes sure the alpha value is 1
     vec3 result = (ambient + diffuse + specular) * objectColor;
 
-    outputColor = vec4(result, 1.0) * mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.5);
-    //outputColor = mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.5);
-    //outputColor = mix(mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.5), result, 0.5);
+    outputColor = vec4(result, 1.0);
 }
 ";
 
-        public Learn012BlendFileParser()
+        public Learn012AssimpScene()
         {
             var options = Silk.NET.Windowing.WindowOptions.Default;
             options.Size = new Vector2D<int>(800, 680);
@@ -185,35 +171,51 @@ void main()
             Keyboard.KeyUp += KeyUp;
             Keyboard.KeyChar += KeyChar;
 
-            var glb = GLTFParser.Parse(".resources/cube-001.glb");
-            var gltf = GLTFParser.Parse(".resources/cube-001.gltf");
-
-            var mesh = glb.ExportScene(new ExportScene.Setting { Indexed = false, Flags = new List<ExportScene.Flag> { ExportScene.Flag.Vertices, ExportScene.Flag.Normals, ExportScene.Flag.Uv0 } });
-
-
-            //var blend = BlendFileParser.Parse(".resources/cube-plane-monkey-camera-light.blend");
-
-            //var fb = blend.FindFileBlock("SC");
-
-            //var s = blend.FindStructure(fb.Header.SdnaIndex);
-
-
-
             var export = ObjParser.Parse(".resources/cube-plane-monkey-camera-light.obj")
-                .ExportScene(new ExportScene.Setting
-                {
-                    Indexed = false,
-                    Flags = new List<ExportScene.Flag>
-                    {
-                        ExportScene.Flag.Vertices,
-                        ExportScene.Flag.Normals,
-                        ExportScene.Flag.Uv0
-                    }
-                });
+                .ExportScene(new ExportScene.Setting { Indexed = false, Flags = new List<ExportScene.Flag> { ExportScene.Flag.Vertices, ExportScene.Flag.Normals } });
 
             var mesh = export.Meshes[0];
 
-            indexCount = (uint)mesh.Indices.Length;
+            var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/plane-001.gltf");
+
+            var vertexTotal = sceneGLTF.TotalMeshVertexCount(false);
+            indiceTotal = sceneGLTF.TotalMeshIndexCount();
+
+            var _vertices = new float[vertexTotal * 3 * 2];
+            var _indices = new uint[indiceTotal];
+            var _indiceIndex = 0u;
+            var _verticesIndex = 0u;
+            var _meshIndiceCount = 0u;
+
+            foreach (var m in sceneGLTF.Meshes)
+            {
+                foreach(var f in m.Faces)
+                {
+                    foreach (var i in f.Indices)
+                    {
+                        if (f.IndexCount > 3)
+                        {
+                            var t = 0;
+                        }
+
+                        _indices[_indiceIndex++] = _meshIndiceCount + (uint)i;
+
+                        var v = m.Vertices[i];
+                        var n = m.Normals[i];
+
+                        _vertices[_verticesIndex++] = v.X;
+                        _vertices[_verticesIndex++] = v.Y;
+                        _vertices[_verticesIndex++] = v.Z;
+
+                        _vertices[_verticesIndex++] = n.X;
+                        _vertices[_verticesIndex++] = n.Y;
+                        _vertices[_verticesIndex++] = n.Z;
+                    }
+                }
+
+                _meshIndiceCount += m.TotalMeshIndexCount();
+            }
+
 
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -222,36 +224,27 @@ void main()
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(GLEnum.ArrayBuffer, _vertexBufferObject);
-            fixed (void* v = &mesh.Vertices[0]) 
-                GL.BufferData(GLEnum.ArrayBuffer, (nuint)(mesh.Vertices.Length * sizeof(float)), v, GLEnum.StaticDraw);
+            //fixed (void* v = &mesh.Vertices[0])
+            //  GL.BufferData(GLEnum.ArrayBuffer, (nuint)(mesh.Vertices.Length * sizeof(float)), v, GLEnum.StaticDraw);
+            fixed (void* v = &_vertices[0])
+                GL.BufferData(GLEnum.ArrayBuffer, (nuint)(_vertices.Length * sizeof(float)), v, GLEnum.StaticDraw);
 
             _elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(GLEnum.ElementArrayBuffer, _elementBufferObject);
-            fixed (void* i = &mesh.Indices[0])
-                GL.BufferData(GLEnum.ElementArrayBuffer, (nuint)(mesh.Indices.Length * sizeof(uint)), i, GLEnum.StaticDraw);
+            //fixed (void* i = &mesh.Indices[0])
+            //  GL.BufferData(GLEnum.ElementArrayBuffer, (nuint)(mesh.Indices.Length * sizeof(uint)), i, GLEnum.StaticDraw);
+            fixed (void* i = &_indices[0])
+                GL.BufferData(GLEnum.ElementArrayBuffer, (nuint)(_indices.Length * sizeof(uint)), i, GLEnum.StaticDraw);
 
             _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource); _shader.Use();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 3, GLEnum.Float, false, 8 * sizeof(float), (void*)0);
+            GL.VertexAttribPointer(vertexLocation, 3, GLEnum.Float, false, 6 * sizeof(float), (void*)0);
 
             var normalLocation = _shader.GetAttribLocation("aNormal");
             GL.EnableVertexAttribArray(normalLocation);
-            GL.VertexAttribPointer(normalLocation, 3, GLEnum.Float, false, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-
-            var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, GLEnum.Float, false, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-
-            _texture = Texture.LoadFromFile(GL, ".resources/container.png");
-            _texture.Use(TextureUnit.Texture0);
-
-            _texture2 = Texture.LoadFromFile(GL, ".resources/awesomeface.png");
-            _texture2.Use(TextureUnit.Texture1);
-
-            _shader.SetInt("texture0", 0);
-            _shader.SetInt("texture1", 1);
+            GL.VertexAttribPointer(normalLocation, 3, GLEnum.Float, false, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
             // For the matrix, we use a few parameters.
             //   Field of view. This determines how much the viewport can see at once. 45 is considered the most "realistic" setting, but most video games nowadays use 90
@@ -329,8 +322,6 @@ void main()
             // You can think like this: first apply the modelToWorld (aka model) matrix, then apply the worldToView (aka view) matrix, 
             // and finally apply the viewToProjectedSpace (aka projection) matrix.
 
-            _texture.Use(TextureUnit.Texture0);
-            _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
             // Now that the matrix is finished, pass it to the vertex shader.
@@ -345,7 +336,7 @@ void main()
             _shader.SetVector3("lightPos", new Vector3(5.0f, 5.0f, 0.0f));
             _shader.SetVector3("viewPos", _camera.Position);
 
-            GL.DrawElements(GLEnum.Triangles, indexCount, GLEnum.UnsignedInt, (void*)0);
+            GL.DrawElements(GLEnum.Triangles, indiceTotal, GLEnum.UnsignedInt, (void*)0);
         }
 
         protected void OnUpdateFrame(double elapsedTime)

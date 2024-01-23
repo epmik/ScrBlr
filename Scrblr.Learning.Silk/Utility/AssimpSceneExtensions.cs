@@ -8,9 +8,11 @@ namespace Scrblr.Learning
 {
     internal static class AssimpSceneExtensions
     {
-        public static uint TotalMeshVertexCount(this Assimp.Scene scene)
+        public static uint TotalMeshVertexCount(this Assimp.Scene scene, bool indexed = true)
         {
-            return (uint)scene.Meshes.Sum(o => o.VertexCount);
+            return indexed 
+                ? (uint)scene.Meshes.Sum(o => o.VertexCount)
+                : scene.TotalMeshIndexCount();
         }
 
         public static uint TotalMeshIndexCount(this Assimp.Mesh mesh)

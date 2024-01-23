@@ -24,6 +24,7 @@
     <Compile Remove="Learn007-Model-View-Projection.cs" />
     <Compile Remove="Learn010-ObjParser.cs" />
     <Compile Remove="Learn012-BlendFileParser.cs" />
+    <Compile Remove="Learn013-AssimpScene.cs" />
     <Compile Remove="Shader20220413.cs" />
     <Compile Remove="_Program.cs" />
     <Compile Remove="__Learn999-BlenderFileReader.cs" />

@@ -13,7 +13,7 @@ namespace Scrblr.Learning
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
-    public class Learn999BlenderFileReader : SilkSketch
+    public class Learn013AssimpScene : SilkSketch
     {
         private uint _elementBufferObject;
 
@@ -77,7 +77,12 @@ void main()
 }
 ";
 
-        public unsafe Learn999BlenderFileReader()
+        float[] _vertices;
+        uint _verticesIndex;
+        uint[] _indices;
+        uint _indicesIndex;
+
+        public unsafe Learn013AssimpScene()
         {
             var options = Silk.NET.Windowing.WindowOptions.Default;
             options.Size = new Vector2D<int>(800, 680);
@@ -92,33 +97,6 @@ void main()
 
             WindowCenter.X = (int)(window.Size.X / 2);
             WindowCenter.Y = (int)(window.Size.Y / 2);
-
-            //var b = BlendFileParser.Parse("resources/test-block.v365.blend");
-
-            //var b1 = ObjFileReader.Parse("resources/quad-001.obj");
-            //var b2 = ObjFileReader.Parse("resources/cube-001.obj");
-            //var b3 = ObjFileReader.Parse("resources/test-objects-001.obj");
-            //var b4 = ObjFileReader.Parse("resources/test-objects-002.obj");
-
-            var importerContext = new Assimp.AssimpContext();
-
-            var assimpApi = Silk.NET.Assimp.Assimp.GetApi();
-
-            var name = "plane-001";
-            //var name = "cube-001";
-            //var name = "scene-001";
-
-            var sceneDAE = importerContext.ImportFile($".resources/{name}.dae");
-            var sceneFBX = importerContext.ImportFile($".resources/{name}.fbx");
-            var sceneGLB = importerContext.ImportFile($".resources/{name}.glb");
-            var sceneGLTF = importerContext.ImportFile($".resources/{name}.gltf");
-            //var sceneOBJ = importerContext.ImportFile($".resources/{name}.obj");
-
-            var sceneDAE2 = assimpApi.ImportFile($".resources/{name}.dae", 0);
-            var sceneFBX2 = assimpApi.ImportFile($".resources/{name}.fbx", 0);
-            var sceneGLB2 = assimpApi.ImportFile($".resources/{name}.glb", 0);
-            var sceneGLTF2 = assimpApi.ImportFile($".resources/{name}.gltf", 0);
-            //var sceneOBJ2 = assimpApi.ImportFile($".resources/{name}.obj", 0);
         }
 
         protected unsafe void OnLoad()
@@ -135,14 +113,15 @@ void main()
             Keyboard.KeyUp += KeyUp;
             Keyboard.KeyChar += KeyChar;
 
-            var sceneGLTF1 = new Assimp.AssimpContext().ImportFile($".resources/plane-001.gltf");
-            var sceneGLTF2 = new Assimp.AssimpContext().ImportFile($".resources/cube-001.gltf");
-            var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/scene-003.gltf");
-
-            //var mesh = sceneGLTF.Meshes[0];
+            //var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/plane-001.gltf");
+            //var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/cube-001.gltf");
+            var sceneGLTF = new Assimp.AssimpContext().ImportFile($".resources/scene-005.gltf");
 
             var vertexCount = sceneGLTF.TotalMeshVertexCount();
             var indiceCount = sceneGLTF.TotalMeshIndexCount();
+
+            _vertices = new float[vertexCount * 3];
+            _indices = new uint[indiceCount];
 
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -195,16 +174,47 @@ void main()
             uint elementArrayBufferBytesWritten = 0;
             uint index = 0;
 
-            WriteNodeToBuffersRecursive(
-                sceneGLTF,
-                _vertexArrayObject,
-                _vertexBufferObject,
-                _elementBufferObject,
-                index,
-                arrayBufferBytesWritten,
-                elementArrayBufferBytesWritten,
-                out arrayBufferBytesWritten,
-                out elementArrayBufferBytesWritten);
+            //WriteNodeToBuffersRecursive(
+            //    sceneGLTF,
+            //    _vertexArrayObject,
+            //    _vertexBufferObject,
+            //    _elementBufferObject,
+            //    index,
+            //    ref arrayBufferBytesWritten,
+            //    ref elementArrayBufferBytesWritten);
+
+            //foreach(var mesh in sceneGLTF.Meshes)
+            //{
+            //    WriteMeshToBuffers(
+            //        mesh,
+            //        _vertexArrayObject,
+            //        _vertexBufferObject,
+            //        _elementBufferObject,
+            //        arrayBufferBytesWritten,
+            //        elementArrayBufferBytesWritten,
+            //        out arrayBufferBytesWritten,
+            //        out elementArrayBufferBytesWritten);
+            //}
+
+
+            fixed (void* v = &_vertices[0])
+            {
+                var size = _vertices.Length * sizeof(float);
+
+                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)0, (nuint)size, v);
+            }
+
+            fixed (void* i = &_indices[0])
+            {
+                var size = _indices.Length * sizeof(uint);
+
+                GL.BufferSubData(GLEnum.ElementArrayBuffer, (nint)0, (nuint)size, i);
+            }
+
+
+            var vertexLocation = _shader.GetAttribLocation("aPosition");
+            GL.EnableVertexAttribArray(vertexLocation);
+            GL.VertexAttribPointer(vertexLocation, 3, GLEnum.Float, false, 3 * sizeof(float), (void*)0);
 
             GL.BindVertexArray(0);
             GL.BindBuffer(GLEnum.ArrayBuffer, 0);
@@ -316,28 +326,34 @@ void main()
 
             _shader.Use();
 
+            var i = Matrix4x4.Identity;
+
             _shader.SetMatrix4("view", _view);
             _shader.SetMatrix4("projection", _projection);
+            _shader.SetMatrix4("model", i);
+            _shader.SetVector4("uColor", new Vector4(1f, 0f, 0f, 1f));
 
-            foreach (var batch in _VAOBatch.Batches)
-            {
-                _shader.Uniform("model", batch.Model);
+            GL.DrawElements(GLEnum.Triangles, (uint)_indices.Length, GLEnum.UnsignedInt, (void*)0);
 
-                foreach (var uniform in batch.Uniforms)
-                {
-                    _shader.Uniform(uniform.Key, uniform.Value);
-                }
+            //foreach (var batch in _VAOBatch.Batches)
+            //{
+            //    _shader.Uniform("model", batch.Model);
 
-                GL.DrawRangeElements(GLEnum.Triangles, (uint)batch.Start, (uint)(batch.Start + batch.Count), (uint)batch.Count, GLEnum.UnsignedInt, (void*)0);
-            }
+            //    foreach (var uniform in batch.Uniforms)
+            //    {
+                    //_shader.Uniform(uniform.Key, uniform.Value);
+            //    }
 
-            // see binding/ubinding https://www.songho.ca/opengl/gl_vbo.html
+            //    GL.DrawRangeElements(GLEnum.Triangles, (uint)batch.Start, (uint)(batch.Start + batch.Count), (uint)batch.Count, GLEnum.UnsignedInt, (void*)0);
+            //}
 
-            foreach (var atribute in _VAOBatch.Attributes)
-            {
-                var vertexLocation = _shader.GetAttribLocation(atribute.Name);
-                GL.DisableVertexAttribArray(vertexLocation);
-            }
+            //// see binding/ubinding https://www.songho.ca/opengl/gl_vbo.html
+
+            //foreach (var atribute in _VAOBatch.Attributes)
+            //{
+            //    var vertexLocation = _shader.GetAttribLocation(atribute.Name);
+            //    GL.DisableVertexAttribArray(vertexLocation);
+            //}
 
             GL.BindVertexArray(0);
             GL.BindBuffer(GLEnum.ArrayBuffer, 0);
@@ -364,10 +380,8 @@ void main()
             uint vbo,
             uint ebo,
             uint index,
-            uint arrayBufferOffset,
-            uint elementArrayBufferOffset,
-            out uint arrayBufferBytesWritten,
-            out uint elementArrayBufferBytesWritten)
+            ref uint arrayBufferOffset,
+            ref uint elementArrayBufferOffset)
         {
             index = WriteNodeToBuffersRecursive(
                     scene.RootNode,
@@ -376,10 +390,8 @@ void main()
                     vbo,
                     ebo,
                     index,
-                    arrayBufferOffset,
-                    elementArrayBufferOffset,
-                    out arrayBufferBytesWritten,
-                    out elementArrayBufferBytesWritten);
+                    ref arrayBufferOffset,
+                    ref elementArrayBufferOffset);
 
             return index;
         }
@@ -391,14 +403,9 @@ void main()
             uint vbo,
             uint ebo,
             uint index,
-            uint arrayBufferOffset,
-            uint elementArrayBufferOffset,
-            out uint arrayBufferBytesWritten,
-            out uint elementArrayBufferBytesWritten)
+            ref uint arrayBufferOffset,
+            ref uint elementArrayBufferOffset)
         {
-            arrayBufferBytesWritten = 0;
-            elementArrayBufferBytesWritten = 0;
-
             if (node == null)
             {
                 return index;
@@ -413,13 +420,8 @@ void main()
                     vbo, 
                     ebo,
                     index,
-                    arrayBufferOffset,
-                    elementArrayBufferOffset,
-                    out arrayBufferBytesWritten,
-                    out elementArrayBufferBytesWritten);
-
-                arrayBufferOffset += arrayBufferBytesWritten;
-                elementArrayBufferOffset += elementArrayBufferBytesWritten;
+                    ref arrayBufferOffset,
+                    ref elementArrayBufferOffset);
             }
 
             if(node.HasChildren)
@@ -433,10 +435,8 @@ void main()
                         vbo,
                         ebo,
                         index,
-                        arrayBufferOffset,
-                        elementArrayBufferOffset,
-                        out arrayBufferBytesWritten,
-                        out elementArrayBufferBytesWritten);
+                        ref arrayBufferOffset,
+                        ref elementArrayBufferOffset);
                 }
             }
 
@@ -449,18 +449,13 @@ void main()
             uint vao,
             uint vbo,
             uint ebo,
-            uint index,
-            uint arrayBufferOffset,
-            uint elementArrayBufferOffset,
-            out uint arrayBufferBytesWritten,
-            out uint elementArrayBufferBytesWritten)
+            uint indiceIndex,
+            ref uint arrayBufferOffset,
+            ref uint elementArrayBufferOffset)
         {
-            arrayBufferBytesWritten = 0;
-            elementArrayBufferBytesWritten = 0;
-
             if (!node.HasMeshes)
             {
-                return index;
+                return indiceIndex;
             }
 
             foreach (var i in node.MeshIndices)
@@ -469,17 +464,16 @@ void main()
 
                 WriteMeshToBuffers(
                     m,
-                    _vertexArrayObject,
-                    _vertexBufferObject,
-                    _elementBufferObject,
-                    arrayBufferOffset,
-                    elementArrayBufferOffset,
-                    out arrayBufferBytesWritten,
-                    out elementArrayBufferBytesWritten);
+                    vao,
+                    vbo,
+                    ebo,
+                    indiceIndex,
+                    ref arrayBufferOffset,
+                    ref elementArrayBufferOffset);
 
                 var b = new Batch
                 {
-                    Start = index,
+                    Start = indiceIndex,
                     Count = m.TotalMeshIndexCount(),
                 };
 
@@ -495,10 +489,10 @@ void main()
                     (float)random.NextDouble(),
                     1f));
 
-                index += b.Count;
+                indiceIndex += b.Count;
             }
 
-            return index;
+            return indiceIndex;
         }
 
         private unsafe void WriteMeshToBuffers(
@@ -506,14 +500,10 @@ void main()
             uint vao,
             uint vbo,
             uint ebo,
-            uint arrayBufferOffset,
-            uint elementArrayBufferOffset,
-            out uint arrayBufferBytesWritten,
-            out uint elementArrayBufferBytesWritten)
+            uint indiceIndex,
+            ref uint arrayBufferOffset,
+            ref uint elementArrayBufferOffset)
         {
-            arrayBufferBytesWritten = 0;
-            elementArrayBufferBytesWritten = 0;
-
             GL.BindVertexArray(vao);
 
             GL.BindBuffer(GLEnum.ArrayBuffer, vbo);
@@ -540,16 +530,17 @@ void main()
             for (var i = 0; i < mesh.Vertices.Count; i++)
             {
                 GL.BufferSubData(GLEnum.ArrayBuffer, (nint)arrayBufferOffset, (nuint)floatSize, mesh.Vertices[i].X);
-                arrayBufferBytesWritten += floatSize;
                 arrayBufferOffset += floatSize;
+                GL.BufferSubData(GLEnum.ArrayBuffer, (nint)arrayBufferOffset, (nuint)floatSize, mesh.Vertices[i].X);
+                _vertices[_verticesIndex++] = mesh.Vertices[i].X;
 
                 GL.BufferSubData(GLEnum.ArrayBuffer, (nint)arrayBufferOffset, (nuint)floatSize, mesh.Vertices[i].Y);
-                arrayBufferBytesWritten += floatSize;
                 arrayBufferOffset += floatSize;
+                _vertices[_verticesIndex++] = mesh.Vertices[i].Y;
 
                 GL.BufferSubData(GLEnum.ArrayBuffer, (nint)arrayBufferOffset, (nuint)floatSize, mesh.Vertices[i].Z);
-                arrayBufferBytesWritten += floatSize;
                 arrayBufferOffset += floatSize;
+                _vertices[_verticesIndex++] = mesh.Vertices[i].Z;
             }
 
             var uintSize = (uint)sizeof(uint);
@@ -558,10 +549,11 @@ void main()
             {
                 for (var i = 0; i < mesh.Faces[f].Indices.Count; i++)
                 {
-                    GL.BufferSubData(GLEnum.ElementArrayBuffer, (nint)elementArrayBufferOffset, (nuint)uintSize, mesh.Faces[f].Indices[i]);
+                    GL.BufferSubData(GLEnum.ElementArrayBuffer, (nint)elementArrayBufferOffset, (nuint)uintSize, indiceIndex + mesh.Faces[f].Indices[i]);
 
-                    elementArrayBufferBytesWritten += uintSize;
                     elementArrayBufferOffset += uintSize;
+
+                    _indices[_indicesIndex++] = (uint)(indiceIndex + mesh.Faces[f].Indices[i]);
                 }
             }
         }
