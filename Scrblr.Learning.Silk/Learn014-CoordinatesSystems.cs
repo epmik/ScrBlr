@@ -3,7 +3,7 @@ using Silk.NET.Input;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using System.Numerics;
-using System.Drawing;
+using Scrblr.Core;
 
 namespace Scrblr.Learning
 {
@@ -12,6 +12,11 @@ namespace Scrblr.Learning
     public class Learn014CoordinatesSystems : SilkSketch
     {
         //private uint _elementBufferObject;
+
+        /// <summary>
+        /// default == ProjectionMode.Perspective
+        /// </summary>
+        public ProjectionMode ProjectionMode { get; set; } = ProjectionMode.Perspective;
 
         private uint _vertexBufferObject;
 
@@ -45,7 +50,23 @@ namespace Scrblr.Learning
         private Vector3 _viewPosition = new Vector3(0, 0, -3f);
         private Vector3 _viewPositionOffsetPerSecond = new Vector3(0, 0, 2);
 
-        private int _windowWidth = 800;
+        public float CanvasWidth = 1;
+        public float CanvasHeight = 1;
+        public float Near = 0.1f;
+        public float Far = 100f;
+
+        /// <summary>
+        /// field of view in degrees
+        /// <para>
+        /// this can be the vertical (default) or horizontal field of view
+        /// </para>
+        /// <para>
+        /// if the window is higher than it's width, then the Fov is considered horizontal
+        /// </para>
+        /// </summary>
+        public float Fov = 45f;
+
+        private int _windowWidth = 640;
         private int _windowHeight = 640;
 
         string _vertexShaderSource = @"
@@ -91,8 +112,10 @@ void main()
 
         public Learn014CoordinatesSystems()
         {
+
             var options = Silk.NET.Windowing.WindowOptions.Default;
-            options.Size = new Vector2D<int>(_windowWidth, _windowHeight);
+            //options.Size = new Vector2D<int>(_windowWidth, _windowHeight);
+            options.Size = CalculateWindowSize(CanvasWidth, CanvasHeight);
             options.Title = "LearnOpenGL with Silk.NET";
             window = Window.Create(options);
 
@@ -101,11 +124,13 @@ void main()
             window.Update += OnUpdateFrame;
             window.Resize += OnResize;
             window.Closing += OnUnLoad;
+
+            Console.WriteLine($"Window size is: {options.Size.X}x{options.Size.Y}");
         }
 
         protected unsafe void OnLoad()
         {
-            GL = GL.GetApi(window);
+            Context.GL = GL = GL.GetApi(window);
 
             inputContext = window.CreateInput();
 
@@ -181,32 +206,57 @@ void main()
             _shader.SetInt("texture0", 0);
             _shader.SetInt("texture1", 1);
 
-            // For the matrix, we use a few parameters.
-            //   Field of view. This determines how much the viewport can see at once. 45 is considered the most "realistic" setting, but most video games nowadays use 90
-            //   Aspect ratio. This should be set to Width / Height.
-            //   Near-clipping. Any vertices closer to the camera than this value will be clipped.
-            //   Far-clipping. Any vertices farther away from the camera than this value will be clipped.
+            UpdateProjectionMatrix();
 
-            var near = 0.1f;
-            var far = 100f;
-            var fov = (float)Utility.DegreesToRadians(45f);
+            var fovRadians = (float)Utility.DegreesToRadians(Fov);
 
-            var aspectRatio = ((float)window.Size.X / (float)window.Size.Y);
-            var top = (float)Math.Tan(fov * 0.5f) * near;
-            var bottom = -top;
-            var right = top * aspectRatio;
-            var left = -right;
+            float extent = CanvasWidth * 0.5f;
+            var z = extent / (float)Math.Sin(fovRadians * 0.5f);
 
+            _viewPosition = new Vector3(0, 0, -(z - Near));
 
-            _projection = Matrix4x4.CreatePerspectiveFieldOfView(fov, aspectRatio, near, far);
-            _projection = Matrix4x4.CreatePerspective(right - left, top - bottom, near, far);
-            //_projection = Matrix4x4.CreateOrthographic(1.0f, 1.0f, near, far);
+        }
 
-            top = (float)Math.Tan(fov * 0.5f);
-            right = top * aspectRatio;
-            var z = (float)((right * (1 / right)) / Math.Tan(fov * 0.5));
+        protected void UpdateProjectionMatrix()
+        {
+            var fovRadians = (float)Utility.DegreesToRadians(Fov);
 
-            _viewPosition = new Vector3(0, 0, -z);
+            var aspectRatioHorizontal = ((float)window.Size.X / (float)window.Size.Y);
+            var aspectRatioVertical = ((float)window.Size.Y / (float)window.Size.X);
+
+            switch (ProjectionMode)
+            {
+                case ProjectionMode.Orthographic:
+                    if (aspectRatioHorizontal >= aspectRatioVertical)
+                    {
+                        _projection = Matrix4x4.CreateOrthographic(CanvasWidth * aspectRatioHorizontal, CanvasHeight, Near, Far);
+                    }
+                    else
+                    {
+                        _projection = Matrix4x4.CreateOrthographic(CanvasWidth, CanvasHeight * aspectRatioVertical, Near, Far);
+                    }
+                    break;
+                case ProjectionMode.Perspective:
+                    if (aspectRatioHorizontal >= aspectRatioVertical)
+                    {
+                        var top = (float)Math.Tan(fovRadians * 0.5f) * Near;
+                        var bottom = -top;
+                        var right = top * aspectRatioHorizontal;
+                        var left = -right;
+                        _projection = Matrix4x4.CreatePerspective(right - left, top - bottom, Near, Far);
+                    }
+                    else
+                    {
+                        var right = (float)Math.Tan(fovRadians * 0.5f) * Near;
+                        var left = -right;
+                        var top = right * aspectRatioVertical;
+                        var bottom = -top;
+                        _projection = Matrix4x4.CreatePerspective(right - left, top - bottom, Near, Far);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         protected unsafe void OnRenderFrame(double elapsedTime)
@@ -325,19 +375,49 @@ void main()
 
         private void KeyDown(IKeyboard keyboard, Key key, int arg3)
         {
-            if (key == Key.Escape)
+            switch(key)
             {
-                window.Close();
-            }
-            if (key == Key.Space)
-            {
-                _animate = !_animate;
+                case Key.Escape:
+                    window.Close();
+                    break;
+                case Key.Space:
+                    _animate = !_animate;
+                    break;
+                case Key.P:
+                    ProjectionMode = ProjectionMode.Next();
+                    Console.WriteLine($"Switched ProjectionMode to: {ProjectionMode}");
+                    UpdateProjectionMatrix();
+                    break;
             }
         }
 
         protected void OnResize(Vector2D<int> size)
         {
             GL.Viewport(0, 0, (uint)size.X, (uint)size.Y);
+
+            UpdateProjectionMatrix();
+        }
+
+
+        private readonly int[] AvailableSizes = { 3840, 3440, 2560, 2160, 2048, 1920, 1600, 1440, 1360, 1280, 1152, 1024, 800, 720, 640, 480, 360 };
+
+        private Vector2D<int> CalculateWindowSize(float canvasWidth, float canvasHeight)
+        {
+            var primaryMonitor = Silk.NET.Windowing.Monitor.GetMainMonitor(null);
+
+            var targetWindowWidth = AvailableSizes.First(o => o < primaryMonitor.Bounds.Size.X);
+            var targetWindowHeight = AvailableSizes.First(o => o < primaryMonitor.Bounds.Size.Y);
+
+            var windowWidth = (int)(targetWindowHeight * canvasWidth / canvasHeight);
+            var windowHeight = targetWindowHeight;
+
+            if (windowWidth > targetWindowWidth || windowHeight > targetWindowWidth)
+            {
+                windowWidth = targetWindowWidth;
+                windowHeight = (int)(targetWindowWidth * canvasHeight / canvasWidth);
+            }
+
+            return new Vector2D<int>(windowWidth, windowHeight);
         }
     }
 }
