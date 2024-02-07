@@ -1,7 +1,7 @@
 ﻿using Silk.NET.OpenGL;
 using System;
 
-namespace Scrblr.Core.Silk.Font
+namespace Scrblr.Core
 {
     public class FontVertexArrayObject : IDisposable
     {

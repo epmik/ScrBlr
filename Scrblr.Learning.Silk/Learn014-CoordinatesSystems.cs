@@ -4,12 +4,13 @@ using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using System.Numerics;
 using Scrblr.Core;
+using FontStashSharp;
 
 namespace Scrblr.Learning
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
-    public class Learn014CoordinatesSystems : SilkSketch
+    public class Learn014CoordinatesSystems : SilkSketch20240207
     {
         //private uint _elementBufferObject;
 
@@ -27,6 +28,9 @@ namespace Scrblr.Learning
         private Texture _texture;
 
         private Texture _texture2;
+
+        private static FontRenderer _fontRenderer;
+        private static FontSystem _fontSystem;
 
         bool _animate = false;
 
@@ -110,6 +114,8 @@ void main()
 }
 ";
 
+        private static float _rads = 0.0f;
+
         public Learn014CoordinatesSystems()
         {
 
@@ -117,7 +123,7 @@ void main()
             //options.Size = new Vector2D<int>(_windowWidth, _windowHeight);
             options.Size = CalculateWindowSize(CanvasWidth, CanvasHeight);
             options.Title = "LearnOpenGL with Silk.NET";
-            window = Window.Create(options);
+            Context.Window = window = Window.Create(options);
 
             window.Load += OnLoad;
             window.Render += OnRenderFrame;
@@ -215,48 +221,24 @@ void main()
 
             _viewPosition = new Vector3(0, 0, -(z - Near));
 
-        }
 
-        protected void UpdateProjectionMatrix()
-        {
-            var fovRadians = (float)Utility.DegreesToRadians(Fov);
+            _fontRenderer = new FontRenderer();
 
-            var aspectRatioHorizontal = ((float)window.Size.X / (float)window.Size.Y);
-            var aspectRatioVertical = ((float)window.Size.Y / (float)window.Size.X);
+            //var settings = new FontSystemSettings
+            //{
+            //    FontResolutionFactor = 2,
+            //    KernelWidth = 2,
+            //    KernelHeight = 2
+            //};
 
-            switch (ProjectionMode)
-            {
-                case ProjectionMode.Orthographic:
-                    if (aspectRatioHorizontal >= aspectRatioVertical)
-                    {
-                        _projection = Matrix4x4.CreateOrthographic(CanvasWidth * aspectRatioHorizontal, CanvasHeight, Near, Far);
-                    }
-                    else
-                    {
-                        _projection = Matrix4x4.CreateOrthographic(CanvasWidth, CanvasHeight * aspectRatioVertical, Near, Far);
-                    }
-                    break;
-                case ProjectionMode.Perspective:
-                    if (aspectRatioHorizontal >= aspectRatioVertical)
-                    {
-                        var top = (float)Math.Tan(fovRadians * 0.5f) * Near;
-                        var bottom = -top;
-                        var right = top * aspectRatioHorizontal;
-                        var left = -right;
-                        _projection = Matrix4x4.CreatePerspective(right - left, top - bottom, Near, Far);
-                    }
-                    else
-                    {
-                        var right = (float)Math.Tan(fovRadians * 0.5f) * Near;
-                        var left = -right;
-                        var top = right * aspectRatioVertical;
-                        var bottom = -top;
-                        _projection = Matrix4x4.CreatePerspective(right - left, top - bottom, Near, Far);
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            //_fontSystem = new FontSystem(settings);
+            _fontSystem = new FontSystem();
+            //_fontSystem.AddFont(File.ReadAllBytes(@".resources/.fonts/droidsans.ttf"));
+            //_fontSystem.AddFont(File.ReadAllBytes(@".resources/.fonts/Roboto-Black.ttf"));
+            _fontSystem.AddFont(File.ReadAllBytes(@".resources/.fonts/Ubuntu-Regular.ttf"));
+            _fontSystem.AddFont(File.ReadAllBytes(@".resources/.fonts/droidsansjapanese.ttf"));
+            _fontSystem.AddFont(File.ReadAllBytes(@".resources/.fonts/symbola-emoji.ttf"));
+
         }
 
         protected unsafe void OnRenderFrame(double elapsedTime)
@@ -327,6 +309,26 @@ void main()
             //GL.DrawElements(GLEnum.Triangles, (uint)(6), GLEnum.UnsignedInt, (void*)0);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+
+
+
+
+            var text = "The quick いろは brown\nfox にほへ jumps over\nt🙌h📦e l👏a👏zy dog";
+            //var scale = new Vector2(2, 2);
+
+            var font = _fontSystem.GetFont(18);
+
+            //var size = font.MeasureString(text, scale);
+            //var origin = new Vector2(size.X / 2.0f, size.Y / 2.0f);
+
+            _fontRenderer.Begin();
+
+            //font.DrawText(_fontRenderer, text, new Vector2(400, 400), FSColor.Yellow, _rads, origin, scale);
+
+            font.DrawText(_fontRenderer, text, new Vector2(20, 20), FSColor.White);
+
+            _fontRenderer.End();
+
         }
 
         protected void OnUpdateFrame(double elapsedTime)
@@ -356,6 +358,8 @@ void main()
                 }
             }
 
+            _rads += 0.01f;
+
             //viewPosition += viewPositionOffsetPerSecond * (float)elapsedTime;
 
             //if (viewPosition.Z > 0 || viewPosition.Z < -6)
@@ -371,6 +375,8 @@ void main()
             GL.DeleteVertexArray(_vertexArrayObject);
 
             _shader.Delete();
+
+            _fontRenderer.Dispose();
         }
 
         private void KeyDown(IKeyboard keyboard, Key key, int arg3)
@@ -396,6 +402,48 @@ void main()
             GL.Viewport(0, 0, (uint)size.X, (uint)size.Y);
 
             UpdateProjectionMatrix();
+        }
+
+        protected void UpdateProjectionMatrix()
+        {
+            var fovRadians = (float)Utility.DegreesToRadians(Fov);
+
+            var aspectRatioHorizontal = ((float)window.Size.X / (float)window.Size.Y);
+            var aspectRatioVertical = ((float)window.Size.Y / (float)window.Size.X);
+
+            switch (ProjectionMode)
+            {
+                case ProjectionMode.Orthographic:
+                    if (aspectRatioHorizontal >= aspectRatioVertical)
+                    {
+                        _projection = Matrix4x4.CreateOrthographic(CanvasWidth * aspectRatioHorizontal, CanvasHeight, Near, Far);
+                    }
+                    else
+                    {
+                        _projection = Matrix4x4.CreateOrthographic(CanvasWidth, CanvasHeight * aspectRatioVertical, Near, Far);
+                    }
+                    break;
+                case ProjectionMode.Perspective:
+                    if (aspectRatioHorizontal >= aspectRatioVertical)
+                    {
+                        var top = (float)Math.Tan(fovRadians * 0.5f) * Near;
+                        var bottom = -top;
+                        var right = top * aspectRatioHorizontal;
+                        var left = -right;
+                        _projection = Matrix4x4.CreatePerspective(right - left, top - bottom, Near, Far);
+                    }
+                    else
+                    {
+                        var right = (float)Math.Tan(fovRadians * 0.5f) * Near;
+                        var left = -right;
+                        var top = right * aspectRatioVertical;
+                        var bottom = -top;
+                        _projection = Matrix4x4.CreatePerspective(right - left, top - bottom, Near, Far);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
 

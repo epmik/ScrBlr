@@ -2,7 +2,7 @@
 using System;
 using System.Drawing;
 
-namespace Scrblr.Core.Silk.Font
+namespace Scrblr.Core
 {
     public unsafe class FontTexture : IDisposable
     {

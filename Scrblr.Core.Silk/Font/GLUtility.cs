@@ -2,7 +2,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Scrblr.Core.Silk.Font
+namespace Scrblr.Core
 {
     internal static class GLUtility
     {

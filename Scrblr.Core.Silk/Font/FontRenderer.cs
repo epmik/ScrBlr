@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using FontStashSharp.Interfaces;
 using Silk.NET.OpenGL;
 
-namespace Scrblr.Core.Silk.Font
+namespace Scrblr.Core
 {
-    internal class FontRenderer : IFontStashRenderer2, IDisposable
+    public class FontRenderer : IFontStashRenderer2, IDisposable
     {
         private const int MAX_SPRITES = 2048;
         private const int MAX_VERTICES = MAX_SPRITES * 4;
@@ -37,7 +37,7 @@ namespace Scrblr.Core.Silk.Font
             _indexBuffer = new FontBufferObject<short>(indexData.Length, BufferTargetARB.ElementArrayBuffer, false);
             _indexBuffer.SetData(indexData, 0, indexData.Length);
 
-            _shader = new FontShader("fontshader.vert", "fontshader.frag");
+            _shader = new FontShader(".resources/.fonts/shader.vert", ".resources/.fonts/shader.frag");
             _shader.Use();
 
             _vao = new FontVertexArrayObject(sizeof(VertexPositionColorTexture));
@@ -82,7 +82,7 @@ namespace Scrblr.Core.Silk.Font
             _shader.Use();
             _shader.SetUniform("TextureSampler", 0);
 
-            var transform = Matrix4x4.CreateOrthographicOffCenter(0, 1200, 800, 0, 0, -1);
+            var transform = Matrix4x4.CreateOrthographicOffCenter(0, Context.Window.Size.X, Context.Window.Size.Y, 0, 0, -1);
             _shader.SetUniform("MatrixTransform", transform);
 
             _vao.Bind();

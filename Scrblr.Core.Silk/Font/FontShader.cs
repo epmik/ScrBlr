@@ -3,7 +3,7 @@ using System.IO;
 using System.Numerics;
 using Silk.NET.OpenGL;
 
-namespace Scrblr.Core.Silk.Font
+namespace Scrblr.Core
 {
     public class FontShader : IDisposable
     {

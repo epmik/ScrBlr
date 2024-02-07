@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
 
-namespace Scrblr.Core.Silk.Font
+namespace Scrblr.Core
 {
     public class FontBufferObject<T> : IDisposable where T : unmanaged
     {

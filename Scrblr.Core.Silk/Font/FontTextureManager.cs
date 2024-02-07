@@ -1,7 +1,7 @@
 ﻿using FontStashSharp.Interfaces;
 using System.Drawing;
 
-namespace Scrblr.Core.Silk.Font
+namespace Scrblr.Core
 {
     internal class FontTextureManager : ITexture2DManager
     {

@@ -9,7 +9,7 @@ namespace Scrblr.Learning
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
-    public class Learn011Lighting : SilkSketch
+    public class Learn011Lighting : SilkSketch20240207
     {
         private uint _elementBufferObject;
 
