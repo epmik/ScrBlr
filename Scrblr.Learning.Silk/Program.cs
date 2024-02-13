@@ -56,23 +56,16 @@ namespace Scrblr.Learning
             Console.Clear();
 
 
-            if (types[index].IsSubclassOf(typeof(SilkSketch)))
+            if (types[index].IsSubclassOf(typeof(Sketch)))
             {
-                using (var window = (SilkSketch)Activator.CreateInstance(types[index]))
+                using (var window = (Sketch)Activator.CreateInstance(types[index]))
                 {
                     window.Run();
                 }
             }
-            else if (types[index].IsSubclassOf(typeof(SilkSketch20240207)))
+            if (types[index].IsSubclassOf(typeof(SilkSketch20240207)))
             {
                 using (var window = (SilkSketch20240207)Activator.CreateInstance(types[index]))
-                {
-                    window.Run();
-                }
-            }
-            else
-            {
-                using (var window = (ISketch)Activator.CreateInstance(types[index]))
                 {
                     window.Run();
                 }
@@ -100,7 +93,7 @@ namespace Scrblr.Learning
 
                 foreach (Type type in
                     Assembly.GetExecutingAssembly().GetTypes()
-                    .Where(t => t.IsClass && !t.IsAbstract && (t.IsSubclassOf(typeof(SilkSketch)) || t.IsSubclassOf(typeof(SilkSketch20240207)) || t.IsSubclassOf(typeof(AbstractSketch)))))
+                    .Where(t => t.IsClass && !t.IsAbstract && (t.IsSubclassOf(typeof(Sketch)) || t.IsSubclassOf(typeof(SilkSketch20240207)))))
                 {
                     _abstractSketchImplementationTypeList.Add(type);
                 }

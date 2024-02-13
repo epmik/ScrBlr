@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
 using System.Numerics;
+using Scrblr.Core;
 
 namespace Scrblr.Learning
 {

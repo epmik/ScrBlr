@@ -6,7 +6,7 @@ using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Input;
 
-namespace Scrblr.Learning
+namespace Scrblr.Core
 {
     public enum ProjectionMode
     {

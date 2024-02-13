@@ -17,7 +17,7 @@ namespace Scrblr.Learning
 
         private uint _vertexArrayObject;
 
-        private Shader _shader;
+        private Core.Shader _shader;
 
         float angle = 20f;
         float angleRotationPerSecond = 45f;
@@ -236,7 +236,7 @@ void main()
             fixed (void* i = &_indices[0])
                 GL.BufferData(GLEnum.ElementArrayBuffer, (nuint)(_indices.Length * sizeof(uint)), i, GLEnum.StaticDraw);
 
-            _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource); _shader.Use();
+            _shader = new Core.Shader(GL, vertexShaderSource, fragmentShaderSource); _shader.Use();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);

@@ -23,11 +23,11 @@ namespace Scrblr.Learning
 
         private uint _vertexArrayObject;
 
-        private Shader _shader;
+        private Core.Shader _shader;
 
-        private Texture _texture;
+        private Core.Texture _texture;
 
-        private Texture _texture2;
+        private Core.Texture _texture2;
 
         private static FontRenderer _fontRenderer;
         private static FontSystem _fontSystem;
@@ -189,7 +189,7 @@ void main()
             //fixed (void* i = &_indices[0])
             //    GL.BufferData(GLEnum.ElementArrayBuffer, (nuint)(_indices.Length * sizeof(uint)), i, GLEnum.StaticDraw);
 
-            _shader = new Shader(GL, _vertexShaderSource, _fragmentShaderSource); _shader.Use();
+            _shader = new Core.Shader(GL, _vertexShaderSource, _fragmentShaderSource); _shader.Use();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);
@@ -203,10 +203,10 @@ void main()
             GL.EnableVertexAttribArray(colorLocation);
             GL.VertexAttribPointer(colorLocation, 4, GLEnum.Float, false, 9 * sizeof(float), (void*)(5 * sizeof(float)));
 
-            _texture = Texture.LoadFromFile(GL, ".resources/container.png");
+            _texture =  Core.Texture.LoadFromFile(GL, ".resources/container.png");
             _texture.Use(TextureUnit.Texture0);
 
-            _texture2 = Texture.LoadFromFile(GL, ".resources/awesomeface.png");
+            _texture2 = Core.Texture.LoadFromFile(GL, ".resources/awesomeface.png");
             _texture2.Use(TextureUnit.Texture1);
 
             _shader.SetInt("texture0", 0);

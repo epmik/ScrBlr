@@ -24,7 +24,7 @@ namespace Scrblr.Core
         public void Dispose()
         {
             Context.GL.DeleteVertexArray(_handle);
-            GLUtility.CheckError();
+            //GLUtility.CheckError();
         }
 
         public void Bind()

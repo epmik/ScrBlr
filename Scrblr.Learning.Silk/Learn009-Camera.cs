@@ -5,6 +5,7 @@ using Silk.NET.Maths;
 using System.Numerics;
 using System.Drawing;
 using Silk.NET.GLFW;
+using Scrblr.Core;
 
 namespace Scrblr.Learning
 {
@@ -18,11 +19,11 @@ namespace Scrblr.Learning
 
         private uint _vertexArrayObject;
 
-        private Shader _shader;
+        private Core.Shader _shader;
 
-        private Texture _texture;
+        private Core.Texture _texture;
 
-        private Texture _texture2;
+        private Core.Texture _texture2;
 
         float angle = 20f;
         float angleRotationPerSecond = 45f;
@@ -150,7 +151,7 @@ void main()
             fixed (void* i = &_indices[0])
                 GL.BufferData(GLEnum.ElementArrayBuffer, (nuint)(_indices.Length * sizeof(uint)), i, GLEnum.StaticDraw);
 
-            _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource); _shader.Use();
+            _shader = new Core.Shader(GL, vertexShaderSource, fragmentShaderSource); _shader.Use();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);
@@ -160,10 +161,10 @@ void main()
             GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, GLEnum.Float, false, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-            _texture = Texture.LoadFromFile(GL, ".resources//container.png");
+            _texture = Core.Texture.LoadFromFile(GL, ".resources//container.png");
             _texture.Use(TextureUnit.Texture0);
 
-            _texture2 = Texture.LoadFromFile(GL, ".resources/awesomeface.png");
+            _texture2 = Core.Texture.LoadFromFile(GL, ".resources/awesomeface.png");
             _texture2.Use(TextureUnit.Texture1);
 
             _shader.SetInt("texture0", 0);

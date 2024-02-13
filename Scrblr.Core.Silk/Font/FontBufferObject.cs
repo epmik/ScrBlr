@@ -34,7 +34,7 @@ namespace Scrblr.Core
         public void Dispose()
         {
             Context.GL.DeleteBuffer(_handle);
-            GLUtility.CheckError();
+            //GLUtility.CheckError();
         }
 
         public unsafe void SetData(T[] data, int startIndex, int elementCount)

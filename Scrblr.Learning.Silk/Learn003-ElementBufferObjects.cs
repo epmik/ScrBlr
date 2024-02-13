@@ -31,7 +31,7 @@ namespace Scrblr.Learning
 
         private uint _vertexArrayObject;
 
-        private Shader _shader;
+        private Core.Shader _shader;
 
         // Add a handle for the EBO
         private uint _elementBufferObject;
@@ -110,7 +110,7 @@ void main()
 }
 ";
 
-            _shader = new Shader(GL, vertexShaderSource, fragmentShaderSource);
+            _shader = new Core.Shader(GL, vertexShaderSource, fragmentShaderSource);
             _shader.Use();
         }
 

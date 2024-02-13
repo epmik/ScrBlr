@@ -7,7 +7,7 @@ namespace Scrblr.Core
 {
 	public static class Context
 	{
-		public static GL GL;
-		public static IWindow Window;
+		public static GL? GL;
+		public static IWindow? Window;
 	}
 }

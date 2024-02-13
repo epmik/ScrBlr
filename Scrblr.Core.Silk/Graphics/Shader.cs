@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Silk.NET.OpenGL;
 using System.Numerics;
 
-namespace Scrblr.Learning
+namespace Scrblr.Core
 {
     // A simple class meant to help create shaders.
     public class Shader

@@ -1,27 +1,25 @@
 ﻿using Silk.NET.OpenGL;
 using Silk.NET.Input;
-using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using System.Numerics;
 using Scrblr.Core;
-using FontStashSharp;
 
 namespace Scrblr.Learning
 {
     // Be warned, there is a LOT of stuff here. It might seem complicated, but just take it slow and you'll be fine.
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
-    public class Learn015Quad : SilkSketch
+    public class Learn015Quad : Sketch
     {
 
         private uint _vertexBufferObject;
 
         private uint _vertexArrayObject;
 
-        private Shader _shader;
+        private Core.Shader _shader;
 
-        private Texture _texture;
+        private Core.Texture _texture;
 
-        private Texture _texture2;
+        private Core.Texture _texture2;
 
         bool _animate = false;
 
@@ -30,14 +28,6 @@ namespace Scrblr.Learning
 
         float _textureMix = 0.5f;
         private float _textureMixOffsetPerSecond = 0.2f;
-
-        // Then, we create two matrices to hold our view and projection. They're initialized at the bottom of OnLoad.
-        // The view matrix is what you might consider the "camera". It represents the current viewport in the window.
-        private Matrix4x4 _view;
-
-        // This represents how the vertices will be projected. It's hard to explain through comments,
-        // so check out the web version for a good demonstration of what this does.
-        private Matrix4x4 _projection;
 
         private Vector3 _modelPosition = new Vector3(0, 0, 0);
         private Vector3 _modelPositionOffsetPerSecond = new Vector3(1, 0, 0);
@@ -88,65 +78,8 @@ void main()
 
         private static float _rads = 0.0f;
 
-        //public Learn014CoordinatesSystems()
-        //{
-
-        //    var options = Silk.NET.Windowing.WindowOptions.Default;
-        //    //options.Size = new Vector2D<int>(_windowWidth, _windowHeight);
-        //    options.Size = CalculateWindowSize(CanvasWidth, CanvasHeight);
-        //    options.Title = "LearnOpenGL with Silk.NET";
-        //    Context.Window = window = Window.Create(options);
-
-        //    window.Load += OnLoad;
-        //    window.Render += OnRenderFrame;
-        //    window.Update += OnUpdateFrame;
-        //    window.Resize += OnResize;
-        //    window.Closing += OnUnLoad;
-
-        //    Console.WriteLine($"Window size is: {options.Size.X}x{options.Size.Y}");
-        //}
-
-        void Load()
+        unsafe void Load()
         {
-
-        }
-
-        void Update()
-        {
-
-        }
-
-        void Render()
-        {
-
-        }
-
-        void Closing()
-        {
-
-        }
-
-        void Resize(Vector2D<int> size)
-        {
-
-        }
-
-        void KeyDown(IKeyboard keyboard, Key key)
-        {
-
-        }
-
-        protected unsafe void OnLoad()
-        {
-            Context.GL = GL = GL.GetApi(window);
-
-            inputContext = window.CreateInput();
-
-            for (int i = 0; i < inputContext.Keyboards.Count; i++)
-            {
-                inputContext.Keyboards[i].KeyDown += KeyDown;
-            }
-
             // clockwise winding
             float[] _vertices =
             {
@@ -159,12 +92,6 @@ void main()
                 -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left black
                 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // top left white
             };
-
-            //uint[] _indices =
-            //{
-            //    0, 1, 3,
-            //    1, 2, 3
-            //};
 
             // background color
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -183,15 +110,10 @@ void main()
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(GLEnum.ArrayBuffer, _vertexBufferObject);
-            fixed (void* v = &_vertices[0]) 
+            fixed (void* v = &_vertices[0])
                 GL.BufferData(GLEnum.ArrayBuffer, (nuint)(_vertices.Length * sizeof(float)), v, GLEnum.StaticDraw);
 
-            //_elementBufferObject = GL.GenBuffer();
-            //GL.BindBuffer(GLEnum.ElementArrayBuffer, _elementBufferObject);
-            //fixed (void* i = &_indices[0])
-            //    GL.BufferData(GLEnum.ElementArrayBuffer, (nuint)(_indices.Length * sizeof(uint)), i, GLEnum.StaticDraw);
-
-            _shader = new Shader(GL, _vertexShaderSource, _fragmentShaderSource); _shader.Use();
+            _shader = new Core.Shader(GL, _vertexShaderSource, _fragmentShaderSource); _shader.Use();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);
@@ -205,10 +127,10 @@ void main()
             GL.EnableVertexAttribArray(colorLocation);
             GL.VertexAttribPointer(colorLocation, 4, GLEnum.Float, false, 9 * sizeof(float), (void*)(5 * sizeof(float)));
 
-            _texture = Texture.LoadFromFile(GL, ".resources/container.png");
+            _texture = Core.Texture.LoadFromFile(GL, ".resources/container.png");
             _texture.Use(TextureUnit.Texture0);
 
-            _texture2 = Texture.LoadFromFile(GL, ".resources/awesomeface.png");
+            _texture2 = Core.Texture.LoadFromFile(GL, ".resources/awesomeface.png");
             _texture2.Use(TextureUnit.Texture1);
 
             _shader.SetInt("texture0", 0);
@@ -224,16 +146,57 @@ void main()
             _viewPosition = new Vector3(0, 0, -(z - Near));
         }
 
-        protected unsafe void OnRenderFrame(double elapsedTime)
+        void Update()
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            if (_animate)
+            {
+                _angle += (float)(_angleRotationPerSecond * ElapsedTime);
+
+                if (_angle >= 360f)
+                {
+                    _angle -= 360f;
+                }
+
+                _modelPosition += _modelPositionOffsetPerSecond * (float)ElapsedTime;
+
+                if (_modelPosition.X > 1.5 || _modelPosition.X < -1.5)
+                {
+                    _modelPositionOffsetPerSecond *= -1;
+                    _modelPosition.X = -1.5f * _modelPositionOffsetPerSecond.X;
+                }
+
+                _textureMix += _textureMixOffsetPerSecond * (float)ElapsedTime;
+
+                if (_textureMix > 1 || _textureMix < 0)
+                {
+                    _textureMixOffsetPerSecond *= -1;
+                }
+            }
+
+            _rads += 0.01f;
+        }
+
+        void Render()
+        {
+            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            Quad(0.5f)
+                .Position(0.25f, -0.25f)
+                .Color(1f, 0f, 0f);
+
+            //Quad(0.5f)
+            //    .Color(1f, 0f, 0f)
+            //    .Texture(".resources/container.png")
+            //    .Position(0.25f, -0.25f)
+            //    .Scale(0.5f)
+            //    .Rotate(45f);
 
             GL.BindVertexArray(_vertexArrayObject);
 
             // Note: The matrices we'll use for transformations are all 4x4.
 
             // We start with an identity matrix. This is just a simple matrix that doesn't move the vertices at all.
-            var model = Matrix4x4.Identity;
+            ModelMatrix = Matrix4x4.Identity;
 
             //// The next few steps just show how to use OpenTK's matrix functions, and aren't necessary for the transform matrix to actually work.
             //// If you want, you can just pass the identity matrix to the shader, though it won't affect the vertices at all.
@@ -259,11 +222,11 @@ void main()
             //// Finally, we have the model matrix. This determines the position of the model.
             //model *= Matrix4x4.CreateRotationZ((float)Utility.DegreesToRadians(_angle));
 
-            model *= Matrix4x4.CreateTranslation(_modelPosition);
+            ModelMatrix *= Matrix4x4.CreateTranslation(_modelPosition);
 
             // For the view, we don't do too much here. Next tutorial will be all about a Camera class that will make it much easier to manipulate the view.
             // For now, we move it backwards three units on the Z axis.
-            _view = Matrix4x4.CreateTranslation(_viewPosition);
+            ViewMatrix = Matrix4x4.CreateTranslation(_viewPosition);
 
             // Then, we pass all of these matrices to the vertex shader.
             // You could also multiply them here and then pass, which is faster, but having the separate matrices available is used for some advanced effects.
@@ -281,9 +244,9 @@ void main()
 
             // Now that the matrix is finished, pass it to the vertex shader.
             // Go over to shader.vert to see how we finally apply this to the vertices.
-            _shader.SetMatrix4("model", model);
-            _shader.SetMatrix4("view", _view);
-            _shader.SetMatrix4("projection", _projection);
+            _shader.SetMatrix4("model", ModelMatrix);
+            _shader.SetMatrix4("view", ViewMatrix);
+            _shader.SetMatrix4("projection", ProjectionMatrix);
 
             _shader.SetFloat("textureMix", _textureMix);
 
@@ -293,82 +256,23 @@ void main()
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
 
-
-
-
-            var text = "The quick いろは brown\nfox にほへ jumps over\nt🙌h📦e l👏a👏zy dog";
-            //var scale = new Vector2(2, 2);
-
-            var font = _fontSystem.GetFont(18);
-
-            //var size = font.MeasureString(text, scale);
-            //var origin = new Vector2(size.X / 2.0f, size.Y / 2.0f);
-
-            _fontRenderer.Begin();
-
-            //font.DrawText(_fontRenderer, text, new Vector2(400, 400), FSColor.Yellow, _rads, origin, scale);
-
-            font.DrawText(_fontRenderer, text, new Vector2(20, 20), FSColor.White);
-
-            _fontRenderer.End();
-
+            WriteText("The quick いろは brown\nfox にほへ jumps over\nt🙌h📦e l👏a👏zy dog", 20, 20);
         }
 
-        protected void OnUpdateFrame(double elapsedTime)
-        {
-            if(_animate)
-            {
-                _angle += (float)(_angleRotationPerSecond * elapsedTime);
-
-                if (_angle >= 360f)
-                {
-                    _angle -= 360f;
-                }
-
-                _modelPosition += _modelPositionOffsetPerSecond * (float)elapsedTime;
-
-                if (_modelPosition.X > 1.5 || _modelPosition.X < -1.5)
-                {
-                    _modelPositionOffsetPerSecond *= -1;
-                    _modelPosition.X = -1.5f * _modelPositionOffsetPerSecond.X;
-                }
-
-                _textureMix += _textureMixOffsetPerSecond * (float)elapsedTime;
-
-                if (_textureMix > 1 || _textureMix < 0)
-                {
-                    _textureMixOffsetPerSecond *= -1;
-                }
-            }
-
-            _rads += 0.01f;
-
-            //viewPosition += viewPositionOffsetPerSecond * (float)elapsedTime;
-
-            //if (viewPosition.Z > 0 || viewPosition.Z < -6)
-            //{
-            //    viewPositionOffsetPerSecond *= -1;
-            //}
-        }
-
-        protected unsafe void OnUnLoad()
+        void Closing()
         {
             GL.DeleteBuffer(_vertexBufferObject);
             //GL.DeleteBuffer(_elementBufferObject);
             GL.DeleteVertexArray(_vertexArrayObject);
 
             _shader.Delete();
-
-            _fontRenderer.Dispose();
         }
 
-        private void KeyDown(IKeyboard keyboard, Key key, int code)
+
+        void KeyDown(IKeyboard keyboard, Key key, int code)
         {
-            switch(key)
+            switch (key)
             {
-                case Key.Escape:
-                    window.Close();
-                    break;
                 case Key.Space:
                     _animate = !_animate;
                     break;
@@ -380,11 +284,10 @@ void main()
             }
         }
 
-        protected void OnResize(Vector2D<int> size)
+        
+        void Resize(Vector2D<int> size)
         {
-            GL.Viewport(0, 0, (uint)size.X, (uint)size.Y);
 
-            UpdateProjectionMatrix();
         }
     }
 }

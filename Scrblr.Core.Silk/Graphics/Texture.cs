@@ -4,7 +4,7 @@ using StbImageSharp;
 using System.IO;
 using Silk.NET.OpenGL;
 
-namespace Scrblr.Learning
+namespace Scrblr.Core
 {
     // A simple class meant to help create shaders.
     public class Texture
@@ -15,7 +15,7 @@ namespace Scrblr.Learning
 
         public unsafe static Texture LoadFromFile(GL gl, string path)
         {
-            Texture.GL = gl;
+            GL = gl;
 
             // Generate handle
             uint handle = GL.GenTexture();
