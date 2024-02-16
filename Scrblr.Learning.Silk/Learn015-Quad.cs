@@ -181,7 +181,7 @@ void main()
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             Quad(0.5f)
-                .Position(0.25f, -0.25f)
+                //.Translate(0.25f, -0.25f)
                 .Color(1f, 0f, 0f);
 
             //Quad(0.5f)

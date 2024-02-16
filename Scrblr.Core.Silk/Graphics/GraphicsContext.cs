@@ -9,6 +9,7 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using System.Numerics;
 using FontStashSharp;
+using System.Drawing;
 
 namespace Scrblr.Core
 {
@@ -55,7 +56,7 @@ namespace Scrblr.Core
 
         private uint __vertexArrayObject;
 
-        private Shader __shader;
+        private Shader __shader_xyz_uv_rgba;
 
         private Texture __texture1;
 
@@ -64,6 +65,26 @@ namespace Scrblr.Core
         #region Shaders
 
         #region Vertex Shaders
+
+        string _vertexShader_xyz_rgba = @"
+#version 330 core
+
+layout(location = 0) in vec3 i_xyz;
+layout(location = 1) in vec4 i_rgba;
+
+out vec4 p_rgba;
+
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_projection;
+
+void main(void)
+{
+    p_rgba = i_rgba;
+
+    gl_Position = vec4(i_xyz, 1.0) * u_model * u_view * u_projection;
+}
+";
 
         string _vertexShader_xyz_uv_rgba = @"
 #version 330 core
@@ -91,6 +112,24 @@ void main(void)
         #endregion Vertex Shaders
 
         #region Fragment Shaders
+
+        string _fragmentShader_xyz_rgba = @"
+#version 330
+
+in vec4 p_rgba;
+
+out vec4 o_rgba;
+
+// uniform sampler2D texture0;
+// uniform sampler2D texture1;
+// uniform float textureMix;
+
+void main()
+{
+    //o_rgba = mix(texture(texture0, texCoord), texture(texture1, texCoord), textureMix) * p_rgba;
+    o_rgba = p_rgba;
+}
+";
 
         string _fragmentShader_xyz_uv_rgba = @"
 #version 330
@@ -153,7 +192,7 @@ void main()
 
             GL.DeleteVertexArray(__vertexArrayObject);
 
-            __shader.Delete();
+            __shader_xyz_uv_rgba.Delete();
         }
 
         private void CreateFontContext()
@@ -209,15 +248,15 @@ void main()
 
             GLUtility.CheckError();
 
-            __shader = new Shader(GL, _vertexShader_xyz_uv_rgba, _fragmentShader_xyz_uv_rgba);
+            __shader_xyz_uv_rgba = new Shader(GL, _vertexShader_xyz_uv_rgba, _fragmentShader_xyz_uv_rgba);
 
             GLUtility.CheckError();
 
-            __shader.Use();
+            __shader_xyz_uv_rgba.Use();
 
             GLUtility.CheckError();
 
-            var location = __shader.GetAttribLocation("i_xyz");
+            var location = __shader_xyz_uv_rgba.GetAttribLocation("i_xyz");
 
             if (location != uint.MaxValue)
             {
@@ -230,7 +269,7 @@ void main()
                 GLUtility.CheckError();
             }
 
-            location = __shader.GetAttribLocation("i_uv");
+            location = __shader_xyz_uv_rgba.GetAttribLocation("i_uv");
             
             if(location != uint.MaxValue)
             {
@@ -243,7 +282,7 @@ void main()
                 GLUtility.CheckError();
             }
 
-            location = __shader.GetAttribLocation("i_rgba");
+            location = __shader_xyz_uv_rgba.GetAttribLocation("i_rgba");
             
             if (location != uint.MaxValue)
             {
@@ -281,6 +320,32 @@ void main()
             //_viewPosition = new Vector3(0, 0, -(z - Near));
         }
 
+        private QuadGeometry[] _quadGeometryArray = new QuadGeometry[64];
+        private uint _quadGeometryArrayCount;
+
+        public QuadGeometry Quad(float size)
+        {
+            return Quad(size, size);
+        }
+
+        public QuadGeometry Quad(float width, float height)
+        {
+            var quadGeometry = _quadGeometryArray[_quadGeometryArrayCount];
+
+            if (quadGeometry == null)
+            {
+                quadGeometry = _quadGeometryArray[_quadGeometryArrayCount] = new QuadGeometry(width, height);
+            }
+            else
+            {
+                quadGeometry.Size(width, height);
+            }
+
+            _quadGeometryArrayCount++;
+
+            return quadGeometry;
+        }
+
         protected void Clear()
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
@@ -290,19 +355,19 @@ void main()
         {
             GL.BindVertexArray(__vertexArrayObject);
 
-            __shader.Use();
+            __shader_xyz_uv_rgba.Use();
 
-            __shader.SetMatrix4("u_model", ModelMatrix);
-            __shader.SetMatrix4("u_view", ViewMatrix);
-            __shader.SetMatrix4("u_projection", ProjectionMatrix);
+            __shader_xyz_uv_rgba.SetMatrix4("u_model", ModelMatrix);
+            __shader_xyz_uv_rgba.SetMatrix4("u_view", ViewMatrix);
+            __shader_xyz_uv_rgba.SetMatrix4("u_projection", ProjectionMatrix);
+
+            _quadGeometryArray[0].Write();
 
             //__shader.SetFloat("textureMix", _textureMix);
 
             // And that's it for now! In the next tutorial, we'll see how to setup a full coordinates system.
 
-            //GL.DrawElements(GLEnum.Triangles, (uint)(6), GLEnum.UnsignedInt, (void*)0);
-
-            //GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
 
         }
 
