@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Scrblr.Sketches
 {
-    [Sketch(Name = "Sketch001-Cube-Tower-Stacks-Tralies-uit-de-weg")]
+    [Sketch(Name = "Sketch001-cube-tower-stacks")]
     public class Sketch001 : AbstractSketch
     {
         float _rotationDegreesPerSecond = 90, _degrees;
@@ -42,7 +42,7 @@ namespace Scrblr.Sketches
         {
             if(_seed != null)
             {
-                RandomSeed(_seed.Value);
+                Random.ReSeed(_seed.Value);
             }
         }
 
@@ -70,7 +70,7 @@ namespace Scrblr.Sketches
 
         public void Update()
         {
-            RandomSeed(RandomSeed());
+            Random.ReSeed(Random.Seed);
 
             _degrees += (float)(_rotationDegreesPerSecond * ElapsedTime);
 
@@ -97,16 +97,16 @@ namespace Scrblr.Sketches
 
         private float RenderCube(float y)
         {
-            var h = Random(_minHeight, _maxHeight);
-            var w = Random(_minWidth, _maxWidth);
-            var d = Random(_minDepth, _maxDepth);
+            var h = Random.Value(_minHeight, _maxHeight);
+            var w = Random.Value(_minWidth, _maxWidth);
+            var d = Random.Value(_minDepth, _maxDepth);
             var margin = 0f;// Random(0.01f, 0.1f);
-            var color = _colors[Random(_colors.Length)];
+            var color = _colors[Random.Value(_colors.Length)];
 
             Graphics.PushMatrix();
-            Graphics.Rotate(Random(0f, _maxXrotation), Axis.X);
-            Graphics.Rotate(Random(0f, _maxYrotation), Axis.Y);
-            Graphics.Rotate(Random(0f, _maxZrotation), Axis.Z);
+            Graphics.Rotate(Random.Value(0f, _maxXrotation), Axis.X);
+            Graphics.Rotate(Random.Value(0f, _maxYrotation), Axis.Y);
+            Graphics.Rotate(Random.Value(0f, _maxZrotation), Axis.Z);
             Graphics.Translate(0, y, -2);
             Graphics.Cube().Color(color).Height(h).Width(w).Depth(d);
             Graphics.PopMatrix();

@@ -1,0 +1,22 @@
+{
+  "OpenGl": {
+    "Version": {
+      "Major": 4,
+      "Minor": 4
+    },
+    "Flags": "ForwardCompatible"
+  },
+  "Window": {
+    "Title": "Tutorial 14 - Render to Texture Extended 05",
+    "IsFullScreen": false,
+    "VSync": false,
+    "WindowBorder": "Hidden",
+    "Width": 1024,
+    "Height": 1024
+  },
+  "Sketch": {
+    "FrameBufferScale": 4.0,
+    "FrustumWidth": 1024.0,
+    "FrustumHeight": 1024.0
+  }
+}

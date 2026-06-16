@@ -1,0 +1,461 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="opengl-tutorial.org\tutorial14_render_to_texture\.resources\.shaders\.chunk\**" />
+    <EmbeddedResource Remove="opengl-tutorial.org\tutorial14_render_to_texture\.resources\.shaders\.chunk\**" />
+    <None Remove="opengl-tutorial.org\tutorial14_render_to_texture\.resources\.shaders\.chunk\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Core\AbstractMaterial.cs" />
+    <Compile Remove="Core\ArrayExtensions.cs" />
+    <Compile Remove="Core\BasicMaterial.cs" />
+    <Compile Remove="opengl-tutorial.org\tutorial14_render_to_texture\Tutorial14WindowExtented06_.cs" />
+    <Compile Remove="Utility\GameWindowExtensions.cs" />
+    <Compile Remove="_Sketch003FrameBuffer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include=".resources\.fonts\DroidSans.ttf" />
+    <Content Include=".resources\.fonts\DroidSansCopyright.txt" />
+    <Content Include=".resources\.fonts\Roboto-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\awesomeface.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\ca5266d55389fd7b73173b6a74f57017d0af95d007bec063f652dfc96b4014c1.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\container.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\CorfeCastle_ROW10757969593_1366x768.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\DiaDosNamorados_ROW12657266058_1920x1080.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\GreatBearRainforest_ROW10233487524_1920x1080-v.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\MatterhornVideo_ROW11549990163_1920x1080-v.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\shutterstock_273816071.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\transparent.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\UpsideDown_ROW12246886594_1920x1080.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".resources\.textures\ZellerHorn_ROW8589974112_1920x1080.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.1" />
+    <PackageReference Include="ObjParser" Version="0.1.0" />
+    <PackageReference Include="OpenTK" Version="4.9.4" />
+    <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.9.4" />
+    <PackageReference Include="StbImageSharp" Version="2.30.15" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".resources\.saves\_postprocessing.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\LearnOpenTK009.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\LearnOpenTK009.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\LearnOpenTK004.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\LearnOpenTK004.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch009RenderToTexture.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch009RenderToTexture.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003VertexBufferObjectFrameBufferObject0.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003VertexBufferObjectFrameBufferObject0.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003VertexBufferObjectFrameBufferObject1.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003VertexBufferObjectFrameBufferObject1.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003VertexBufferObjectFrameBufferObject2.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003VertexBufferObjectFrameBufferObject2.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002MultipleDynamicVertexBuffers2.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002MultipleDynamicVertexBuffers2.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002MultipleDynamicVertexBuffers1.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002MultipleDynamicVertexBuffers1.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002MultipleDynamicVertexBuffers0.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002MultipleDynamicVertexBuffers0.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch008BoxGeometryLine.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch008BoxGeometryLine.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch008BoxGeometryQuad.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch008BoxGeometryQuad.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch008RenderToTexture.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch008RenderToTexture.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch007RenderToTexture.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch007RenderToTexture.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch006Grid.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch006Grid.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch005Lines.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch005Lines.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch004Quad.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch004Quad.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003FrameBuffer.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch003FrameBuffer.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002TexturedDynamicVertexBuffer.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\Sketch002TexturedDynamicVertexBuffer.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\_postprocessing.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\_postprocessing.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\orange.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\orange.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\with-camera.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\with-camera.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\simple.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include=".resources\.shaders\simple.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\Desaturate.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\Desaturate.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\DotScreenShader.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\DotScreenShader.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\Filmic.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\Filmic.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\FullScreenQuad.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\FullScreenQuad.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\HorizontalGaussianBlurShader.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\HorizontalGaussianBlurShader.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\Multiply.frag.glsl">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\MvpXyzRgba.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\MvpXyzRgba.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\MvpXyzRgbaUv.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\MvpXyzRgbaUv.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\Passthrough.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\Passthrough.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\StandardShadingRTT.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\StandardShadingRTT.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\suzanne.obj">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\TransformVertexShader.vert">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\uvmap.DDS">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\uvmap.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\WobblyTexture.frag">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include=".resources\.scenes\" />
+    <Folder Include="learnopengl.com\" />
+    <Folder Include="LearnOpenTK\Resources\" />
+    <Folder Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\.fonts\" />
+    <Folder Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\.shaders\" />
+    <Folder Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\.textures\" />
+    <Folder Include="opengl-tutorial.org\tutorial14_render_to_texture\.resources\.scenes\" />
+    <Folder Include="opengl-tutorial.org\tutorial14_render_to_texture\.saves\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Skrbl.Blender\Skrbl.Blender.csproj" />
+    <ProjectReference Include="..\Skrbl.Core\Skrbl.Core.csproj" />
+    <ProjectReference Include="..\Skrbl.Gltf\Skrbl.Gltf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="LearnOpenTK\Resources\container2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LearnOpenTK\Resources\container2_specular.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LearnOpenTK\Shaders\LearnOpenTK026MultipleLights.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LearnOpenTK\Shaders\LearnOpenTK026MultipleLights.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LearnOpenTK\Shaders\LearnOpenTK026MultipleLightsLighting.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial02_red_triangle\SimpleFragmentShader.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial02_red_triangle\SimpleVertexShader.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial03_matrices\SimpleTransform.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial03_matrices\SingleColor.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial04_colored_cube\ColorFragmentShader.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial04_colored_cube\TransformVertexShader.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial14_render_to_texture\.shaders-todo">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial09_vbo_indexing\StandardShading.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial09_vbo_indexing\StandardShading.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial09_vbo_indexing\suzanne.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial09_vbo_indexing\uvmap.DDS">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial09_vbo_indexing\uvmap.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial08_basic_shading\cube.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial08_basic_shading\suzanne.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial08_basic_shading\StandardShading.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial08_basic_shading\StandardShading.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial08_basic_shading\uvmap.DDS">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial08_basic_shading\uvmap.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\box.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\cube.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\TextureFragmentShader.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\TransformVertexShader.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\uvmap.DDS">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\uvmap.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\uvtemplate.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\uvtemplate.DDS">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\uvtemplate.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\uvtemplate.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial07_model_loading\uvtemplate.tga">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial06_keyboard_and_mouse\TextureFragmentShader.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial06_keyboard_and_mouse\TransformVertexShader.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial06_keyboard_and_mouse\uvtemplate.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial06_keyboard_and_mouse\uvtemplate.DDS">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial06_keyboard_and_mouse\uvtemplate.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial06_keyboard_and_mouse\uvtemplate.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial06_keyboard_and_mouse\uvtemplate.tga">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial05_textured_cube\TextureFragmentShader.fragmentshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial05_textured_cube\TransformVertexShader.vertexshader">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial05_textured_cube\uvtemplate.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial05_textured_cube\uvtemplate.DDS">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial05_textured_cube\uvtemplate.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial05_textured_cube\uvtemplate.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="opengl-tutorial.org\tutorial05_textured_cube\uvtemplate.tga">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LearnOpenTK\Shaders\LearnOpenTK0044ShadersMoreAttributes.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LearnOpenTK\Shaders\LearnOpenTK0044ShadersMoreAttributes.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

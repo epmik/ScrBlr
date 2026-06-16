@@ -45,7 +45,7 @@ namespace Scrblr.Core
         /// <summary>
         /// Must be specified in angles, default == 1000f
         /// </summary>
-        public float Far { get; set; } = 1000f;
+        public float Far { get; set; } = 10000f;
 
         private float _left = -1f;
 

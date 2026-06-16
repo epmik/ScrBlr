@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Scrblr.Core
 {
-    public class Shader
+    public class Shader : IDisposable
     {
         #region Fields and Properties
 
@@ -142,6 +142,7 @@ namespace Scrblr.Core
 
             // Check for linking errors
             GL.GetProgram(program, GetProgramParameterName.LinkStatus, out var code);
+
             if (code != (int)All.True)
             {
                 // We can use `GL.GetProgramInfoLog(program)` to get information about the error.
@@ -309,9 +310,11 @@ namespace Scrblr.Core
             GL.Uniform4(_uniformLocations[name], x, y, z, w);
         }
 
-        //public override string ToString()
-        //{
-        //    return _name;
-        //}
+        public void Dispose()
+        {
+            GL.UseProgram(0);
+
+            GL.DeleteProgram(Handle);
+        }
     }
 }

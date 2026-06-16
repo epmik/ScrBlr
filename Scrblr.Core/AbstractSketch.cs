@@ -6,6 +6,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -18,25 +19,25 @@ namespace Scrblr.Core
 
         private GameWindow _internalWindow;
 
-        private GraphicsContext _graphics;
+        private SaveFrameGraphicsContext _screenGraphics;
 
         private IRandomGenerator _defaultRandomGenerator;
 
-        public GraphicsContext Graphics => _graphics;
+        public IRandomGenerator Random{ get { return _defaultRandomGenerator; } }
+
+        public SaveFrameGraphicsContext Graphics => _screenGraphics;
 
         private const float DefaultFrustumWidth = 2f;
         private const float DefaultFrustumHeight = 2f;
         public float FrustumWidth { get; private set; } = DefaultFrustumWidth;
         public float FrustumHeight { get; private set; } = DefaultFrustumHeight;
-        public Dimensions Dimension { get; private set; } = Dimensions.Two;
+        //public Dimensions Dimension { get; private set; } = Dimensions.Two;
+        
+        public SketchMode Mode { get; private set; } = SketchMode.TwoDimensional;
 
 
         //protected ScrollDragCamera Camera;
 
-
-        public int WindowWidth { get { return Width; } }
-
-        public int WindowHeight { get { return Height; } }
         protected KeyboardState KeyboardState { get { return _internalWindow.KeyboardState; } }
         protected MouseState MouseState { get { return _internalWindow.MouseState; } }
 
@@ -47,6 +48,10 @@ namespace Scrblr.Core
         public int FramesPerSecond { get; private set; }
 
         private long LastFramesPerSecondTimeStamp { get; set; }
+
+        public int WindowWidth { get { return Width; } }
+
+        public int WindowHeight { get { return Height; } }
 
         /// <summary>
         /// default == true
@@ -92,35 +97,13 @@ namespace Scrblr.Core
 
         #region Save Frame Fields and Properties
 
-        private bool _saveNextFrame { get; set; }
+        private bool _saveFrame { get; set; }
 
-        private GraphicsContext _saveMultiSampleFrameGraphicsContext;
-        private GraphicsContext _saveFrameGraphicsContext;
+        //private GraphicsContext _saveMultiSampleFrameGraphicsContext;
+        //private GraphicsContext _saveFrameGraphicsContext;
 
-        /// <summary>
-        /// A scale applied to the saved image. default == 4f
-        /// <para>
-        /// i.e. if the window is 600 x 800 pixels
-        /// a scale will of 1 will result in a 600 x 800 pixels image
-        /// a scale will of 2 will result in a 1200 x 1600 pixels image
-        /// a scale will of 0.25 will result in a 150 x 200 pixels image
-        /// </para>
-        /// <para>
-        /// Irrespective of the scale, the dimensions of the image can never be less then 1 and never be greater then the texture size limit defined by OpenGl and your graphics device.
-        /// And will also be limited by the <see cref="SaveFrameMaxWidth"/> and <see cref="SaveFrameMaxHeight"/> properties.
-        /// </para>
-        /// </summary>
-        public float SaveFrameScale = 12f;
+        //private GraphicsContext _secundaryGraphicsContext;
 
-        /// <summary>
-        /// default == 4096
-        /// </summary>
-        public int SaveFrameMaxWidth = 1024 * 4;
-
-        /// <summary>
-        /// default == 4096
-        /// </summary>
-        public int SaveFrameMaxHeight = 1024 * 4;
 
         #endregion Save Frame Fields and Properties
 
@@ -132,7 +115,12 @@ namespace Scrblr.Core
         protected Keys? CloseKey = Keys.Escape;
 
         /// <summary>
+        /// <para>
         /// default key to save a frame a a image. Set to null if you want to dissable this.
+        /// </para>
+        /// <para>
+        /// F5 is the default key
+        /// </para>
         /// </summary>
         protected Keys? SaveFrameKey = Keys.F5;
 
@@ -145,7 +133,7 @@ namespace Scrblr.Core
         #region Constructors
 
         public AbstractSketch()
-            : this(DefaultFrustumWidth, DefaultFrustumHeight)
+            : this(DefaultFrustumWidth, DefaultFrustumHeight, SketchMode.TwoDimensional)
         {
 
         }
@@ -157,11 +145,24 @@ namespace Scrblr.Core
         /// <param name="width"></param>
         /// <param name="height"></param>
         public AbstractSketch(float width, float height)
+            : this(width, height, SketchMode.TwoDimensional)
+        {
+
+        }
+
+        /// <summary>
+        /// <paramref name="width"/> is not the width of the window. This is the width of sketch visible in the frustum and it is irrespective of the window width or resolution.
+        /// <paramref name="height"/> is not the height of the window. This is the height of sketch visible in the frustum and it is irrespective of the window height or resolution.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public AbstractSketch(float width, float height, SketchMode mode)
             : base(0, 0)
         {
             _defaultRandomGenerator = new RandomGenerator(); 
             FrustumWidth = width;
             FrustumHeight = height;
+            Mode = mode;
         }
 
         #endregion Constructors
@@ -214,18 +215,25 @@ namespace Scrblr.Core
 
             //_internalWindow.MousePosition
 
-            _graphics = new GraphicsContext(WindowWidth, WindowHeight, DepthBits, stencilBits: StencilBits, samples: Samples);
+            _screenGraphics = new SaveFrameGraphicsContext(WindowWidth, WindowHeight, DepthBits, stencilBits: StencilBits, samples: Samples);
+
+            _screenGraphics.Bind();
 
             var camera = new ScrollDragCamera
             {
                 Width = FrustumWidth,
                 Height = FrustumHeight,
                 Near = 1f,
-                Far = 1000f,
-                ProjectionMode = ProjectionMode.Perspective,
+                Far = 10000f,
+                ProjectionMode = Mode == SketchMode.TwoDimensional ? ProjectionMode.Orthographic : ProjectionMode.Perspective,
             };
 
             AttachCamera(camera, true, true);
+
+            if(Mode == SketchMode.TwoDimensional)
+            {
+                Graphics.AutoPositionCamera();
+            }
         }
 
         protected Vector2 ModelToScreenSpace(Vector3 position)
@@ -257,8 +265,8 @@ namespace Scrblr.Core
 
         protected void HideAndLockCursor()
         {
-            _internalWindow.CursorVisible = false;
-            _internalWindow.CursorGrabbed = true;
+            //_internalWindow.CursorState = false;
+            //_internalWindow.CursorGrabbed = true;
             //_internalWindow.MousePosition = new Vector2(Width * 0.5f, Height * 0.5f);
         }
 
@@ -328,7 +336,7 @@ namespace Scrblr.Core
 
             if (a.Key == SaveFrameKey)
             {
-                _saveNextFrame = true;
+                _saveFrame = true;
             }
 
             KeyUpAction?.Invoke(a);
@@ -388,11 +396,11 @@ namespace Scrblr.Core
             return _timeStopWatch.ElapsedMilliseconds;
         }
 
-        private List<IEventComponent> EventComponents = new List<IEventComponent>();
+        //private List<IEventComponent> EventComponents = new List<IEventComponent>();
 
         protected void AttachCamera(ICamera camera, bool bindEvents = true, bool makeActive = true)
         {
-            EventComponents.Add(camera);
+            //EventComponents.Add(camera);
 
             if (bindEvents)
             {
@@ -408,7 +416,7 @@ namespace Scrblr.Core
                 _internalWindow.MouseWheel += camera.MouseWheel;
             }
             // TODO differentiate between attached and active camera's
-            _graphics.ActiveCamera(camera);
+            _screenGraphics.ActiveCamera(camera);
         }
 
         //protected void BindMouseMoveEvent(Action<MouseMoveEventArgs> e)
@@ -423,16 +431,16 @@ namespace Scrblr.Core
 
         private void LoadInternal()
         {
-            Graphics.Load();
+            //Graphics.Load();
 
-            EnableDefaultStates();
+            EnableDefaultState();
 
             LoadAction?.Invoke();
         }
 
-        private void EnableDefaultStates()
+        private void EnableDefaultState()
         {
-            if(Dimension == Dimensions.Two)
+            if(Mode == SketchMode.TwoDimensional)
             {
                 Graphics.State.Disable(EnableFlag.DepthTest);
             }
@@ -482,14 +490,14 @@ namespace Scrblr.Core
 
             ResetStatesAndCounters();
 
-            _graphics.ClearMatrixStack();
+            _screenGraphics.ClearMatrixStack();
 
-            foreach(var eventComponent in EventComponents)
-            {
-                eventComponent.KeyboardState = _internalWindow.KeyboardState;
-                eventComponent.MouseState = _internalWindow.MouseState;
-                eventComponent.ElapsedTime = ElapsedTime;
-            }
+            //foreach(var eventComponent in EventComponents)
+            //{
+            //    eventComponent.KeyboardState = _internalWindow.KeyboardState;
+            //    eventComponent.MouseState = _internalWindow.MouseState;
+            //    eventComponent.ElapsedTime = ElapsedTime;
+            //}
         }
 
         private void PostUpdateFrameInternal(FrameEventArgs a)
@@ -505,6 +513,27 @@ namespace Scrblr.Core
         {
             PreRenderFrameInternal(a);
 
+            if (_saveFrame)
+            {
+                _saveFrame = false;
+
+                Graphics.BindOffscreenContext();
+
+                //_saveFrameGraphicsContext.Bind();
+
+                RenderAction();
+
+                Graphics.SaveOffscreenContextFrame($"saves/{GetSketchName()}{DateTime.Now.ToString(".yyyyMMdd.HHmmss.ffff")}.png");
+                //_saveFrameGraphicsContext.SaveFrame($"saves/{GetSketchName()}{DateTime.Now.ToString(".yyyyMMdd.HHmmss.ffff")}.png");
+
+                Graphics.DisposeOffscreenContext();
+                //_saveFrameGraphicsContext.Dispose();
+
+                //_saveFrameGraphicsContext = null;
+            }
+
+            Graphics.Bind();
+
             RenderAction();
 
             PostRenderFrameInternal(a);
@@ -512,51 +541,22 @@ namespace Scrblr.Core
 
         private void PreRenderFrameInternal(FrameEventArgs a)
         {
-            if(_saveNextFrame)
-            {
-                if(_saveFrameGraphicsContext == null)
-                {
-                    CreateSaveFrameGraphicsContext();
+            Graphics.Bind();
 
-                    if(_saveMultiSampleFrameGraphicsContext != null)
-                    {
-                        // to save multi sampled images, we need 2 frame buffers
-                        // one multi sampled frame buffer to render the scene to
-                        // another normal frame buffer to blit the multi sampled frame buffer onto
-
-                        // bind the multi sampled frame buffer to render the scene to
-                        _saveMultiSampleFrameGraphicsContext.Bind();
-                    }
-                    else
-                    {
-                        _saveFrameGraphicsContext.Bind();
-                    }
-
-                }
-            }
-        }
-
-        private void PostRenderFrameInternal(FrameEventArgs a)
-        {
             if (AutoClearBuffers)
             {
                 Graphics.ClearBuffers();
             }
 
-            Graphics.Flush();
-
-            if (_saveNextFrame)
+            if (_saveFrame)
             {
-                _saveNextFrame = false;
-
-                SaveSaveFrameGraphicsContext();
-
-                DisposeSaveFrameGraphicsContext();
-
-                Graphics.Bind();
-
-                return;
+                Graphics.CreateOffscreenContext();
             }
+        }
+
+        private void PostRenderFrameInternal(FrameEventArgs a)
+        {        
+            Graphics.Flush();
 
             _internalWindow.SwapBuffers();
 
@@ -565,11 +565,11 @@ namespace Scrblr.Core
 
         private void UnLoadInternal()
         {
-            _saveFrameGraphicsContext?.Dispose();
-            _saveFrameGraphicsContext = null;
+            //_saveFrameGraphicsContext?.Dispose();
+            //_saveFrameGraphicsContext = null;
 
-            _saveMultiSampleFrameGraphicsContext?.Dispose();
-            _saveMultiSampleFrameGraphicsContext = null;
+            //_saveMultiSampleFrameGraphicsContext?.Dispose();
+            //_saveMultiSampleFrameGraphicsContext = null;
 
             Graphics.Dispose();
 
@@ -583,195 +583,59 @@ namespace Scrblr.Core
             ResizeAction?.Invoke(a);
         }
 
-        private void SaveSaveFrameGraphicsContext()
-        {
-            var graphics = _saveFrameGraphicsContext;
+        //private void CreateSaveFrameGraphicsContext()
+        //{
+        //    var width = (int)(WindowWidth * SaveFrameScale);
+        //    var height = (int)(WindowHeight * SaveFrameScale);
 
-            //if (_saveMultiSampleFrameGraphicsContext != null)
-            //{
-            //    // to save multi sampled images, we need 2 frame buffers
-            //    // one multi sampled frame buffer to render the scene to
-            //    // another normal frame buffer to blit the multi sampled frame buffer onto
+        //    var max = GL.GetInteger(GetPName.MaxTextureSize);
+        //    var maxwidth = Math.Min(max, SaveFrameMaxWidth);
+        //    var maxheight = Math.Min(max, SaveFrameMaxHeight);
 
-            //    // bind the multi sampled frame buffer to render the scene to
-            //    _saveMultiSampleFrameGraphicsContext.Bind();
-            //}
-            //else
-            //{
-            //    graphics.Bind();
-            //}
+        //    if (width > maxwidth)
+        //    {
+        //        var factor = (float)maxwidth / (float)width;
+        //        width = (int)(width * factor);
+        //        height = (int)(height * factor);
+        //    }
 
-            GL.Flush();
+        //    if (height > maxheight)
+        //    {
+        //        var factor = (float)maxheight / (float)height;
+        //        width = (int)(width * factor);
+        //        height = (int)(height * factor);
+        //    }
 
-            if (_saveMultiSampleFrameGraphicsContext != null)
-            {
-                // to save multi sampled images, we need 2 frame buffers
-                // one multi sampled frame buffer to render the scene to
-                // another normal frame buffer to blit the multi sampled frame buffer onto
+        //    _saveFrameGraphicsContext = new GraphicsContext(
+        //        width,
+        //        height,
+        //        Graphics.ColorBits,
+        //        Graphics.DepthBits,
+        //        Graphics.StencilBits,
+        //        1);
 
-                // bind the multi sampled frame buffer for reading
-                _saveMultiSampleFrameGraphicsContext.Bind(BindFlag.Read);
+        //    _saveFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
+        //    _saveFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
 
-                // bind the normal frame buffer for writing
-                graphics.Bind(BindFlag.Write);
+        //    //if(Graphics.Samples > 1)
+        //    //{
+        //    //    // to save multi sampled images, we need 2 frame buffers
+        //    //    // one multi sampled frame buffer to render the scene to
+        //    //    // another normal frame buffer to blit the multi sampled frame buffer onto
+        //    //    _saveMultiSampleFrameGraphicsContext = new GraphicsContext(
+        //    //        width,
+        //    //        height,
+        //    //        Graphics.ColorBits,
+        //    //        Graphics.DepthBits,
+        //    //        Graphics.StencilBits,
+        //    //        Graphics.Samples);
 
-                // blit the multi sampled frame buffer to the normal frame buffer
-                GL.BlitFramebuffer(
-                    0, 0,
-                    _saveMultiSampleFrameGraphicsContext.Width, _saveMultiSampleFrameGraphicsContext.Height, 
-                    0, 0, 
-                    graphics.Width, graphics.Height, 
-                    ClearBufferMask.ColorBufferBit, 
-                    BlitFramebufferFilter.Linear);
-            }
+        //    //    _saveMultiSampleFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
+        //    //    _saveMultiSampleFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
+        //    //}
+        //}
 
-            // bind the normal frame buffer for reading
-            graphics.Bind(BindFlag.Read);
-
-            using (var bitmap = new System.Drawing.Bitmap(graphics.Width, graphics.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-            {
-                var name = GetSketchName() + DateTime.Now.ToString(".yyyyMMdd.HHmmss.ffff") + ".png";
-
-                var data = bitmap.LockBits(new System.Drawing.Rectangle(
-                    0, 0,
-                    graphics.Width, graphics.Height), 
-                    System.Drawing.Imaging.ImageLockMode.WriteOnly, 
-                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                
-                GL.PixelStore(PixelStoreParameter.PackRowLength, data.Stride / 4);
-                
-                GL.ReadPixels(
-                    0, 0,
-                    graphics.Width, graphics.Height, 
-                    PixelFormat.Bgra, 
-                    PixelType.UnsignedByte, 
-                    data.Scan0);
-                
-                bitmap.UnlockBits(data);
-
-                bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
-
-                bitmap.Save(@"saves/" + name, System.Drawing.Imaging.ImageFormat.Png);
-            }
-        }
-
-        private void CreateSaveFrameGraphicsContext()
-        {
-            var width = (int)(WindowWidth * SaveFrameScale);
-            var height = (int)(WindowHeight * SaveFrameScale);
-
-            var max = GL.GetInteger(GetPName.MaxTextureSize);
-            var maxwidth = Math.Min(max, SaveFrameMaxWidth);
-            var maxheight = Math.Min(max, SaveFrameMaxHeight);
-
-            if (width > maxwidth)
-            {
-                var factor = (float)maxwidth / (float)width;
-                width = (int)(width * factor);
-                height = (int)(height * factor);
-            }
-
-            if (height > maxheight)
-            {
-                var factor = (float)maxheight / (float)height;
-                width = (int)(width * factor);
-                height = (int)(height * factor);
-            }
-
-            _saveFrameGraphicsContext = new GraphicsContext(
-                width,
-                height,
-                Graphics.ColorBits,
-                Graphics.DepthBits,
-                Graphics.StencilBits,
-                1);
-
-            _saveFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
-            _saveFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
-
-            if(Graphics.Samples > 1)
-            {
-                // to save multi sampled images, we need 2 frame buffers
-                // one multi sampled frame buffer to render the scene to
-                // another normal frame buffer to blit the multi sampled frame buffer onto
-                _saveMultiSampleFrameGraphicsContext = new GraphicsContext(
-                    width,
-                    height,
-                    Graphics.ColorBits,
-                    Graphics.DepthBits,
-                    Graphics.StencilBits,
-                    Graphics.Samples);
-
-                _saveMultiSampleFrameGraphicsContext.ActiveCamera(Graphics.ActiveCamera());
-                _saveMultiSampleFrameGraphicsContext.ModelMatrix(Graphics.ModelMatrix());
-            }
-        }
-
-        private void DisposeSaveFrameGraphicsContext()
-        {
-            GraphicsContext.Default.Bind();
-
-            if (_saveFrameGraphicsContext != null)
-            {
-                _saveFrameGraphicsContext.Dispose();
-
-                _saveFrameGraphicsContext = null;
-            }
-
-            if (_saveMultiSampleFrameGraphicsContext != null)
-            {
-                _saveMultiSampleFrameGraphicsContext.Dispose();
-
-                _saveMultiSampleFrameGraphicsContext = null;
-            }
-        }
-
-        public int RandomSeed()
-        {
-            return _defaultRandomGenerator.Seed();
-        }
-
-        public int RandomSeed(int seed)
-        {
-            return _defaultRandomGenerator.ReSeed(seed);
-        }
-
-        public float Random()
-        {
-            return Random(0f, 1f);
-        }
-
-        public float Random(float max)
-        {
-            return Random(0, max);
-        }
-
-        public float Random(float min, float max)
-        {
-            return _defaultRandomGenerator.Value(min, max);
-        }
-
-        public double Random(double max)
-        {
-            return Random(0, max);
-        }
-
-        public double Random(double min, double max)
-        {
-            return _defaultRandomGenerator.Value(min, max);
-        }
-
-        public int Random(int max)
-        {
-            return Random(0, max);
-        }
-
-        public int Random(int min, int max)
-        {
-            return _defaultRandomGenerator.Value(min, max);
-        }
-
-        private string GetSketchName()
+        protected string GetSketchName()
         {
             var typeInfo = GetType().GetTypeInfo();
             var sketchAttribute = typeInfo.GetCustomAttribute<SketchAttribute>();

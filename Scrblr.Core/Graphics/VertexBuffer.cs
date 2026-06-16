@@ -280,25 +280,27 @@ namespace Scrblr.Core
         public void UnBind()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+
+            GL.BindVertexArray(0);
         }
 
-        public void EnableElements(Shader shader)
-        {
-            //GL.BindVertexArray(Mapping.Handle);
+        //public void EnableElements(Shader shader)
+        //{
+        //    //GL.BindVertexArray(Mapping.Handle);
 
-            //foreach (var e in Mapping.Maps)
-            //{
-            //    if (!shader.TryAttributeLocation(e.ShaderInputName, out int location))
-            //    {
-            //        continue;
-            //    }
+        //    //foreach (var e in Mapping.Maps)
+        //    //{
+        //    //    if (!shader.TryAttributeLocation(e.ShaderInputName, out int location))
+        //    //    {
+        //    //        continue;
+        //    //    }
 
-            //    if (e.Enabled && VertexFlags(true).HasFlag(e.VertexFlag))
-            //    {
-            //        GL.EnableVertexAttribArray(location);
-            //    }
-            //}
-        }
+        //    //    if (e.Enabled && VertexFlags(true).HasFlag(e.VertexFlag))
+        //    //    {
+        //    //        GL.EnableVertexAttribArray(location);
+        //    //    }
+        //    //}
+        //}
 
         public void EnableElements(VertexFlag vertexFlags)
         {
@@ -321,8 +323,24 @@ namespace Scrblr.Core
             }
         }
 
+        public void EnableElements()
+        {
+            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
+
+            GL.BindVertexArray(Mapping.Handle);
+
+            for (var location = 0; location < Mapping.Maps.Length; location++)
+            {
+                GL.EnableVertexAttribArray(location);
+            }
+        }
+
         public void DisableElements()
         {
+            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
+
+            GL.BindVertexArray(Mapping.Handle);
+
             for (var location = 0; location < Mapping.Maps.Length; location++)
             {
                 GL.DisableVertexAttribArray(location);
@@ -332,9 +350,10 @@ namespace Scrblr.Core
         public void Dispose()
         {
             UnBind();
-            
+
             GL.DeleteBuffer(Handle);
-            
+            GL.DeleteVertexArray(Mapping.Handle);
+
             GC.SuppressFinalize(this);
         }
 

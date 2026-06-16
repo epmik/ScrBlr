@@ -169,6 +169,11 @@ namespace Scrblr.Core
         {
         }
 
+        //public void Attach(Texture texture)
+        //{
+        //    GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.Color, TextureTarget.Texture2D, texture.Handle, 0);
+        //}
+
         public void Dispose()
         {
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);

@@ -5,9 +5,13 @@ namespace Scrblr.Core
 {
     public interface IRandomGenerator
     {
-        int Seed();
+        int Seed { get; }
+
+        int ReSeed();
 
         int ReSeed(int seed);
+
+        int Reset();
 
         double Value();
 

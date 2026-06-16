@@ -615,6 +615,189 @@ void main()
 
         #endregion Shader Sources
 
+        #region Fields and Properties
+
+        ///// <summary>
+        ///// default == 256
+        ///// </summary>
+        //private int _maxRenderChunks = 256;
+
+        //private int _renderChunkCount;
+
+        //private RenderChunk[] _renderChunks;
+
+        /// <summary>
+        /// default == 256
+        /// </summary>
+        private int _maxRenderBatchCount = 256;
+
+        private int _renderBatchCount;
+
+        private RenderBatch[] _renderBatches;
+
+
+        /// <summary>
+        /// default == 4096
+        /// </summary>
+        private int _maxGeometryCount = 4096;
+
+        private int _geometryCount;
+
+        private AbstractGeometry[] _geometry;
+
+
+        ///// <summary>
+        ///// default == 4096
+        ///// </summary>
+        //private int _maxTesselatedGeometryCount = 4096;
+
+        //private int _tesselatedGeometryCount;
+
+        //private AbstractGeometry[] _tesselatedGeometry;
+
+        // todo implement default camera instead of relying on the camera provided by AbstractSketch
+        private ICamera _activeCamera { get; set; }
+
+        public ICamera ActiveCamera()
+        {
+            return _activeCamera;
+        }
+
+        public void ActiveCamera(ICamera camera)
+        {
+            _activeCamera = camera;
+        }
+
+        public void AutoPositionCamera()
+        {
+            var a = (180f - _activeCamera.Fov) * 0.5f;
+            var d = _activeCamera.ProjectionMode == ProjectionMode.Orthographic ? _activeCamera.Far - _activeCamera.Near : (float)Math.Tan(MathHelper.DegreesToRadians(a)) * (_activeCamera.Width * 0.5f);
+            _activeCamera.Position = new Vector3(0.0f, 0.0f, d);
+        }
+
+        private static int GraphicsContextCount { get; set; }
+
+        public static GraphicsContext Default { get; set; }
+
+        /// <summary>
+        /// default == Color4.White
+        /// </summary>
+        protected Color4 _clearColor = Color4.White;
+
+        /// <summary>
+        /// the OpenGl Handle to the intenal framebuffer if any was created, or 0 if this is the default framebuffer
+        /// default == 0 or the default framebuffer
+        /// </summary>
+        public int Handle
+        {
+            get
+            {
+                return _frameBuffer == null ? 0 : _frameBuffer.Handle;
+            }
+        }
+
+        public bool IsDefault
+        {
+            get { return _frameBuffer == null; }
+        }
+
+        private static int BoundFrameBufferHandle { get; set; } = -1;
+
+        private FrameBuffer _frameBuffer;
+
+        private Shader _attachedShader { get; set; }
+
+        public void AttachShader(Shader shader)
+        {
+            _attachedShader = shader;
+        }
+
+        public Shader AttachedShader()
+        {
+            return _attachedShader;
+        }
+
+        private Dictionary<string, Shader> _standardShaderDictionary;
+
+
+
+        private const int DefaultVertexBufferElementCount = 32768;
+
+        //private VertexBuffer _defaultVertexBuffer { get; set; }
+
+        private VertexBuffer _attachedVertexBuffer { get; set; }
+
+        public VertexBuffer AttachedVertexBuffer()
+        {
+            return _attachedVertexBuffer;
+        }
+
+        public void AttachVertexBuffer(VertexBuffer vertexBuffer)
+        {
+            _attachedVertexBuffer = vertexBuffer;
+        }
+
+        private const int _standardVertexBufferArraySize = 8;
+
+        private int _standardVertexBufferArrayCount = 0;
+
+        private VertexBuffer[] _standardVertexBufferArray = new VertexBuffer[_standardVertexBufferArraySize];
+
+        #endregion Fields and Properties
+
+        #region Constructors
+
+        public GraphicsContext(
+            int width,
+            int height,
+            int colorBits = GraphicsSettings.DefaultColorBits,
+            int depthBits = GraphicsSettings.DefaultDepthBits,
+            int stencilBits = GraphicsSettings.DefaultStencilBits,
+            int samples = GraphicsSettings.DefaultSamples)
+            : base(width, height, colorBits, depthBits, stencilBits, samples)
+        {
+            _modelMatrixStack[_modelMatrixStackIndex] = Matrix4.Identity;
+
+            GraphicsContextCount++;
+
+            if (GraphicsContextCount == 1)
+            {
+                // default OpenGl context
+                GraphicsContext.Default = this;
+            }
+            else
+            {
+                // custom OpenGl context, create a framebuffer to render to
+                _frameBuffer = new FrameBuffer(Width, Height, ColorBits, DepthBits, StencilBits, Samples);
+            }
+
+            InitializeStandardShaderDictionary();
+
+            _renderBatches = new RenderBatch[_maxRenderBatchCount];
+
+            for (var i = 0; i < _maxRenderBatchCount; i++)
+            {
+                _renderBatches[i] = new RenderBatch();
+            }
+
+            _geometry = new AbstractGeometry[_maxGeometryCount];
+
+            InitializeStandardVertexBuffers();
+        }
+
+        public GraphicsContext(GraphicsSettings graphicsSettings)
+            : this(
+                  graphicsSettings.Width,
+                  graphicsSettings.Height,
+                  graphicsSettings.ColorBits,
+                  graphicsSettings.DepthBits,
+                  graphicsSettings.StencilBits,
+                  graphicsSettings.Samples)
+        {
+        }
+
+        #endregion Constructors
+
         //private void FlushRenderChunks()
         //{
         //    if (!State.IsEnabled(EnableFlag.Rendering))
@@ -724,7 +907,27 @@ void main()
                 GL.DrawArrays((PrimitiveType)renderBatch.GeometryType, renderBatch.ElementIndex, renderBatch.ElementCount);
             }
 
+            GL.Flush();
+
             _renderBatchCount = 0;
+        }
+
+        /// <summary>
+        /// Binds the <paramref name="vertexBuffer"/>, enables the attributes and calls Use on the <paramref name="shader"/>
+        /// </summary>
+        /// <param name="vertexBuffer"></param>
+        /// <param name="shader"></param>
+        public void Render(VertexBuffer vertexBuffer, Shader shader, GeometryType geometryType = GeometryType.Triangles)
+        {
+            Bind();
+
+            vertexBuffer.Bind();
+
+            vertexBuffer.EnableElements();
+
+            shader.Use();            
+
+            GL.DrawArrays((PrimitiveType)geometryType, 0, vertexBuffer.UsedElements());
         }
 
         //protected void InsertRenderBatchAndWriteToVertexBuffer(AbstractGeometry geometry)
@@ -882,174 +1085,6 @@ void main()
 
             _standardVertexBufferArrayCount++;
         }
-
-        #region Fields and Properties
-
-        ///// <summary>
-        ///// default == 256
-        ///// </summary>
-        //private int _maxRenderChunks = 256;
-
-        //private int _renderChunkCount;
-
-        //private RenderChunk[] _renderChunks;
-
-        /// <summary>
-        /// default == 256
-        /// </summary>
-        private int _maxRenderBatchCount = 256;
-
-        private int _renderBatchCount;
-
-        private RenderBatch[] _renderBatches;
-
-
-        /// <summary>
-        /// default == 4096
-        /// </summary>
-        private int _maxGeometryCount = 4096;
-
-        private int _geometryCount;
-
-        private AbstractGeometry[] _geometry;
-
-
-        ///// <summary>
-        ///// default == 4096
-        ///// </summary>
-        //private int _maxTesselatedGeometryCount = 4096;
-
-        //private int _tesselatedGeometryCount;
-
-        //private AbstractGeometry[] _tesselatedGeometry;
-
-        // todo implement default camera instead of relying on the camera provided by AbstractSketch
-        private ICamera _activeCamera { get; set; }
-
-        public ICamera ActiveCamera() 
-        { 
-            return _activeCamera; 
-        }
-
-        public void ActiveCamera(ICamera camera)
-        {
-            _activeCamera = camera;
-        }
-
-        public void AutoPositionCamera()
-        {
-            var a = (180f - _activeCamera.Fov) * 0.5f;
-            var d = _activeCamera.ProjectionMode == ProjectionMode.Orthographic ? _activeCamera.Far - _activeCamera.Near : (float)Math.Tan(MathHelper.DegreesToRadians(a)) * (_activeCamera.Width * 0.5f);
-            _activeCamera.Position = new Vector3(0.0f, 0.0f, d);
-        }
-
-        private static int GraphicsContextCount { get; set; }
-
-        public static GraphicsContext Default { get; set; }
-
-        /// <summary>
-        /// default == Color4.White
-        /// </summary>
-        protected Color4 _clearColor = Color4.White;
-
-        /// <summary>
-        /// the OpenGl Handle to the intenal framebuffer if any was created, or 0 if this is the default framebuffer
-        /// default == 0 or the default framebuffer
-        /// </summary>
-        public int Handle
-        {
-            get
-            {
-                return _frameBuffer == null ? 0 : _frameBuffer.Handle;
-            }
-        }
-
-        public bool IsDefault
-        {
-            get { return _frameBuffer == null; }
-        }
-
-        private FrameBuffer _frameBuffer;
-
-        private Shader _attachedShader { get; set; }
-
-        public void AttachShader(Shader shader)
-        {
-            _attachedShader = shader;
-        }
-
-        public Shader AttachedShader()
-        {
-            return _attachedShader;
-        }
-
-        private Dictionary<string, Shader> _standardShaderDictionary;
-
-
-
-        private const int DefaultVertexBufferElementCount = 32768;
-
-        //private VertexBuffer _defaultVertexBuffer { get; set; }
-
-        private VertexBuffer _attachedVertexBuffer { get; set; }
-
-        public VertexBuffer AttachedVertexBuffer()
-        {
-            return _attachedVertexBuffer;
-        }
-
-        public void AttachVertexBuffer(VertexBuffer vertexBuffer)
-        {
-            _attachedVertexBuffer = vertexBuffer;
-        }
-
-        private const int _standardVertexBufferArraySize = 8;
-
-        private int _standardVertexBufferArrayCount = 0;
-
-        private VertexBuffer[] _standardVertexBufferArray = new VertexBuffer[_standardVertexBufferArraySize];
-
-        #endregion Fields and Properties
-
-        #region Constructors
-
-        public GraphicsContext(
-            int width,
-            int height,
-            int colorBits = GraphicsSettings.DefaultColorBits,
-            int depthBits = GraphicsSettings.DefaultDepthBits,
-            int stencilBits = GraphicsSettings.DefaultStencilBits,
-            int samples = GraphicsSettings.DefaultSamples)
-            : base(width, height, colorBits, depthBits, stencilBits, samples)
-        {
-            _modelMatrixStack[_modelMatrixStackIndex] = Matrix4.Identity;
-
-            GraphicsContextCount++;
-
-            if (GraphicsContextCount == 1)
-            {
-                // default OpenGl context
-                GraphicsContext.Default = this;
-            }
-            else
-            {
-                // custom OpenGl context, create a framebuffer to render to
-                _frameBuffer = new FrameBuffer(Width, Height, ColorBits, DepthBits, StencilBits, Samples);
-            }
-        }
-
-        public GraphicsContext(GraphicsSettings graphicsSettings)
-            : this(
-                  graphicsSettings.Width,
-                  graphicsSettings.Height,
-                  graphicsSettings.ColorBits,
-                  graphicsSettings.DepthBits,
-                  graphicsSettings.StencilBits,
-                  graphicsSettings.Samples)
-        {
-        }
-
-        #endregion Constructors
 
         #region Matrix Stack Stuff
 
@@ -1244,37 +1279,6 @@ void main()
 
         #endregion Matrix Stack Stuff
 
-        #region Load
-
-        public virtual void Load()
-        {
-            InitializeStandardShaderDictionary();
-
-            //_renderChunks = new RenderChunk[_maxRenderChunks];
-
-            //for (var i = 0; i < _maxRenderChunks; i++)
-            //{
-            //    _renderChunks[i] = new RenderChunk();
-            //}
-
-            _renderBatches = new RenderBatch[_maxRenderBatchCount];
-
-            for (var i = 0; i < _maxRenderBatchCount; i++)
-            {
-                _renderBatches[i] = new RenderBatch();
-            }
-
-            _geometry = new AbstractGeometry[_maxGeometryCount];
-
-            //_tesselatedGeometry = new AbstractGeometry[_maxTesselatedGeometryCount];
-
-            InitializeStandardVertexBuffers();
-
-            GL.ClearColor(_clearColor);
-        }
-
-        #endregion Load
-
         #region Reset
 
         public void Reset()
@@ -1304,13 +1308,13 @@ void main()
 
         public void Flush()
         {
+            //Diagnostics.Log("Flush called");
+
             //TesselateGeometry();
 
-            //GeometryToRenderChunks();
+            //Bind();
 
             GeometryToRenderBatches();
-
-            //FlushRenderChunks();
 
             FlushRenderBatches();
 
@@ -1405,11 +1409,93 @@ void main()
 
         #endregion Standard Shaders Functions
 
-        public void Bind(BindFlag bindFlag = BindFlag.Default)
+        /// <summary>
+        /// <para>
+        /// Binds the frame buffer (0 for the default frame buffer)
+        /// </para>
+        /// <para>
+        /// Sets the viewport and clear color
+        /// </para>
+        /// </summary>
+        /// <param name="bindFlag">default == BindFlag.Default</param>
+        public virtual void Bind(BindFlag bindFlag = BindFlag.Default)
         {
+            if(BoundFrameBufferHandle == Handle)
+            {
+                return;
+            }
+
+            BoundFrameBufferHandle = Handle;
+
             GL.BindFramebuffer(ToFramebufferTarget(bindFlag), Handle);
 
             GL.Viewport(0, 0, Width, Height);
+
+            GL.ClearColor(_clearColor);
+        }
+
+        /// <summary>
+        /// Binds and flushes the current frame buffer and saves it's color buffer to disk as a .png file
+        /// </summary>
+        /// <param name="pathAndName"></param>
+        public void SaveFrame(string pathAndName = null, bool bind = true, bool flush = true)
+        {
+            if(string.IsNullOrEmpty(pathAndName))
+            {
+                pathAndName = $"saves/{DateTime.Now.ToString(".yyyyMMdd.HHmmss.ffff")}.png";
+            }
+            else if(!pathAndName.EndsWith(".png"))
+            {
+                pathAndName += ".png";
+            }
+
+            if (bind)
+            {
+                Bind(BindFlag.Read);
+            }
+
+            if (flush)
+            {
+                Flush();
+            }
+
+            using (var bitmap = new System.Drawing.Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            {
+                var data = bitmap.LockBits(new System.Drawing.Rectangle(
+                    0, 0,
+                    Width, Height),
+                    System.Drawing.Imaging.ImageLockMode.WriteOnly,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                GL.PixelStore(PixelStoreParameter.PackRowLength, data.Stride / 4);
+
+                GL.ReadPixels(
+                    0, 0,
+                    Width, Height,
+                    OpenTK.Graphics.OpenGL4.PixelFormat.Bgra,
+                    PixelType.UnsignedByte,
+                    data.Scan0);
+
+                bitmap.UnlockBits(data);
+
+                bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
+
+                bitmap.Save(pathAndName, System.Drawing.Imaging.ImageFormat.Png);
+
+                pathAndName += ".bmp";
+
+                bitmap.Save(pathAndName, System.Drawing.Imaging.ImageFormat.Bmp);
+            }
+        }
+
+        public void Enable(EnableFlag flag)
+        {
+            State.Enable(flag);
+        }
+
+        public void Disable(EnableFlag flag)
+        {
+            State.Disable(flag);
         }
 
         private FramebufferTarget ToFramebufferTarget(BindFlag bindFlag)
@@ -1475,14 +1561,19 @@ void main()
             ClearColor(r * Utility.ByteToUnitSingleFactor, g * Utility.ByteToUnitSingleFactor, b * Utility.ByteToUnitSingleFactor, a * Utility.ByteToUnitSingleFactor);
         }
 
-        public void ClearColor(float r, float g, float b, float a = 1f)
+        public void ClearColor(Color4 color)
         {
-            _clearColor.R = r;
-            _clearColor.G = g;
-            _clearColor.B = b;
-            _clearColor.A = a;
+            _clearColor.R = color.R;
+            _clearColor.G = color.G;
+            _clearColor.B = color.B;
+            _clearColor.A = color.A;
 
             GL.ClearColor(_clearColor);
+        }
+
+        public void ClearColor(float r, float g, float b, float a = 1f)
+        {
+            ClearColor(new Color4(r, g, b, a));  
         }
 
         public VertexBuffer StandardVertexBuffer()
@@ -1575,6 +1666,15 @@ void main()
         public RectangleGeometry Rectangle()
         {
             var g = new RectangleGeometry(ModelMatrix());
+
+            AddGeometry(g);
+
+            return g;
+        }
+
+        public HairlineGeometry Hairline()
+        {
+            var g = new HairlineGeometry(ModelMatrix());
 
             AddGeometry(g);
 
@@ -1746,7 +1846,9 @@ void main()
         {
             if (_geometryCount + 1 >= _maxGeometryCount)
             {
-                throw new InvalidOperationException($"AddGeometry(Geometry geometry) failed. _maxGeometryCount had been reached: {_geometryCount}");
+                Flush();
+
+                //throw new InvalidOperationException($"AddGeometry(Geometry geometry) failed. _maxGeometryCount had been reached: {_geometryCount}");
             }
 
             _geometry[_geometryCount++] = geometry;

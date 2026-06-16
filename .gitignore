@@ -161,3 +161,11 @@ packages
 resources
 saves
 /Scrblr.Playground
+/Skrbl/.resources/.saves
+/Skrbl/.resources/.textures
+/Skrbl/.resources/.scenes
+/Skrbl.Blender
+/Skrbl.Gltf
+/Skrbl.Gltf.Tests
+/Skrbl.FontRendering
+/Skrbl.Threejs.Debug

@@ -20,9 +20,9 @@ namespace Scrblr.Core
             ReSeed(seed);
         }
 
-        public int Seed()
+        public int Seed
         {
-            return _seed;
+            get { return _seed; }
         }
 
         public int ReSeed()
@@ -35,6 +35,11 @@ namespace Scrblr.Core
             _seed = seed;
             _random = new Random(_seed);
             return _seed;
+        }
+
+        public int Reset()
+        {
+            return ReSeed(Seed);
         }
 
         public double Value()

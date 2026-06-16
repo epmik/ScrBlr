@@ -38,9 +38,7 @@ namespace Scrblr.Core
         /// <summary>
         /// default == 32
         /// </summary>
-        /// set to 0 to disable depth buffer creation
         /// <para>
-        /// possible values are 32
         /// </para>
         public int ColorBits
         {
@@ -88,7 +86,7 @@ namespace Scrblr.Core
         private int _stencilBits = GraphicsSettings.DefaultStencilBits;
 
         /// <summary>
-        /// default == 24
+        /// default == 0
         /// set to 0 to disable stencil buffer creation
         /// <para>
         /// possible values are 16 or 24

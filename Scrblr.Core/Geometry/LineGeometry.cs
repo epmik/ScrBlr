@@ -142,6 +142,7 @@ namespace Scrblr.Core
 
         public override void WriteToVertexBuffer(VertexBuffer vertexBuffer)
         {
+
         }
 
         public LineGeometry From(float x, float y, float z = 0f)

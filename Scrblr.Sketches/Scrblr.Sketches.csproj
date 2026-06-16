@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ApplicationIcon />
     <StartupObject />
   </PropertyGroup>
@@ -20,6 +20,7 @@
     <Compile Remove="Learn028-Training ground-Custom Shader.cs" />
     <Compile Remove="Learn029-Training ground-Custom VertexBuffer.cs" />
     <Compile Remove="Learn032-Training ground-Cube-Texture-Color-Blending.cs" />
+    <Compile Remove="Sketch004-render-to-texture.cs" />
   </ItemGroup>
 
   <ItemGroup>
