@@ -8,6 +8,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Cameras\Camera.cs" />
+    <Compile Remove="Cameras\CameraBouncingRays.cs" />
+    <Compile Remove="Cameras\CameraMultiSample.cs" />
+    <Compile Remove="Cameras\CameraScatter.cs" />
+    <Compile Remove="Cameras\CameraSingleSample.cs" />
+    <Compile Remove="Geometry\Sphere.cs" />
+    <Compile Remove="Geometry\SphereNoMaterial.cs" />
+    <Compile Remove="HitRecord.cs" />
+    <Compile Remove="Hittable.cs" />
+    <Compile Remove="HittableList.cs" />
+    <Compile Remove="Interval.cs" />
+    <Compile Remove="Materials\Dielectric.cs" />
+    <Compile Remove="Materials\Lambertian.cs" />
+    <Compile Remove="Materials\Material.cs" />
+    <Compile Remove="Materials\Metal.cs" />
+    <Compile Remove="Ppm.cs" />
+    <Compile Remove="Programs\FirstSimpleProgram.cs" />
+    <Compile Remove="Programs\SimpleWorldProgram.cs" />
+    <Compile Remove="Programs\SimpleWorldWithBouncingRaysCameraProgram.cs" />
+    <Compile Remove="Programs\SimpleWorldWithCameraProgram.cs" />
+    <Compile Remove="Programs\SimpleWorldWithMaterialsProgram.cs" />
+    <Compile Remove="Programs\SimpleWorldWithMultiSampleCameraProgram.cs" />
+    <Compile Remove="Programs\SimpleWorldWithUltimateCameraProgram.cs" />
+    <Compile Remove="Ray.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include=".output\_dummy-to-force-copy-to-output-directory.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -15,6 +42,10 @@
 
   <ItemGroup>
     <Folder Include=".resources\" />
+    <Folder Include="Cameras\" />
+    <Folder Include="Geometry\" />
+    <Folder Include="Materials\" />
+    <Folder Include="Programs\" />
   </ItemGroup>
 
   <ItemGroup>

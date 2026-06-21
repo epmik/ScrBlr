@@ -76,7 +76,6 @@ namespace Scrblr.Rtx
 
         public static Vector3d UnitVector(Vector3d v) => v / v.Length();
 
-        // Mimics std::ostream operator<< by overriding ToString()
         public override readonly string ToString() => $"{X} {Y} {Z}";
 
         public static Vector3d random()
