@@ -13,6 +13,13 @@
         {
             return degrees * Pi / 180.0;
         }
+
+        public static int random_int(int min, int max)
+        {
+            // Returns a random integer in [min,max].
+            return (int)(RandomDouble(min, max + 1));
+        }
+
         public static double RandomDouble()
         {
             // Returns a random real double in [0.0, 1.0)

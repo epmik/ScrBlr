@@ -7,6 +7,9 @@ namespace Scrblr.Rtx
 
     public struct Vector3d
     {
+        public static Vector3d Zero = new Vector3d(0, 0, 0);
+        public static Vector3d One = new Vector3d(1, 1, 1);
+
         // Constructors
         public Vector3d() : this(0, 0, 0) { }
 
@@ -129,6 +132,16 @@ namespace Scrblr.Rtx
             var r_out_perp = etai_over_etat * (uv + cos_theta * n);
             var r_out_parallel = -Math.Sqrt(Math.Abs(1.0 - r_out_perp.LengthSquared())) * n;
             return r_out_perp + r_out_parallel;
+        }
+
+        public static Vector3d random_in_unit_disk() 
+        {
+            while (true) 
+            {
+                var p = new Vector3d(Utility.RandomDouble(-1, 1), Utility.RandomDouble(-1, 1), 0);
+                if (p.LengthSquared() < 1)
+                    return p;
+            }
         }
     }
 }
