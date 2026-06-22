@@ -300,9 +300,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Skrbl.Blender\Skrbl.Blender.csproj" />
     <ProjectReference Include="..\Skrbl.Core\Skrbl.Core.csproj" />
-    <ProjectReference Include="..\Skrbl.Gltf\Skrbl.Gltf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
