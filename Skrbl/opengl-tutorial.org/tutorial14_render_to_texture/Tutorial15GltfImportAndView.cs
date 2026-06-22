@@ -770,10 +770,10 @@ namespace OpenGlTutorialOrg
             // end suzanne render pass
             // ------------------------------------------------------------------------------------
 
-            var gltfModel = Skrbl.Gltf.Import(new Skrbl.Gltf.ImportSettings
-            {
-                FilePath = Resources.Scene("TriangleWithoutIndices/glTF/TriangleWithoutIndices.gltf"),
-            });
+            //var gltfModel = Skrbl.Gltf.Import(new Skrbl.Gltf.ImportSettings
+            //{
+            //    FilePath = Resources.Scene("TriangleWithoutIndices/glTF/TriangleWithoutIndices.gltf"),
+            //});
 
 
             // ------------------------------------------------------------------------------------

@@ -324,10 +324,10 @@ namespace OpenGlTutorialOrg
 
             //importer.Parse();
 
-            var modelGltfTriangle = Skrbl.Gltf.Import(new Skrbl.Gltf.ImportSettings
-            {
-                FilePath = Resources.Scene("TriangleWithoutIndices/glTF/TriangleWithoutIndices.gltf"),
-            });
+            //var modelGltfTriangle = Skrbl.Gltf.Import(new Skrbl.Gltf.ImportSettings
+            //{
+            //    FilePath = Resources.Scene("TriangleWithoutIndices/glTF/TriangleWithoutIndices.gltf"),
+            //});
 
             //var modelGltf = Skrbl.Gltf.Import(new Skrbl.Gltf.ImportSettings
             //{
