@@ -36,7 +36,11 @@
 
             //new Scrblr.Rtx.Chapter095().Main("C:\\Steven\\Atelier\\Scrblr\\Scrblr.Rtx\\.output\\chapter095.png");
 
-            new Scrblr.Rtx.Chapter100().Main("C:\\Steven\\Atelier\\Scrblr\\Scrblr.Rtx\\.output\\chapter100.png");
+            //new Scrblr.Rtx.Chapter100().Main("C:\\Steven\\Atelier\\Scrblr\\Scrblr.Rtx\\.output\\chapter100.png");
+
+            new Scrblr.Rtx.Chapter106().Main("chapter106.png");
+
+            new Scrblr.Rtx.Chapter110().Main("chapter110.png");
 
             //new FirstSimpleProgram().Main();
 

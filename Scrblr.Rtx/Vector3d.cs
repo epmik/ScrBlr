@@ -123,13 +123,11 @@ namespace Scrblr.Rtx
             return v - 2 * Vector3d.Dot(v, n) * n;
         }
 
-        public static Vector3d Refract(Vector3d uv, Vector3d n, double etai_over_etat) 
+        public static Vector3d Refract(Vector3d uv, Vector3d n, double etai_over_etat)
         {
             var cos_theta = Math.Min(Vector3d.Dot(-uv, n), 1.0);
-            
-            Vector3d r_out_perp = etai_over_etat * (uv + cos_theta * n);
-            Vector3d r_out_parallel = -Math.Sqrt(Math.Abs(1.0 - r_out_perp.LengthSquared())) * n;
-
+            var r_out_perp = etai_over_etat * (uv + cos_theta * n);
+            var r_out_parallel = -Math.Sqrt(Math.Abs(1.0 - r_out_perp.LengthSquared())) * n;
             return r_out_perp + r_out_parallel;
         }
     }
