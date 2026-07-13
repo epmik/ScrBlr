@@ -5,6 +5,39 @@ namespace Scrblr.Rtx
 {
     class Chapter141
     {
+        public interface IProgressTracker
+        {
+            int TotalSteps { get; set; }
+            int CurrentStep { get; }
+            double PercentageCompleted { get; }
+            void Increment();
+        }
+
+        public class ProgressTracker : IProgressTracker
+        {
+            private int _currentStep;
+
+            public int TotalSteps { get; set; }
+            public int CurrentStep => _currentStep;
+            public double PercentageCompleted => TotalSteps == 0 ? 100.0 : (double)_currentStep / TotalSteps * 100.0;
+
+            public ProgressTracker()
+                : this(1)
+            {
+            }
+
+            public ProgressTracker(int totalSteps)
+            {
+                TotalSteps = totalSteps;
+                _currentStep = 0;
+            }
+
+            public void Increment()
+            {
+                Interlocked.Increment(ref _currentStep);
+            }
+        }
+
 
         class Camera
         {
@@ -81,6 +114,51 @@ namespace Scrblr.Rtx
 
                 Png.Save(path, image_width, image_height, buffer);
 
+            }
+
+            public async Task RenderAsync(HittableList world, string path, IProgressTracker tracker)
+            {
+                Initialize();
+
+                tracker.TotalSteps = image_width * image_height;
+
+                var buffer = new Vector3d[image_width * image_height];
+
+                await Task.Run(() =>
+                {
+                    var index = 0;
+
+                    Parallel.For(0, image_height, j =>
+                    {
+                        for (int i = 0; i < image_width; i++)
+                        {
+                            var pixel_color = new Color(0, 0, 0);
+
+                            for (int sample = 0; sample < samples_per_pixel; sample++)
+                            {
+                                var r = get_ray(i, j);
+                                pixel_color += RayColor(r, max_depth, world);
+                            }
+
+                            pixel_color *= pixel_samples_scale;
+
+                            if (!OutputLinearColorSpace)
+                            {
+                                pixel_color = new Color(
+                                    linear_to_gamma(pixel_color.X),
+                                    linear_to_gamma(pixel_color.Y),
+                                    linear_to_gamma(pixel_color.Z));
+                            }
+
+                            buffer[index++] = pixel_color;
+
+                            tracker.Increment();
+                        }
+                    });
+
+                    Png.Save(path, image_width, image_height, buffer);
+
+                });
             }
 
             Ray get_ray(int i, int j)
@@ -493,7 +571,7 @@ namespace Scrblr.Rtx
         }
 
 
-        public void Main(string path)
+        public async Task Main(string path)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -549,7 +627,7 @@ namespace Scrblr.Rtx
             var cam = new Camera();
 
             cam.aspect_ratio = 16.0 / 9.0;
-            cam.image_width = 1200;
+            cam.image_width = 600;
             cam.samples_per_pixel = 10;
             cam.max_depth = 50;
 
@@ -567,17 +645,37 @@ namespace Scrblr.Rtx
 
             //cam.Render(world, path + "-100-samples.png");
 
-            cam.samples_per_pixel = 100;
+            cam.samples_per_pixel = 2;
 
             stopwatch.Stop();
 
-            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.TotalMilliseconds} ms");
+            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")} ms");
 
             Console.WriteLine("Rendering...");
 
+            var tracker = new ProgressTracker();
+
+            using var cts = new CancellationTokenSource();
+
+
             stopwatch.Restart();
 
-            cam.Render(world, path + "-100-samples.png");
+            Task renderTask = cam.RenderAsync(world, path + "-100-samples.png", tracker);
+
+            Task progressTask = StartProgressReportingLoop(tracker, cts.Token);
+
+            await renderTask;
+
+            cts.Cancel();
+
+            try
+            {
+                await progressTask;
+            }
+            catch (OperationCanceledException) 
+            { 
+                /* Expected cancellation */ 
+            }
 
             stopwatch.Stop();
 
@@ -589,5 +687,52 @@ namespace Scrblr.Rtx
 
             Console.Read();
         }
+
+        private static async Task StartProgressReportingLoop(IProgressTracker tracker, CancellationToken token)
+        {
+            if (tracker == null) return;
+
+            int lastReportedStep = -1;
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // Keep looping until Main tells us to stop via the token
+                while (!token.IsCancellationRequested)
+                {
+                    int currentStep = tracker.CurrentStep;
+
+                    if (currentStep > lastReportedStep)
+                    {
+                        double totalSeconds = stopwatch.Elapsed.TotalSeconds;
+                        double pixelsPerSecond = totalSeconds > 0 ? currentStep / totalSeconds : 0;
+
+                        Console.Write($"\rProgress: {tracker.PercentageCompleted:F2}% ({currentStep}/{tracker.TotalSteps} px) | Speed: {pixelsPerSecond:F0} px/s    ");
+
+                        lastReportedStep = currentStep;
+                    }
+
+                    // Pass the token to the delay so it wakes up immediately upon cancellation
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                int finalStep = tracker.CurrentStep;
+                if (finalStep > lastReportedStep)
+                {
+                    double totalSeconds = stopwatch.Elapsed.TotalSeconds;
+                    double pixelsPerSecond = totalSeconds > 0 ? finalStep / totalSeconds : 0;
+
+                    Console.Write($"\rFinal Progress: {tracker.PercentageCompleted:F2}% ({finalStep}/{tracker.TotalSteps} px) | Speed: {pixelsPerSecond:F0} px/s    ");
+                }
+            }
+            finally
+            {
+                stopwatch.Stop();
+                Console.WriteLine();
+            }
+        }
+
     }
 }
