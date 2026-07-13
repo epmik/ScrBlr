@@ -1,4 +1,5 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Scrblr.Rtx
 {
@@ -494,6 +495,11 @@ namespace Scrblr.Rtx
 
         public void Main(string path)
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            Console.WriteLine("Rendering 141 A Final Render...");
+            Console.WriteLine("Setup...");
+
             HittableList world = new HittableList();
 
             var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5));
@@ -561,9 +567,27 @@ namespace Scrblr.Rtx
 
             //cam.Render(world, path + "-100-samples.png");
 
-            cam.samples_per_pixel = 500;
+            cam.samples_per_pixel = 100;
 
-            cam.Render(world, path + "-500-samples.png");
+            stopwatch.Stop();
+
+            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.TotalMilliseconds} ms");
+
+            Console.WriteLine("Rendering...");
+
+            stopwatch.Restart();
+
+            cam.Render(world, path + "-100-samples.png");
+
+            stopwatch.Stop();
+
+            Console.WriteLine("Rendering finished...");
+
+            Console.WriteLine($"Render duration: {stopwatch.Elapsed.TotalMilliseconds} ms");
+
+            Console.WriteLine($"Press a key to continue");
+
+            Console.Read();
         }
     }
 }

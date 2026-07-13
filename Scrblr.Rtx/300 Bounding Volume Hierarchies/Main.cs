@@ -1,4 +1,5 @@
 ﻿using SixLabors.ImageSharp.ColorProfiles;
+using System.Diagnostics;
 using System.Xml.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -719,6 +720,11 @@ namespace Scrblr.Rtx
 
         public void Main(string path)
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            Console.WriteLine("Rendering 300 Bounding Volume Hierarchies...");
+            Console.WriteLine("Setup...");
+
             HittableList world = new HittableList();
 
             var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5));
@@ -784,7 +790,27 @@ namespace Scrblr.Rtx
             cam.defocus_angle = 0.6;
             cam.focus_dist = 10.0;
 
-            cam.Render(world, path);
+            cam.samples_per_pixel = 100;
+
+            stopwatch.Stop();
+
+            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.TotalMilliseconds} ms");
+
+            Console.WriteLine("Rendering...");
+
+            stopwatch.Restart();
+
+            cam.Render(world, path + "-100-samples.png");
+
+            stopwatch.Stop();
+
+            Console.WriteLine("Rendering finished...");
+
+            Console.WriteLine($"Render duration: {stopwatch.Elapsed.TotalMilliseconds} ms");
+
+            Console.WriteLine($"Press a key to continue");
+
+            Console.Read();
         }
     }
 }

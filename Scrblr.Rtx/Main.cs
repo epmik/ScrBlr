@@ -4,7 +4,8 @@
     {
         static void Main()
         {
-            const string PathRoot = "C:\\Steven\\Atelier\\Scrblr\\Scrblr.Rtx\\.output\\";
+            //const string PathRoot = "C:\\Steven\\Atelier\\Scrblr\\Scrblr.Rtx\\.output\\";
+            const string PathRoot = @"C:\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
 
             //new Scrblr.Rtx.Chapter040().Main(PathRoot + "chapter040.png");
 
@@ -56,7 +57,7 @@
 
             //new Scrblr.Rtx.Chapter130().Main(PathRoot + "chapter130.png");
 
-            //new Scrblr.Rtx.Chapter141().Main(PathRoot + "chapter141.png");
+            new Scrblr.Rtx.Chapter141().Main(PathRoot + "chapter141.png");
 
             //new Scrblr.Rtx.Chapter200().Main(PathRoot + "chapter200.png");
 
