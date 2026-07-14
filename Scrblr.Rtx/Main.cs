@@ -4,9 +4,10 @@
     {
         static async Task Main()
         {
-            const string PathRoot = @"C:\Steven\OneDrive\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
+            // steven's laptop
+            //const string PathRoot = @"C:\Steven\OneDrive\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
             // sabien's laptop
-            //const string PathRoot = @"C:\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
+            const string PathRoot = @"C:\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
 
             //new Scrblr.Rtx.Chapter040().Main(System.IO.Path.Combine(PathRoot, "chapter040.png"));
 
@@ -62,7 +63,7 @@
 
             //new Scrblr.Rtx.Chapter200().Main(System.IO.Path.Combine(PathRoot, "chapter200.png"));
 
-            new Scrblr.Rtx.Chapter300().Main(System.IO.Path.Combine(PathRoot, "chapter300.png"));
+            //new Scrblr.Rtx.Chapter300().Main(System.IO.Path.Combine(PathRoot, "chapter300.png"));
         }
     }
 }

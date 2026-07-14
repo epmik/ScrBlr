@@ -627,7 +627,7 @@ namespace Scrblr.Rtx
             var cam = new Camera();
 
             cam.aspect_ratio = 16.0 / 9.0;
-            cam.image_width = 600;
+            cam.image_width = 1200;
             cam.samples_per_pixel = 10;
             cam.max_depth = 50;
 
@@ -645,7 +645,7 @@ namespace Scrblr.Rtx
 
             //cam.Render(world, path + "-100-samples.png");
 
-            cam.samples_per_pixel = 2;
+            cam.samples_per_pixel = 24;
 
             stopwatch.Stop();
 
