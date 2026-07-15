@@ -418,97 +418,97 @@ namespace Scrblr.Rtx
             }
         }
 
-    public class Aabb
-    {
-        // Fix: Internalized as clean, immutable Vector3d boundaries
-        public Vector3d Min { get; }
-        public Vector3d Max { get; }
-
-        // Default constructor initialized to an empty/invalid box
-        public Aabb()
+        class Aabb
         {
-            Min = new Vector3d(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
-            Max = new Vector3d(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
-        }
+            // Fix: Internalized as clean, immutable Vector3d boundaries
+            public Vector3d Min { get; }
+            public Vector3d Max { get; }
 
-        // Construct from explicit Min and Max bounds
-        public Aabb(in Vector3d min, in Vector3d max)
-        {
-            Min = new Vector3d(Math.Min(min.X, max.X), Math.Min(min.Y, max.Y), Math.Min(min.Z, max.Z));
-            Max = new Vector3d(Math.Max(min.X, max.X), Math.Max(min.Y, max.Y), Math.Max(min.Z, max.Z));
-        }
-
-        // Construct from three component intervals
-        public Aabb(Interval x, Interval y, Interval z)
-        {
-            Min = new Vector3d(x.Min, y.Min, z.Min);
-            Max = new Vector3d(x.Max, y.Max, z.Max);
-        }
-
-        // Construct using two arbitrary points (automatically finds true min/max)
-        public Aabb(Vector3d min, Vector3d max)
-        {
-            Min = new Vector3d(Math.Min(min.X, max.X), Math.Min(min.Y, max.Y), Math.Min(min.Z, max.Z));
-            Max = new Vector3d(Math.Max(min.X, max.X), Math.Max(min.Y, max.Y), Math.Max(min.Z, max.Z));
-        }
-
-        // Construct to tightly enclose two existing bounding boxes
-        public Aabb(Aabb box0, Aabb box1)
-        {
-            Min = new Vector3d(
-                Math.Min(box0.Min.X, box1.Min.X),
-                Math.Min(box0.Min.Y, box1.Min.Y),
-                Math.Min(box0.Min.Z, box1.Min.Z)
-            );
-            Max = new Vector3d(
-                Math.Max(box0.Max.X, box1.Max.X),
-                Math.Max(box0.Max.Y, box1.Max.Y),
-                Math.Max(box0.Max.Z, box1.Max.Z)
-            );
-        }
-
-        // Returns the component interval for a specific axis (0 = X, 1 = Y, 2 = Z)
-        public Interval axis_interval(int n) => n switch
-        {
-            0 => new Interval(Min.X, Max.X),
-            1 => new Interval(Min.Y, Max.Y),
-            2 => new Interval(Min.Z, Max.Z),
-            _ => throw new ArgumentOutOfRangeException(nameof(n), "Axis index must be 0, 1, or 2.")
-        };
-
-        // Optimized Hit Method (Andrew Kensler's AABB algorithm)
-        public bool hit(Ray r, Interval ray_t)
-        {
-            // Unpack properties into local variables for faster CPU register utilization
-            var ray_orig = r.Origin;
-            var ray_dir = r.Direction;
-            double t_min = ray_t.Min;
-            double t_max = ray_t.Max;
-
-            for (int axis = 0; axis < 3; axis++)
+            // Default constructor initialized to an empty/invalid box
+            public Aabb()
             {
-                double invD = 1.0 / ray_dir[axis];
-                double t0 = (Min[axis] - ray_orig[axis]) * invD;
-                double t1 = (Max[axis] - ray_orig[axis]) * invD;
-
-                if (invD < 0.0)
-                {
-                    // Swap t0 and t1 if ray direction is negative on this axis
-                    (t0, t1) = (t1, t0);
-                }
-
-                if (t0 > t_min) t_min = t0;
-                if (t1 < t_max) t_max = t1;
-
-                if (t_max <= t_min)
-                    return false;
+                Min = new Vector3d(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
+                Max = new Vector3d(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
             }
 
-            return true;
-        }
-    }
+            // Construct from explicit Min and Max bounds
+            public Aabb(in Vector3d min, in Vector3d max)
+            {
+                Min = new Vector3d(Math.Min(min.X, max.X), Math.Min(min.Y, max.Y), Math.Min(min.Z, max.Z));
+                Max = new Vector3d(Math.Max(min.X, max.X), Math.Max(min.Y, max.Y), Math.Max(min.Z, max.Z));
+            }
 
-    class bvh_node : Hittable 
+            // Construct from three component intervals
+            public Aabb(Interval x, Interval y, Interval z)
+            {
+                Min = new Vector3d(x.Min, y.Min, z.Min);
+                Max = new Vector3d(x.Max, y.Max, z.Max);
+            }
+
+            // Construct using two arbitrary points (automatically finds true min/max)
+            public Aabb(Vector3d min, Vector3d max)
+            {
+                Min = new Vector3d(Math.Min(min.X, max.X), Math.Min(min.Y, max.Y), Math.Min(min.Z, max.Z));
+                Max = new Vector3d(Math.Max(min.X, max.X), Math.Max(min.Y, max.Y), Math.Max(min.Z, max.Z));
+            }
+
+            // Construct to tightly enclose two existing bounding boxes
+            public Aabb(Aabb box0, Aabb box1)
+            {
+                Min = new Vector3d(
+                    Math.Min(box0.Min.X, box1.Min.X),
+                    Math.Min(box0.Min.Y, box1.Min.Y),
+                    Math.Min(box0.Min.Z, box1.Min.Z)
+                );
+                Max = new Vector3d(
+                    Math.Max(box0.Max.X, box1.Max.X),
+                    Math.Max(box0.Max.Y, box1.Max.Y),
+                    Math.Max(box0.Max.Z, box1.Max.Z)
+                );
+            }
+
+            // Returns the component interval for a specific axis (0 = X, 1 = Y, 2 = Z)
+            public Interval axis_interval(int n) => n switch
+            {
+                0 => new Interval(Min.X, Max.X),
+                1 => new Interval(Min.Y, Max.Y),
+                2 => new Interval(Min.Z, Max.Z),
+                _ => throw new ArgumentOutOfRangeException(nameof(n), "Axis index must be 0, 1, or 2.")
+            };
+
+            // Optimized Hit Method (Andrew Kensler's AABB algorithm)
+            public bool hit(Ray r, Interval ray_t)
+            {
+                // Unpack properties into local variables for faster CPU register utilization
+                var ray_orig = r.Origin;
+                var ray_dir = r.Direction;
+                double t_min = ray_t.Min;
+                double t_max = ray_t.Max;
+
+                for (int axis = 0; axis < 3; axis++)
+                {
+                    double invD = 1.0 / ray_dir[axis];
+                    double t0 = (Min[axis] - ray_orig[axis]) * invD;
+                    double t1 = (Max[axis] - ray_orig[axis]) * invD;
+
+                    if (invD < 0.0)
+                    {
+                        // Swap t0 and t1 if ray direction is negative on this axis
+                        (t0, t1) = (t1, t0);
+                    }
+
+                    if (t0 > t_min) t_min = t0;
+                    if (t1 < t_max) t_max = t1;
+
+                    if (t_max <= t_min)
+                        return false;
+                }
+
+                return true;
+            }
+        }
+
+        class bvh_node : Hittable 
         {
             Hittable left;
             Hittable right;

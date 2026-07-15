@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="141 A Final Render - With Progress\_Main.cs" />
     <Compile Remove="Cameras\Camera.cs" />
     <Compile Remove="Cameras\CameraBouncingRays.cs" />
     <Compile Remove="Cameras\CameraMultiSample.cs" />

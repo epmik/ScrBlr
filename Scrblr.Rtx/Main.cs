@@ -5,9 +5,9 @@
         static async Task Main()
         {
             // steven's laptop
-            //const string PathRoot = @"C:\Steven\OneDrive\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
+            const string PathRoot = @"C:\Steven\OneDrive\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
             // sabien's laptop
-            const string PathRoot = @"C:\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
+            //const string PathRoot = @"C:\Steven\Atelier\ScrBlr\Scrblr.Rtx\.output";
 
             //new Scrblr.Rtx.Chapter040().Main(System.IO.Path.Combine(PathRoot, "chapter040.png"));
 
@@ -59,7 +59,9 @@
 
             //new Scrblr.Rtx.Chapter130().Main(System.IO.Path.Combine(PathRoot, "chapter130.png"));
 
-            await new Scrblr.Rtx.Chapter141().Main(System.IO.Path.Combine(PathRoot, "chapter141.png"));
+            new Scrblr.Rtx.Chapter141().Main(System.IO.Path.Combine(PathRoot, "chapter141.png"));
+
+            new Scrblr.Rtx.Chapter141WithProgress().Main(System.IO.Path.Combine(PathRoot, "chapter141-with-progress.png"));
 
             //new Scrblr.Rtx.Chapter200().Main(System.IO.Path.Combine(PathRoot, "chapter200.png"));
 

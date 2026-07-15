@@ -1,10 +1,45 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Scrblr.Rtx
 {
-    class Chapter141
+    class Chapter141WithProgress
     {
-        protected class Camera
+        public interface IProgressTracker
+        {
+            int TotalSteps { get; set; }
+            int CurrentStep { get; }
+            double PercentageCompleted { get; }
+            void Increment();
+        }
+
+        public class ProgressTracker : IProgressTracker
+        {
+            private int _currentStep;
+
+            public int TotalSteps { get; set; }
+            public int CurrentStep => _currentStep;
+            public double PercentageCompleted => TotalSteps == 0 ? 100.0 : (double)_currentStep / TotalSteps * 100.0;
+
+            public ProgressTracker()
+                : this(1)
+            {
+            }
+
+            public ProgressTracker(int totalSteps)
+            {
+                TotalSteps = totalSteps;
+                _currentStep = 0;
+            }
+
+            public void Increment()
+            {
+                Interlocked.Increment(ref _currentStep);
+            }
+        }
+
+
+        class Camera
         {
             public double aspect_ratio = 1.0;
             public int image_width = 100;
@@ -19,8 +54,8 @@ namespace Scrblr.Rtx
             public double defocus_angle = 0;  // Variation angle of rays through each pixel
             public double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
-            public int image_height = 100;
-            public double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
+            int image_height = 100;
+            double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
 
             Vector3d center = new Vector3d(0, 0, 0);
             Vector3d pixel00_loc;    // Location of pixel 0, 0
@@ -81,7 +116,52 @@ namespace Scrblr.Rtx
 
             }
 
-            public Ray get_ray(int i, int j)
+            public async Task RenderAsync(HittableList world, string path, IProgressTracker tracker)
+            {
+                Initialize();
+
+                tracker.TotalSteps = image_width * image_height;
+
+                var buffer = new Vector3d[image_width * image_height];
+
+                await Task.Run(() =>
+                {
+                    var index = 0;
+
+                    Parallel.For(0, image_height, j =>
+                    {
+                        for (int i = 0; i < image_width; i++)
+                        {
+                            var pixel_color = new Color(0, 0, 0);
+
+                            for (int sample = 0; sample < samples_per_pixel; sample++)
+                            {
+                                var r = get_ray(i, j);
+                                pixel_color += RayColor(r, max_depth, world);
+                            }
+
+                            pixel_color *= pixel_samples_scale;
+
+                            if (!OutputLinearColorSpace)
+                            {
+                                pixel_color = new Color(
+                                    linear_to_gamma(pixel_color.X),
+                                    linear_to_gamma(pixel_color.Y),
+                                    linear_to_gamma(pixel_color.Z));
+                            }
+
+                            buffer[index++] = pixel_color;
+
+                            tracker.Increment();
+                        }
+                    });
+
+                    Png.Save(path, image_width, image_height, buffer);
+
+                });
+            }
+
+            Ray get_ray(int i, int j)
             {
                 // Construct a camera ray originating from the defocus disk and directed at a randomly
                 // sampled point around the pixel location i, j.
@@ -103,14 +183,14 @@ namespace Scrblr.Rtx
                 return new Vector3d(Utility.RandomDouble() - 0.5, Utility.RandomDouble() - 0.5, 0);
             }
 
-            Vector3d defocus_disk_sample()
+            Vector3d defocus_disk_sample() 
             {
                 // Returns a random point in the camera defocus disk.
                 var p = Vector3d.random_in_unit_disk();
-                return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
+                return center + (p[0]* defocus_disk_u) + (p[1]* defocus_disk_v);
             }
 
-            public void Initialize()
+        private void Initialize()
             {
                 image_height = (int)(image_width / aspect_ratio);
                 image_height = (image_height < 1) ? 1 : image_height;
@@ -149,7 +229,7 @@ namespace Scrblr.Rtx
                 defocus_disk_v = v * defocus_radius;
             }
 
-            public Vector3d RayColor(Ray r, int depth, HittableList world)
+            private Vector3d RayColor(Ray r, int depth, HittableList world)
             {
                 // If we've exceeded the ray bounce limit, no more light is gathered.
                 if (depth <= 0)
@@ -172,17 +252,17 @@ namespace Scrblr.Rtx
                 var a = 0.5 * (unit_direction.Y + 1.0);
                 return (1.0 - a) * new Vector3d(1.0, 1.0, 1.0) + a * new Vector3d(0.5, 0.7, 1.0);
             }
+
+            double linear_to_gamma(double linear_component)
+            {
+                if (linear_component > 0)
+                    return Math.Sqrt(linear_component);
+
+                return 0;
+            }
         }
 
-        protected static double linear_to_gamma(double linear_component)
-        {
-            if (linear_component > 0)
-                return Math.Sqrt(linear_component);
-
-            return 0;
-        }
-
-        protected class Dielectric : Material
+        class Dielectric : Material
         {
             // Refractive index in vacuum or air, or the ratio of the material's refractive index over
             // the refractive index of the enclosing media
@@ -225,7 +305,7 @@ namespace Scrblr.Rtx
             }
         }
 
-        protected abstract class Material
+        abstract class Material
         {
             public virtual bool Scatter(
                 Ray rIn,
@@ -240,8 +320,8 @@ namespace Scrblr.Rtx
                 return false;
             }
         }
-
-        protected class Lambertian : Material
+        
+        class Lambertian : Material
         {
             Color _albedo;
 
@@ -265,7 +345,7 @@ namespace Scrblr.Rtx
             }
         }
 
-        protected class Metal : Material
+        class Metal : Material
         {
             Color _albedo;
             double _fuzz;
@@ -279,18 +359,18 @@ namespace Scrblr.Rtx
             override public bool Scatter(Ray r_in, HitRecord rec, out Color attenuation, out Ray scattered)
             {
                 Vector3d reflected = Vector3d.Reflect(r_in.Direction, rec.Normal);
-
+                
                 reflected = Vector3d.UnitVector(reflected) + (_fuzz * Vector3d.random_unit_vector());
-
+                
                 scattered = new Ray(rec.P, reflected);
-
+                
                 attenuation = _albedo;
-
+                
                 return (Vector3d.Dot(scattered.Direction, rec.Normal) > 0);
             }
         }
 
-        protected struct Interval
+        public struct Interval
         {
             public double Min { get; set; }
             public double Max { get; set; }
@@ -327,7 +407,7 @@ namespace Scrblr.Rtx
             public static readonly Interval Universe = new Interval(double.NegativeInfinity, double.PositiveInfinity);
         }
 
-        protected class HitRecord
+        class HitRecord
         {
             public Vector3d P { get; set; }
             public Vector3d Normal { get; set; }
@@ -340,7 +420,7 @@ namespace Scrblr.Rtx
 
             public HitRecord()
             {
-
+                
             }
 
             public HitRecord(HitRecord record)
@@ -352,22 +432,22 @@ namespace Scrblr.Rtx
                 mat = record.mat;
             }
 
-            public void set_face_normal(Ray r, Vector3d outward_normal)
+            public void set_face_normal(Ray r, Vector3d outward_normal) 
             {
                 // Sets the hit record normal vector.
                 // NOTE: the parameter `outward_normal` is assumed to have unit length.
 
                 front_face = Vector3d.Dot(r.Direction, outward_normal) < 0;
-                Normal = front_face ? outward_normal : -outward_normal;
+                Normal = front_face? outward_normal : -outward_normal;
             }
         }
 
-        protected abstract class Hittable
+        abstract class Hittable
         {
             public abstract bool Hit(Ray r, Interval ray_t, out HitRecord rec);
         }
 
-        protected class HittableList : Hittable
+        class HittableList : Hittable
         {
             public List<Hittable> Objects { get; set; } = new List<Hittable>();
 
@@ -412,7 +492,7 @@ namespace Scrblr.Rtx
             }
         }
 
-        protected class Sphere : Hittable
+        class Sphere : Hittable
         {
             Point3 _center;
             double _radius;
@@ -451,7 +531,7 @@ namespace Scrblr.Rtx
                 }
 
                 rec.T = root;
-                rec.P = r.At(rec.T);
+                rec.P = r.At(rec.T); 
                 Vector3d outward_normal = (rec.P - _center) / _radius;
                 rec.set_face_normal(r, outward_normal);
                 rec.mat = _mat;
@@ -460,7 +540,7 @@ namespace Scrblr.Rtx
             }
         };
 
-        protected struct Ray
+        struct Ray
         {
             private Vector3d _orig;
             private Vector3d _dir;
@@ -491,8 +571,13 @@ namespace Scrblr.Rtx
         }
 
 
-        public virtual void Main(string path)
+        public async Task Main(string path)
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            Console.WriteLine("Rendering 141 A Final Render...");
+            Console.WriteLine("Setup...");
+
             HittableList world = new HittableList();
 
             var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5));
@@ -503,7 +588,7 @@ namespace Scrblr.Rtx
                 for (int b = -11; b < 11; b++)
                 {
                     var choose_mat = Utility.RandomDouble();
-                    var center = new Point3(a + 0.9 * Utility.RandomDouble(), 0.2, b + 0.9 * Utility.RandomDouble());
+                    var center = new Point3(a +0.9 * Utility.RandomDouble(), 0.2, b + 0.9 * Utility.RandomDouble());
 
                     if ((center - new Point3(4, 0.2, 0)).Length() > 0.9)
                     {
@@ -554,15 +639,93 @@ namespace Scrblr.Rtx
             cam.defocus_angle = 0.6;
             cam.focus_dist = 10.0;
 
-            //cam.Render(world, path);
+            stopwatch.Stop();
 
-            //cam.samples_per_pixel = 100;
+            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")} ms");
 
-            //cam.Render(world, path + "-100-samples.png");
+            Console.WriteLine("Rendering...");
+
+            var tracker = new ProgressTracker();
+
+            using var cts = new CancellationTokenSource();
+
+            stopwatch.Restart();
 
             cam.samples_per_pixel = 20;
 
-            cam.Render(world, path + "-" + cam.samples_per_pixel + "-samples.png");
+            Task renderTask = cam.RenderAsync(world, path + "-20-samples.png", tracker);
+
+            Task progressTask = StartProgressReportingLoop(tracker, cts.Token);
+
+            await renderTask;
+
+            cts.Cancel();
+
+            try
+            {
+                await progressTask;
+            }
+            catch (OperationCanceledException) 
+            { 
+                /* Expected cancellation */ 
+            }
+
+            stopwatch.Stop();
+
+            Console.WriteLine("Rendering finished...");
+
+            Console.WriteLine($"Render duration: {stopwatch.Elapsed.TotalMilliseconds} ms");
+
+            Console.WriteLine($"Press a key to continue");
+
+            Console.Read();
         }
+
+        private static async Task StartProgressReportingLoop(IProgressTracker tracker, CancellationToken token)
+        {
+            if (tracker == null) return;
+
+            int lastReportedStep = -1;
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // Keep looping until Main tells us to stop via the token
+                while (!token.IsCancellationRequested)
+                {
+                    int currentStep = tracker.CurrentStep;
+
+                    if (currentStep > lastReportedStep)
+                    {
+                        double totalSeconds = stopwatch.Elapsed.TotalSeconds;
+                        double pixelsPerSecond = totalSeconds > 0 ? currentStep / totalSeconds : 0;
+
+                        Console.Write($"\rProgress: {tracker.PercentageCompleted:F2}% ({currentStep}/{tracker.TotalSteps} px) | Speed: {pixelsPerSecond:F0} px/s    ");
+
+                        lastReportedStep = currentStep;
+                    }
+
+                    // Pass the token to the delay so it wakes up immediately upon cancellation
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                int finalStep = tracker.CurrentStep;
+                if (finalStep > lastReportedStep)
+                {
+                    double totalSeconds = stopwatch.Elapsed.TotalSeconds;
+                    double pixelsPerSecond = totalSeconds > 0 ? finalStep / totalSeconds : 0;
+
+                    Console.Write($"\rFinal Progress: {tracker.PercentageCompleted:F2}% ({finalStep}/{tracker.TotalSteps} px) | Speed: {pixelsPerSecond:F0} px/s    ");
+                }
+            }
+            finally
+            {
+                stopwatch.Stop();
+                Console.WriteLine();
+            }
+        }
+
     }
 }

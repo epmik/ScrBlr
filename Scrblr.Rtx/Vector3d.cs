@@ -5,8 +5,6 @@ namespace Scrblr.Rtx
 {
     using System;
 
-    using System;
-
     public readonly struct Vector3d : IEquatable<Vector3d>
     {
         // Fix: Static properties prevent modification and use default/cached values
@@ -82,6 +80,48 @@ namespace Scrblr.Rtx
             var rOutPerp = etaiOverEtat * (uv + cosTheta * n);
             var rOutParallel = -Math.Sqrt(Math.Abs(1.0 - rOutPerp.LengthSquared())) * n;
             return rOutPerp + rOutParallel;
+        }
+        public static Vector3d random()
+        {
+            return new Vector3d(Utility.RandomDouble(), Utility.RandomDouble(), Utility.RandomDouble());
+        }
+
+        public static Vector3d random(double min, double max)
+        {
+            return new Vector3d(Utility.RandomDouble(min, max), Utility.RandomDouble(min, max), Utility.RandomDouble(min, max));
+        }
+
+        public static Vector3d random_unit_vector()
+        {
+            while (true)
+            {
+                var p = random(-1, 1);
+
+                var lensq = p.LengthSquared();
+
+                if (1e-160 < lensq && lensq <= 1)
+                    return p / Math.Sqrt(lensq);
+            }
+        }
+
+        public static Vector3d random_on_hemisphere(Vector3d normal)
+        {
+            var on_unit_sphere = random_unit_vector();
+
+            if (Vector3d.Dot(on_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+                return on_unit_sphere;
+            else
+                return -on_unit_sphere;
+        }
+
+        public static Vector3d random_in_unit_disk()
+        {
+            while (true)
+            {
+                var p = new Vector3d(Utility.RandomDouble(-1, 1), Utility.RandomDouble(-1, 1), 0);
+                if (p.LengthSquared() < 1)
+                    return p;
+            }
         }
 
         //// 2. Use 'in' for vector arguments to pass by reference without copying
