@@ -490,10 +490,11 @@ namespace Scrblr.Rtx
             }
         }
 
-
-        public virtual void Main(string path)
+        protected void CreateScene(out HittableList world, out Camera cam)
         {
-            HittableList world = new HittableList();
+            world = new HittableList();
+
+            Utility.RandomSeed(42);  // Seed the random number generator for reproducibility
 
             var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5));
             world.Add(new Sphere(new Point3(0, -1000, 0), 1000, ground_material));
@@ -539,28 +540,28 @@ namespace Scrblr.Rtx
             world.Add(new Sphere(new Vector3d(4, 1, 0), 1.0, material3));
 
 
-            var cam = new Camera();
+            cam = new Camera();
 
             cam.aspect_ratio = 16.0 / 9.0;
             cam.image_width = 600;
-            cam.samples_per_pixel = 10;
             cam.max_depth = 50;
-
             cam.vfov = 20;
             cam.lookfrom = new Point3(13, 2, 3);
             cam.lookat = new Point3(0, 0, 0);
             cam.vup = new Vector3d(0, 1, 0);
-
             cam.defocus_angle = 0.6;
             cam.focus_dist = 10.0;
 
-            //cam.Render(world, path);
-
-            //cam.samples_per_pixel = 100;
-
-            //cam.Render(world, path + "-100-samples.png");
-
             cam.samples_per_pixel = 20;
+        }
+
+
+        public virtual void Main(string path)
+        {
+            HittableList world;
+            Camera cam;
+
+            CreateScene(out world, out cam);
 
             cam.Render(world, path + "-" + cam.samples_per_pixel + "-samples.png");
         }
