@@ -7,6 +7,8 @@
         public const double Infinity = double.MaxValue;
         public const double Pi = 3.1415926535897932385;
 
+        private static Random Random = new Random();   
+
         // Utility Functions
 
         public static double ToRadians(double degrees)
@@ -20,10 +22,16 @@
             return (int)(RandomDouble(min, max + 1));
         }
 
+        public static void RandomSeed(int seed)
+        {
+            // Returns a random real double in [0.0, 1.0)
+            Utility.Random = new Random(seed);
+        }
+
         public static double RandomDouble()
         {
             // Returns a random real double in [0.0, 1.0)
-            return Random.Shared.NextDouble();
+            return Utility.Random.NextDouble();
         }
 
         public static double RandomDouble(double min, double max)
