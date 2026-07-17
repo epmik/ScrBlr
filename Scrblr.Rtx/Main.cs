@@ -59,9 +59,13 @@
 
             //new Scrblr.Rtx.Chapter130().Main(System.IO.Path.Combine(PathRoot, "chapter130.png"));
 
-            new Scrblr.Rtx.Chapter141().Main(System.IO.Path.Combine(PathRoot, "chapter141.png"));
+            //new Scrblr.Rtx.Chapter141().Main(System.IO.Path.Combine(PathRoot, "chapter141.png"));
 
-            new Scrblr.Rtx.Chapter141WithProgress().Main(System.IO.Path.Combine(PathRoot, "chapter141-with-progress.png"));
+            //new Scrblr.Rtx.Chapter141WithProgress().Main(System.IO.Path.Combine(PathRoot, "chapter141-with-progress.png"));
+
+            //await new Scrblr.Rtx.Chapter141Threaded().Main(System.IO.Path.Combine(PathRoot, "chapter141-threaded.png"));
+
+            await new Scrblr.Rtx.Chapter141Threaded2().Main(System.IO.Path.Combine(PathRoot, "chapter141-threaded2.png"));
 
             //new Scrblr.Rtx.Chapter200().Main(System.IO.Path.Combine(PathRoot, "chapter200.png"));
 

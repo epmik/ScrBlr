@@ -39,7 +39,7 @@ namespace Scrblr.Rtx
         }
 
 
-        private static async Task StartProgressReportingLoop(IProgressTracker tracker)
+        protected static async Task StartProgressReportingLoop(IProgressTracker tracker)
         {
             if (tracker == null) return;
 
@@ -149,7 +149,7 @@ namespace Scrblr.Rtx
 
             stopwatch.Stop();
 
-            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")} ms");
+            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
 
             Console.WriteLine("Rendering...");
 
@@ -165,7 +165,7 @@ namespace Scrblr.Rtx
 
             Console.WriteLine("Rendering finished...");
 
-            Console.WriteLine($"Render duration: {stopwatch.Elapsed.TotalMilliseconds} ms");
+            Console.WriteLine($"Render duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
 
             Console.WriteLine($"Press a key to continue");
 

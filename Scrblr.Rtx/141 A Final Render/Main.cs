@@ -494,7 +494,9 @@ namespace Scrblr.Rtx
         {
             world = new HittableList();
 
-            Utility.RandomSeed(42);  // Seed the random number generator for reproducibility
+            var random = new Random(42);
+
+            //Utility.RandomSeed(42);  // Seed the random number generator for reproducibility
 
             var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5));
             world.Add(new Sphere(new Point3(0, -1000, 0), 1000, ground_material));
@@ -503,8 +505,8 @@ namespace Scrblr.Rtx
             {
                 for (int b = -11; b < 11; b++)
                 {
-                    var choose_mat = Utility.RandomDouble();
-                    var center = new Point3(a + 0.9 * Utility.RandomDouble(), 0.2, b + 0.9 * Utility.RandomDouble());
+                    var choose_mat = random.NextDouble();
+                    var center = new Point3(a + 0.9 * random.NextDouble(), 0.2, b + 0.9 * random.NextDouble());
 
                     if ((center - new Point3(4, 0.2, 0)).Length() > 0.9)
                     {
@@ -518,7 +520,7 @@ namespace Scrblr.Rtx
                         {
                             // metal
                             var albedo = Color.random(0.5, 1);
-                            var fuzz = Utility.RandomDouble(0, 0.5);
+                            var fuzz = random.NextDouble() * 0.5;
                             world.Add(new Sphere(center, 0.2, new Metal(albedo, fuzz)));
                         }
                         else
@@ -543,7 +545,7 @@ namespace Scrblr.Rtx
             cam = new Camera();
 
             cam.aspect_ratio = 16.0 / 9.0;
-            cam.image_width = 600;
+            cam.image_width = 400;
             cam.max_depth = 50;
             cam.vfov = 20;
             cam.lookfrom = new Point3(13, 2, 3);
@@ -552,7 +554,7 @@ namespace Scrblr.Rtx
             cam.defocus_angle = 0.6;
             cam.focus_dist = 10.0;
 
-            cam.samples_per_pixel = 20;
+            cam.samples_per_pixel = 10;
         }
 
 
