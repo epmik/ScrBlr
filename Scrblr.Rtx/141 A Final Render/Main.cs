@@ -1,11 +1,15 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Scrblr.Rtx
 {
     class Chapter141
     {
+        protected IRandomGenerator _randomGenerator;
+
         protected class Camera
         {
+            protected IRandomGenerator _randomGenerator;
             public double aspect_ratio = 1.0;
             public int image_width = 100;
             public int samples_per_pixel = 10;   // Count of random samples for each pixel
@@ -34,6 +38,11 @@ namespace Scrblr.Rtx
             public bool OutputLinearColorSpace = false;  // Output linear color space (no gamma correction) if true
 
             static readonly Interval intensity = new Interval(0.000, 0.999);
+
+            public Camera(IRandomGenerator randomGenerator)
+            {
+                _randomGenerator = randomGenerator;
+            }
 
             public void Render(HittableList world, string path)
             {
@@ -100,7 +109,7 @@ namespace Scrblr.Rtx
             Vector3d sample_square()
             {
                 // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
-                return new Vector3d(Utility.RandomDouble() - 0.5, Utility.RandomDouble() - 0.5, 0);
+                return new Vector3d(_randomGenerator.Double() - 0.5, _randomGenerator.Double() - 0.5, 0);
             }
 
             Vector3d defocus_disk_sample()
@@ -182,51 +191,15 @@ namespace Scrblr.Rtx
             return 0;
         }
 
-        protected class Dielectric : Material
-        {
-            // Refractive index in vacuum or air, or the ratio of the material's refractive index over
-            // the refractive index of the enclosing media
-            double _refraction_index;
-
-            public Dielectric(double refraction_index)
-            {
-                _refraction_index = refraction_index;
-            }
-
-            override public bool Scatter(Ray r_in, HitRecord rec, out Color attenuation, out Ray scattered)
-            {
-                attenuation = new Color(1.0, 1.0, 1.0);
-                double ri = rec.front_face ? (1.0 / _refraction_index) : _refraction_index;
-
-                var unit_direction = Vector3d.UnitVector(r_in.Direction);
-
-                double cos_theta = Math.Min(Vector3d.Dot(-unit_direction, rec.Normal), 1.0);
-                double sin_theta = Math.Sqrt(1.0 - cos_theta * cos_theta);
-
-                bool cannot_refract = ri * sin_theta > 1.0;
-                Vector3d direction;
-
-                if (cannot_refract || Reflectance(cos_theta, ri) > Utility.RandomDouble())
-                    direction = Vector3d.Reflect(unit_direction, rec.Normal);
-                else
-                    direction = Vector3d.Refract(unit_direction, rec.Normal, ri);
-
-                scattered = new Ray(rec.P, direction);
-
-                return true;
-            }
-
-            static double Reflectance(double cosine, double refraction_index)
-            {
-                // Use Schlick's approximation for reflectance.
-                var r0 = (1 - refraction_index) / (1 + refraction_index);
-                r0 = r0 * r0;
-                return r0 + (1 - r0) * Math.Pow((1 - cosine), 5);
-            }
-        }
-
         protected abstract class Material
         {
+            protected IRandomGenerator _randomGenerator;
+
+            protected Material(IRandomGenerator randomGenerator)
+            {
+                _randomGenerator = randomGenerator;
+            }
+
             public virtual bool Scatter(
                 Ray rIn,
                 HitRecord rec,
@@ -245,7 +218,8 @@ namespace Scrblr.Rtx
         {
             Color _albedo;
 
-            public Lambertian(Color albedo)
+            public Lambertian(Color albedo, IRandomGenerator randomGenerator)
+                : base(randomGenerator)
             {
                 _albedo = albedo;
             }
@@ -265,12 +239,57 @@ namespace Scrblr.Rtx
             }
         }
 
+        protected class Dielectric : Material
+        {
+            // Refractive index in vacuum or air, or the ratio of the material's refractive index over
+            // the refractive index of the enclosing media
+            double _refraction_index;
+
+            public Dielectric(double refraction_index, IRandomGenerator randomGenerator)
+                : base(randomGenerator)
+            {
+                _refraction_index = refraction_index;
+            }
+
+            override public bool Scatter(Ray r_in, HitRecord rec, out Color attenuation, out Ray scattered)
+            {
+                attenuation = new Color(1.0, 1.0, 1.0);
+                double ri = rec.front_face ? (1.0 / _refraction_index) : _refraction_index;
+
+                var unit_direction = Vector3d.UnitVector(r_in.Direction);
+
+                double cos_theta = Math.Min(Vector3d.Dot(-unit_direction, rec.Normal), 1.0);
+                double sin_theta = Math.Sqrt(1.0 - cos_theta * cos_theta);
+
+                bool cannot_refract = ri * sin_theta > 1.0;
+                Vector3d direction;
+
+                if (cannot_refract || Reflectance(cos_theta, ri) > _randomGenerator.Double())
+                    direction = Vector3d.Reflect(unit_direction, rec.Normal);
+                else
+                    direction = Vector3d.Refract(unit_direction, rec.Normal, ri);
+
+                scattered = new Ray(rec.P, direction);
+
+                return true;
+            }
+
+            static double Reflectance(double cosine, double refraction_index)
+            {
+                // Use Schlick's approximation for reflectance.
+                var r0 = (1 - refraction_index) / (1 + refraction_index);
+                r0 = r0 * r0;
+                return r0 + (1 - r0) * Math.Pow((1 - cosine), 5);
+            }
+        }
+
         protected class Metal : Material
         {
             Color _albedo;
             double _fuzz;
 
-            public Metal(Color albedo, double fuzz)
+            public Metal(Color albedo, double fuzz, IRandomGenerator randomGenerator)
+                : base(randomGenerator)
             {
                 _albedo = albedo;
                 _fuzz = fuzz;
@@ -280,7 +299,7 @@ namespace Scrblr.Rtx
             {
                 Vector3d reflected = Vector3d.Reflect(r_in.Direction, rec.Normal);
 
-                reflected = Vector3d.UnitVector(reflected) + (_fuzz * Vector3d.random_unit_vector());
+                reflected = Vector3d.UnitVector(reflected) + (_fuzz * _randomGenerator.UnitVector3d());
 
                 scattered = new Ray(rec.P, reflected);
 
@@ -494,58 +513,57 @@ namespace Scrblr.Rtx
         {
             world = new HittableList();
 
-            var random = new Random(42);
 
-            //Utility.RandomSeed(42);  // Seed the random number generator for reproducibility
-
-            var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5));
+            var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5), _randomGenerator);
             world.Add(new Sphere(new Point3(0, -1000, 0), 1000, ground_material));
 
             for (int a = -11; a < 11; a++)
             {
                 for (int b = -11; b < 11; b++)
                 {
-                    var choose_mat = random.NextDouble();
-                    var center = new Point3(a + 0.9 * random.NextDouble(), 0.2, b + 0.9 * random.NextDouble());
+                    var choose_mat = _randomGenerator.Double();
+                    var center = new Point3(a + 0.9 * _randomGenerator.Double(), 0.2, b + 0.9 * _randomGenerator.Double());
 
                     if ((center - new Point3(4, 0.2, 0)).Length() > 0.9)
                     {
                         if (choose_mat < 0.8)
                         {
                             // diffuse
-                            var albedo = Color.random() * Color.random();
-                            world.Add(new Sphere(center, 0.2, new Lambertian(albedo)));
+                            var albedo = _randomGenerator.Color() * _randomGenerator.Color();
+                            world.Add(new Sphere(center, 0.2, new Lambertian(albedo, _randomGenerator)));
                         }
                         else if (choose_mat < 0.95)
                         {
                             // metal
-                            var albedo = Color.random(0.5, 1);
-                            var fuzz = random.NextDouble() * 0.5;
-                            world.Add(new Sphere(center, 0.2, new Metal(albedo, fuzz)));
+                            var albedo = _randomGenerator.Vector3d(0.5, 1);
+                            var fuzz = _randomGenerator.Double() * 0.5;
+                            world.Add(new Sphere(center, 0.2, new Metal(albedo, fuzz, _randomGenerator)));
                         }
                         else
                         {
                             // glass
-                            world.Add(new Sphere(center, 0.2, new Dielectric(1.5)));
+                            world.Add(new Sphere(center, 0.2, new Dielectric(1.5, _randomGenerator)));
+                            //world.Add(new Sphere(center, 0.2, new Lambertian(new Vector3d(1.0, 0.0, 0.0), _randomGenerator)));
                         }
                     }
                 }
             }
 
-            var material1 = new Dielectric(1.5);
+            var material1 = new Dielectric(1.5, _randomGenerator);
             world.Add(new Sphere(new Vector3d(0, 1, 0), 1.0, material1));
+            //world.Add(new Sphere(new Vector3d(0, 1, 0), 1.0, new Lambertian(new Vector3d(1.0, 0.0, 0.0), _randomGenerator)));
 
-            var material2 = new Lambertian(new Color(0.4, 0.2, 0.1));
+            var material2 = new Lambertian(new Color(0.4, 0.2, 0.1), _randomGenerator);
             world.Add(new Sphere(new Vector3d(-4, 1, 0), 1.0, material2));
 
-            var material3 = new Metal(new Color(0.7, 0.6, 0.5), 0.0);
+            var material3 = new Metal(new Color(0.7, 0.6, 0.5), 0.0, _randomGenerator);
             world.Add(new Sphere(new Vector3d(4, 1, 0), 1.0, material3));
 
 
-            cam = new Camera();
+            cam = new Camera(_randomGenerator);
 
             cam.aspect_ratio = 16.0 / 9.0;
-            cam.image_width = 400;
+            cam.image_width = 800;
             cam.max_depth = 50;
             cam.vfov = 20;
             cam.lookfrom = new Point3(13, 2, 3);
@@ -554,7 +572,7 @@ namespace Scrblr.Rtx
             cam.defocus_angle = 0.6;
             cam.focus_dist = 10.0;
 
-            cam.samples_per_pixel = 10;
+            cam.samples_per_pixel = 25;
         }
 
 
@@ -563,9 +581,37 @@ namespace Scrblr.Rtx
             HittableList world;
             Camera cam;
 
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            Console.WriteLine($"// ------------------------ //");
+            Console.WriteLine($"");
+
+            Console.WriteLine("Rendering 141 A Final Render...");
+            Console.WriteLine("Setup...");
+
+            _randomGenerator = new RandomGenerator(1024);
+
             CreateScene(out world, out cam);
 
-            cam.Render(world, path + "-" + cam.samples_per_pixel + "-samples.png");
+            stopwatch.Stop();
+
+            Console.WriteLine($"Setup duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
+
+            Console.WriteLine("Rendering...");
+
+            stopwatch.Restart();
+
+            cam.Render(world, path);
+
+            stopwatch.Stop();
+
+            Console.WriteLine("Rendering finished...");
+
+            Console.WriteLine($"Render duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
+
+            Console.WriteLine($"");
+            Console.WriteLine($"// ------------------------ //");
         }
     }
 }

@@ -28,16 +28,16 @@
         //    Utility._random = new Random(seed);
         //}
 
-        //public static double RandomDouble()
-        //{
-        //    // Returns a random real double in [0.0, 1.0)
-        //    return Utility._random.NextDouble();
-        //}
+        public static double RandomDouble()
+        {
+            // Returns a random real double in [0.0, 1.0)
+            return Utility._random.NextDouble();
+        }
 
-        //public static double RandomDouble(double min, double max)
-        //{
-        //    // Returns a random real double in [min, max)
-        //    return min + (max - min) * RandomDouble();
-        //}
+        public static double RandomDouble(double min, double max)
+        {
+            // Returns a random real double in [min, max)
+            return min + (max - min) * RandomDouble();
+        }
     }
 }

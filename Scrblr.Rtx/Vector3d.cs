@@ -81,6 +81,7 @@ namespace Scrblr.Rtx
             var rOutParallel = -Math.Sqrt(Math.Abs(1.0 - rOutPerp.LengthSquared())) * n;
             return rOutPerp + rOutParallel;
         }
+
         public static Vector3d random()
         {
             return new Vector3d(Utility.RandomDouble(), Utility.RandomDouble(), Utility.RandomDouble());

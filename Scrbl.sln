@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skrbl", "Skrbl\Skrbl.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skrbl.Core", "Skrbl.Core\Skrbl.Core.csproj", "{0AFDC34C-86A1-4741-AD33-85823433CAFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scrblr.Rtx", "Scrblr.Rtx\Scrblr.Rtx.csproj", "{294F430C-96BE-4913-BC44-D5D04B53CFC4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scrbl.Rtx", "Scrblr.Rtx\Scrbl.Rtx.csproj", "{294F430C-96BE-4913-BC44-D5D04B53CFC4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -99,14 +99,6 @@ namespace Scrblr.Rtx
             {
                 for (int i = 0; i < camera.image_width; i++)
                 {
-                    //color pixel_color(0,0,0);
-                    //for (int sample = 0; sample < samples_per_pixel; sample++)
-                    //{
-                    //    ray r = get_ray(i, j);
-                    //    pixel_color += ray_color(r, world);
-                    //}
-                    //write_color(std::cout, pixel_samples_scale * pixel_color);
-
                     var pixel_color = new Color(0, 0, 0);
 
                     for (int sample = 0; sample < camera.samples_per_pixel; sample++)
@@ -132,7 +124,6 @@ namespace Scrblr.Rtx
             }
 
             Png.Save(path, camera.image_width, camera.image_height, buffer);
-
         }
 
         public override void Main(string path)
@@ -142,8 +133,13 @@ namespace Scrblr.Rtx
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            Console.WriteLine("Rendering 141 A Final Render...");
+            Console.WriteLine($"// ------------------------ //");
+            Console.WriteLine($"");
+
+            Console.WriteLine("Rendering 141 A Final Render - With Progress...");
             Console.WriteLine("Setup...");
+            
+            _randomGenerator = new RandomGenerator(1024);
 
             CreateScene(out world, out cam);
 
@@ -159,7 +155,7 @@ namespace Scrblr.Rtx
 
             stopwatch.Restart();
 
-            Render(cam, world, path + "-" + cam.samples_per_pixel + "-samples.png", tracker);
+            Render(cam, world, path, tracker);
 
             stopwatch.Stop();
 
@@ -167,9 +163,8 @@ namespace Scrblr.Rtx
 
             Console.WriteLine($"Render duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
 
-            Console.WriteLine($"Press a key to continue");
-
-            Console.Read();
+            Console.WriteLine($"");
+            Console.WriteLine($"// ------------------------ //");
         }
     }
 }
