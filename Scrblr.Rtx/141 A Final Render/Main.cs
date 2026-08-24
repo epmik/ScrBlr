@@ -9,6 +9,7 @@ namespace Scrblr.Rtx
 
         protected class SceneSettings
         {
+            public double ShutterTime { get; set; } = 0.0;
             public bool AddLargeSpheres { get; set; } = true;
             public bool AddSmallStaticSpheres { get; set; } = true;
             public bool AddSmallDynamicSpheres { get; set; } = false;
@@ -69,14 +70,6 @@ namespace Scrblr.Rtx
                 {
                     for (int i = 0; i < image_width; i++)
                     {
-                        //color pixel_color(0,0,0);
-                        //for (int sample = 0; sample < samples_per_pixel; sample++)
-                        //{
-                        //    ray r = get_ray(i, j);
-                        //    pixel_color += ray_color(r, world);
-                        //}
-                        //write_color(std::cout, pixel_samples_scale * pixel_color);
-
                         var pixel_color = new Color(0, 0, 0);
 
                         for (int sample = 0; sample < samples_per_pixel; sample++)
@@ -473,6 +466,11 @@ namespace Scrblr.Rtx
 
                 var center = _velocity != null ? _center + (_velocity.Value * r.Time) : _center;
 
+                if(_velocity != null)
+                {
+                    var t = 0;
+                }
+
                 Vector3d oc = center - r.Origin;
 
                 var a = r.Direction.LengthSquared();
@@ -553,29 +551,11 @@ namespace Scrblr.Rtx
                 {
                     for (int b = -11; b < 11; b++)
                     {
-                        var choose_mat = _randomGenerator.Double();
                         var center = new Point3(a + 0.9 * _randomGenerator.Double(), 0.2, b + 0.9 * _randomGenerator.Double());
 
                         if ((center - new Point3(4, 0.2, 0)).Length() > 0.9)
                         {
-                            if (choose_mat < 0.8)
-                            {
-                                // diffuse
-                                var albedo = _randomGenerator.Color() * _randomGenerator.Color();
-                                world.Add(new Sphere(center, 0.2, new Lambertian(albedo, _randomGenerator)));
-                            }
-                            else if (choose_mat < 0.95)
-                            {
-                                // metal
-                                var albedo = _randomGenerator.Vector3d(0.5, 1);
-                                var fuzz = _randomGenerator.Double() * 0.5;
-                                world.Add(new Sphere(center, 0.2, new Metal(albedo, fuzz, _randomGenerator)));
-                            }
-                            else
-                            {
-                                // glass
-                                world.Add(new Sphere(center, 0.2, new Dielectric(1.5, _randomGenerator)));
-                            }
+                            world.Add(CreateSphere(center));
                         }
                     }
                 }
@@ -593,6 +573,27 @@ namespace Scrblr.Rtx
                 world.Add(new Sphere(new Vector3d(4, 1, 0), 1.0, material3));
             }
 
+            if (sceneSettings.AddSmallDynamicSpheres)
+            {
+                //world.Add(CreateSphere(new Vector3d(-4, 0.2,  0))); // furthest from camera
+                //world.Add(CreateSphere(new Vector3d( 0, 0.2,  0))); // 
+                //world.Add(CreateSphere(new Vector3d( 4, 0.2,  0))); // closer to camera
+                //world.Add(CreateSphere(new Vector3d( 4, 0.2, -1))); // closer to camera
+                //world.Add(CreateSphere(new Vector3d( 4, 0.2,  1))); // closer to camera
+
+                var sphere = CreateSphere(new Vector3d(4, 0.2, 0));
+                sphere.Velocity(new Vector3d(0, 0, -1));
+                world.Add(sphere);
+
+                sphere = CreateSphere(new Vector3d(4, 0.2, 1));
+                sphere.Velocity(new Vector3d(0, 0, 2));
+                world.Add(sphere);
+
+                sphere = CreateSphere(new Vector3d(4, 0.2, -1));
+                sphere.Velocity(new Vector3d(0, 0.25, 0));
+                world.Add(sphere);
+            }
+
             cam = new Camera(_randomGenerator);
 
             cam.aspect_ratio = 16.0 / 9.0;
@@ -604,8 +605,33 @@ namespace Scrblr.Rtx
             cam.defocus_angle = 0.6;
             cam.focus_dist = 10.0;
 
+            cam.ShutterTime = sceneSettings.ShutterTime;
             cam.samples_per_pixel = sceneSettings.SamplesPerPixel;
             cam.image_width = sceneSettings.ImageWidth;
+        }
+
+        private Sphere CreateSphere(Vector3d center)
+        {
+            var choose_mat = _randomGenerator.Double();
+
+            if (choose_mat < 0.8)
+            {
+                // diffuse
+                var albedo = _randomGenerator.Color() * _randomGenerator.Color();
+                return new Sphere(center, 0.2, new Lambertian(albedo, _randomGenerator));
+            }
+            else if (choose_mat < 0.95)
+            {
+                // metal
+                var albedo = _randomGenerator.Vector3d(0.5, 1);
+                var fuzz = _randomGenerator.Double() * 0.5;
+                return new Sphere(center, 0.2, new Metal(albedo, fuzz, _randomGenerator));
+            }
+            else
+            {
+                // glass
+                return new Sphere(center, 0.2, new Dielectric(1.5, _randomGenerator));
+            }
         }
 
 
@@ -625,7 +651,7 @@ namespace Scrblr.Rtx
 
             _randomGenerator = new RandomGenerator(1024);
 
-            CreateScene(new SceneSettings { ImageWidth = 200, SamplesPerPixel = 8 }, out world, out cam);
+            CreateScene(new SceneSettings { ImageWidth = 400, SamplesPerPixel = 16 }, out world, out cam);
 
             stopwatch.Stop();
 

@@ -6,7 +6,7 @@ namespace Scrblr.Rtx
 {
     class Chapter141WithProgressThreaded : Chapter141WithProgress
     {
-        private async static Task RenderAsync(Camera camera, HittableList world, string path, ProgressTracker tracker)
+        protected async static Task RenderAsync(Camera camera, HittableList world, string path, ProgressTracker tracker)
         {
             await Task.Run(() =>
             {
@@ -49,7 +49,7 @@ namespace Scrblr.Rtx
             });
         }
 
-        public async Task Main(string path)
+        public virtual async Task Main(string path)
         {
             HittableList world;
             Camera cam;
