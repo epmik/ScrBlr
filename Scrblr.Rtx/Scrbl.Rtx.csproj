@@ -10,6 +10,7 @@
   <ItemGroup>
     <Compile Remove="141 A Final Render - With Progress - Threaded\_Main.cs" />
     <Compile Remove="141 A Final Render - With Progress\Chapter141Threaded2Main.cs" />
+    <Compile Remove="200 Motion Blur\Main.cs" />
     <Compile Remove="300 Bounding Volume Hierarchies\Main.cs" />
     <Compile Remove="Cameras\Camera.cs" />
     <Compile Remove="Cameras\CameraBouncingRays.cs" />
@@ -45,6 +46,7 @@
 
   <ItemGroup>
     <Folder Include=".resources\" />
+    <Folder Include="200 Motion Blur\" />
     <Folder Include="300 Bounding Volume Hierarchies\" />
     <Folder Include="Cameras\" />
     <Folder Include="Geometry\" />

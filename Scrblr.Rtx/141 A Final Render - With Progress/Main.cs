@@ -141,7 +141,7 @@ namespace Scrblr.Rtx
             
             _randomGenerator = new RandomGenerator(1024);
 
-            CreateScene(out world, out cam);
+            CreateScene(new SceneSettings(), out world, out cam);
 
             stopwatch.Stop();
 
