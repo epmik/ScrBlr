@@ -449,8 +449,11 @@ namespace Scrblr.Rtx
         protected class Sphere : Hittable
         {
             Point3 _center;
+            Vector3d? _velocity;
             double _radius;
             Material _mat;
+
+
 
             public Sphere(Point3 center, double radius, Material mat)
             {
@@ -459,10 +462,18 @@ namespace Scrblr.Rtx
                 _mat = mat;
             }
 
+            public void Velocity(Vector3d velocity)
+            {
+                _velocity = velocity;
+            }
+
             public override bool Hit(Ray r, Interval ray_t, out HitRecord rec)
             {
                 rec = new HitRecord();
-                Vector3d oc = _center - r.Origin;
+
+                var center = _velocity != null ? _center + (_velocity.Value * r.Time) : _center;
+
+                Vector3d oc = center - r.Origin;
 
                 var a = r.Direction.LengthSquared();
                 var h = Vector3d.Dot(r.Direction, oc);
@@ -486,7 +497,7 @@ namespace Scrblr.Rtx
 
                 rec.T = root;
                 rec.P = r.At(rec.T);
-                Vector3d outward_normal = (rec.P - _center) / _radius;
+                Vector3d outward_normal = (rec.P - center) / _radius;
                 rec.set_face_normal(r, outward_normal);
                 rec.mat = _mat;
 
@@ -499,7 +510,7 @@ namespace Scrblr.Rtx
             private Vector3d _orig;
             private Vector3d _dir;
 
-            private double _time;
+            public double Time;
 
             // Parameterless constructor (Defaults to 0,0,0 vectors)
             public Ray()
@@ -513,7 +524,7 @@ namespace Scrblr.Rtx
             {
                 _orig = origin;
                 _dir = direction;
-                _time = time;
+                Time = time;
             }
 
             // Getters matching your original origin() and direction()
