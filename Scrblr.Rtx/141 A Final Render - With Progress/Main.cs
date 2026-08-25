@@ -85,31 +85,31 @@ namespace Scrblr.Rtx
             }
         }
 
-        private static void Render(Camera camera, HittableList world, string path, ProgressTracker tracker)
+        private static void Render(Scene scene, string path, ProgressTracker tracker)
         {
-            camera.Initialize();
+            scene.Camera.Initialize();
 
-            tracker.TotalSteps = camera.image_width * camera.image_height;
+            tracker.TotalSteps = scene.Camera.image_width * scene.Camera.image_height;
 
-            var buffer = new Vector3d[camera.image_width * camera.image_height];
+            var buffer = new Vector3d[scene.Camera.image_width * scene.Camera.image_height];
 
             var index = 0;
 
-            for (int j = 0; j < camera.image_height; j++)
+            for (int j = 0; j < scene.Camera.image_height; j++)
             {
-                for (int i = 0; i < camera.image_width; i++)
+                for (int i = 0; i < scene.Camera.image_width; i++)
                 {
                     var pixel_color = new Color(0, 0, 0);
 
-                    for (int sample = 0; sample < camera.samples_per_pixel; sample++)
+                    for (int sample = 0; sample < scene.Camera.samples_per_pixel; sample++)
                     {
-                        var r = camera.get_ray(i, j);
-                        pixel_color += camera.RayColor(r, camera.max_depth, world);
+                        var r = scene.Camera.get_ray(scene, i, j);
+                        pixel_color += scene.Camera.RayColor(r, scene.Camera.max_depth, scene);
                     }
 
-                    pixel_color *= camera.pixel_samples_scale;
+                    pixel_color *= scene.Camera.pixel_samples_scale;
 
-                    if (!camera.OutputLinearColorSpace)
+                    if (!scene.Camera.OutputLinearColorSpace)
                     {
                         pixel_color = new Color(
                             linear_to_gamma(pixel_color.X),
@@ -123,13 +123,12 @@ namespace Scrblr.Rtx
                 }
             }
 
-            Png.Save(path, camera.image_width, camera.image_height, buffer);
+            Png.Save(path, scene.Camera.image_width, scene.Camera.image_height, buffer);
         }
 
         public override void Main(string path)
         {
-            HittableList world;
-            Camera cam;
+            Scene world;
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -141,7 +140,7 @@ namespace Scrblr.Rtx
             
             _randomGenerator = new RandomGenerator(1024);
 
-            CreateScene(new SceneSettings(), out world, out cam);
+            CreateScene(new SceneSettings(), out world);
 
             stopwatch.Stop();
 
@@ -155,7 +154,7 @@ namespace Scrblr.Rtx
 
             stopwatch.Restart();
 
-            Render(cam, world, path, tracker);
+            Render(world, path, tracker);
 
             stopwatch.Stop();
 

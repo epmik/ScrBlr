@@ -9,7 +9,8 @@ namespace Scrblr.Rtx
 
         protected class SceneSettings
         {
-            public double ShutterTime { get; set; } = 0.0;
+            public double SceneTime { get; set; } = 0.0;
+            public double ShutterDuration { get; set; } = 0.0;
             public bool AddLargeSpheres { get; set; } = true;
             public bool AddSmallStaticSpheres { get; set; } = true;
             public bool AddSmallDynamicSpheres { get; set; } = false;
@@ -38,7 +39,7 @@ namespace Scrblr.Rtx
             public int image_height = 100;
             public double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
 
-            public double ShutterTime = 0.0;
+            public double ShutterDuration = 0.0;
 
             Vector3d center = new Vector3d(0, 0, 0);
             Vector3d pixel00_loc;    // Location of pixel 0, 0
@@ -58,7 +59,7 @@ namespace Scrblr.Rtx
                 _randomGenerator = randomGenerator;
             }
 
-            public void Render(HittableList world, string path)
+            public void Render(Scene scene, string path)
             {
                 Initialize();
 
@@ -74,8 +75,8 @@ namespace Scrblr.Rtx
 
                         for (int sample = 0; sample < samples_per_pixel; sample++)
                         {
-                            var r = get_ray(i, j);
-                            pixel_color += RayColor(r, max_depth, world);
+                            var r = get_ray(scene, i, j);
+                            pixel_color += RayColor(r, max_depth, scene);
                         }
 
                         pixel_color *= pixel_samples_scale;
@@ -96,7 +97,7 @@ namespace Scrblr.Rtx
 
             }
 
-            public Ray get_ray(int i, int j)
+            public Ray get_ray(Scene scene, int i, int j)
             {
                 // Construct a camera ray originating from the defocus disk and directed at a randomly
                 // sampled point around the pixel location i, j.
@@ -109,7 +110,8 @@ namespace Scrblr.Rtx
                 var ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
                 var ray_direction = pixel_sample - ray_origin;
 
-                var t = ShutterTime > 0.0 ? _randomGenerator.Double() * ShutterTime : 0.0;
+                // pick a random time for the ray to simulate motion blur if the shutter duration is greater than 0
+                var t = ShutterDuration > 0.0 ? scene.SceneTime + (_randomGenerator.Double() * ShutterDuration) : 0.0;
 
                 return new Ray(ray_origin, ray_direction, t);
             }
@@ -166,15 +168,13 @@ namespace Scrblr.Rtx
                 defocus_disk_v = v * defocus_radius;
             }
 
-            public Vector3d RayColor(Ray r, int depth, HittableList world)
+            public Color RayColor(Ray r, int depth, Scene world)
             {
                 // If we've exceeded the ray bounce limit, no more light is gathered.
                 if (depth <= 0)
                     return new Color(0, 0, 0);
 
-                HitRecord rec;
-
-                if (world.Hit(r, new Interval(0.001, double.PositiveInfinity), out rec))
+                if (world.ProcessHit(r, new Interval(0.001, double.PositiveInfinity), out HitRecord rec))
                 {
                     Ray scattered;
                     Color attenuation;
@@ -240,7 +240,7 @@ namespace Scrblr.Rtx
                 if (Vector3d.NearZero(scatter_direction))
                     scatter_direction = rec.Normal;
 
-                scattered = new Ray(rec.P, scatter_direction);
+                scattered = new Ray(rec.P, scatter_direction, r_in.Time);
                 attenuation = _albedo;
 
                 return true;
@@ -391,20 +391,14 @@ namespace Scrblr.Rtx
 
         protected abstract class Hittable
         {
-            public abstract bool Hit(Ray r, Interval ray_t, out HitRecord rec);
+            public abstract bool Hit(Ray r, Scene scene, Interval ray_t, out HitRecord rec);
         }
 
-        protected class HittableList : Hittable
+        protected class Scene
         {
             public List<Hittable> Objects { get; set; } = new List<Hittable>();
-
-            // Constructors
-            public HittableList() { }
-
-            public HittableList(Hittable obj)
-            {
-                Add(obj);
-            }
+            public Camera Camera { get; internal set; }
+            public double SceneTime { get; internal set; } = 0.0;
 
             // Methods
             public void Clear()
@@ -417,7 +411,7 @@ namespace Scrblr.Rtx
                 Objects.Add(obj);
             }
 
-            public override bool Hit(Ray r, Interval ray_t, out HitRecord rec)
+            public bool ProcessHit(Ray r, Interval ray_t, out HitRecord rec)
             {
                 rec = new HitRecord();
                 HitRecord tempRec;
@@ -426,7 +420,7 @@ namespace Scrblr.Rtx
 
                 foreach (Hittable obj in Objects)
                 {
-                    if (obj.Hit(r, new Interval(ray_t.Min, closestSoFar), out tempRec))
+                    if (obj.Hit(r, this, new Interval(ray_t.Min, closestSoFar), out tempRec))
                     {
                         hitAnything = true;
                         closestSoFar = tempRec.T;
@@ -460,7 +454,7 @@ namespace Scrblr.Rtx
                 _velocity = velocity;
             }
 
-            public override bool Hit(Ray r, Interval ray_t, out HitRecord rec)
+            public override bool Hit(Ray r, Scene scene, Interval ray_t, out HitRecord rec)
             {
                 rec = new HitRecord();
 
@@ -536,13 +530,13 @@ namespace Scrblr.Rtx
             }
         }
 
-        protected void CreateScene(SceneSettings sceneSettings, out HittableList world, out Camera cam)
+        protected void CreateScene(SceneSettings sceneSettings, out Scene scene)
         {
-            world = new HittableList();
+            scene = new Scene();
 
 
             var ground_material = new Lambertian(new Color(0.5, 0.5, 0.5), _randomGenerator);
-            world.Add(new Sphere(new Point3(0, -1000, 0), 1000, ground_material));
+            scene.Add(new Sphere(new Point3(0, -1000, 0), 1000, ground_material));
 
             if (sceneSettings.AddSmallStaticSpheres)
             {
@@ -555,7 +549,7 @@ namespace Scrblr.Rtx
 
                         if ((center - new Point3(4, 0.2, 0)).Length() > 0.9)
                         {
-                            world.Add(CreateSphere(center));
+                            scene.Add(CreateSphere(center));
                         }
                     }
                 }
@@ -564,13 +558,13 @@ namespace Scrblr.Rtx
             if (sceneSettings.AddLargeSpheres)
             { 
                 var material1 = new Dielectric(1.5, _randomGenerator);
-                world.Add(new Sphere(new Vector3d(0, 1, 0), 1.0, material1));
+                scene.Add(new Sphere(new Vector3d(0, 1, 0), 1.0, material1));
 
                 var material2 = new Lambertian(new Color(0.4, 0.2, 0.1), _randomGenerator);
-                world.Add(new Sphere(new Vector3d(-4, 1, 0), 1.0, material2));
+                scene.Add(new Sphere(new Vector3d(-4, 1, 0), 1.0, material2));
 
                 var material3 = new Metal(new Color(0.7, 0.6, 0.5), 0.0, _randomGenerator);
-                world.Add(new Sphere(new Vector3d(4, 1, 0), 1.0, material3));
+                scene.Add(new Sphere(new Vector3d(4, 1, 0), 1.0, material3));
             }
 
             if (sceneSettings.AddSmallDynamicSpheres)
@@ -583,31 +577,31 @@ namespace Scrblr.Rtx
 
                 var sphere = CreateSphere(new Vector3d(4, 0.2, 0));
                 sphere.Velocity(new Vector3d(0, 0, -1));
-                world.Add(sphere);
+                scene.Add(sphere);
 
                 sphere = CreateSphere(new Vector3d(4, 0.2, 1));
                 sphere.Velocity(new Vector3d(0, 0, 2));
-                world.Add(sphere);
+                scene.Add(sphere);
 
                 sphere = CreateSphere(new Vector3d(4, 0.2, -1));
                 sphere.Velocity(new Vector3d(0, 0.25, 0));
-                world.Add(sphere);
+                scene.Add(sphere);
             }
 
-            cam = new Camera(_randomGenerator);
+            scene.Camera = new Camera(_randomGenerator);
 
-            cam.aspect_ratio = 16.0 / 9.0;
-            cam.max_depth = 50;
-            cam.vfov = 20;
-            cam.lookfrom = new Point3(13, 2, 3);
-            cam.lookat = new Point3(0, 0, 0);
-            cam.vup = new Vector3d(0, 1, 0);
-            cam.defocus_angle = 0.6;
-            cam.focus_dist = 10.0;
+            scene.Camera.aspect_ratio = 16.0 / 9.0;
+            scene.Camera.max_depth = 50;
+            scene.Camera.vfov = 20;
+            scene.Camera.lookfrom = new Point3(13, 2, 3);
+            scene.Camera.lookat = new Point3(0, 0, 0);
+            scene.Camera.vup = new Vector3d(0, 1, 0);
+            scene.Camera.defocus_angle = 0.6;
+            scene.Camera.focus_dist = 10.0;
 
-            cam.ShutterTime = sceneSettings.ShutterTime;
-            cam.samples_per_pixel = sceneSettings.SamplesPerPixel;
-            cam.image_width = sceneSettings.ImageWidth;
+            scene.Camera.ShutterDuration = sceneSettings.ShutterDuration;
+            scene.Camera.samples_per_pixel = sceneSettings.SamplesPerPixel;
+            scene.Camera.image_width = sceneSettings.ImageWidth;
         }
 
         private Sphere CreateSphere(Vector3d center)
@@ -637,9 +631,7 @@ namespace Scrblr.Rtx
 
         public virtual void Main(string path)
         {
-            HittableList world;
-            Camera cam;
-
+            Scene scene;
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -651,7 +643,7 @@ namespace Scrblr.Rtx
 
             _randomGenerator = new RandomGenerator(1024);
 
-            CreateScene(new SceneSettings { ImageWidth = 400, SamplesPerPixel = 16 }, out world, out cam);
+            CreateScene(new SceneSettings { ImageWidth = 400, SamplesPerPixel = 16 }, out scene);
 
             stopwatch.Stop();
 
@@ -661,7 +653,7 @@ namespace Scrblr.Rtx
 
             stopwatch.Restart();
 
-            cam.Render(world, path);
+            scene.Camera.Render(scene, path);
 
             stopwatch.Stop();
 
