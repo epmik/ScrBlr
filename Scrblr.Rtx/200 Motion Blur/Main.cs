@@ -22,7 +22,7 @@ namespace Scrblr.Rtx
 
             _randomGenerator = new RandomGeneratorThreadSafe(1024);
 
-            CreateScene(new SceneSettings { ShutterTime = 0.25, AddSmallDynamicSpheres = true, AddSmallStaticSpheres = false, AddLargeSpheres = false }, out world, out cam);
+            CreateScene(new SceneSettings { ImageWidth = 1600, SamplesPerPixel = 24, ShutterTime = 0.25, AddSmallDynamicSpheres = true, AddSmallStaticSpheres = false, AddLargeSpheres = false }, out world, out cam);
 
             stopwatch.Stop();
 
