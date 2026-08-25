@@ -9,8 +9,7 @@ namespace Scrblr.Rtx
 
         public override async Task Main(string path)
         {
-            HittableList world;
-            Camera cam;
+            Scene scene;
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -22,7 +21,7 @@ namespace Scrblr.Rtx
 
             _randomGenerator = new RandomGeneratorThreadSafe(1024);
 
-            CreateScene(new SceneSettings { ShutterTime = 0.25, AddSmallDynamicSpheres = true, AddSmallStaticSpheres = false, AddLargeSpheres = false }, out world, out cam);
+            CreateScene(new SceneSettings { ImageWidth = 1600, ShutterDuration = 0.25, AddSmallDynamicSpheres = true, AddSmallStaticSpheres = false, AddLargeSpheres = false }, out scene);
 
             stopwatch.Stop();
 
@@ -36,7 +35,7 @@ namespace Scrblr.Rtx
 
             stopwatch.Restart();
 
-            var renderTask = RenderAsync(cam, world, path, tracker);
+            var renderTask = RenderAsync(scene, path, tracker);
 
             await renderTask;
 
