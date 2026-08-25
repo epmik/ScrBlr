@@ -64,7 +64,7 @@ namespace Scrblr.Rtx
 
             _randomGenerator = new RandomGeneratorThreadSafe(1024);
 
-            CreateScene(new SceneSettings(), out world, out cam);
+            CreateScene(new SceneSettings { ImageWidth = 1600, SamplesPerPixel = 24 }, out world, out cam);
 
             stopwatch.Stop();
 
