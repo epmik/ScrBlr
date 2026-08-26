@@ -391,7 +391,12 @@ namespace Scrblr.Rtx
 
         protected abstract class Hittable
         {
-            public abstract bool Hit(Ray r, Scene scene, Interval ray_t, out HitRecord rec);
+            public virtual bool Hit(Ray r, Scene scene, Interval ray_t, out HitRecord rec)
+            {
+                return Hit(r, scene, ray_t.Min, ray_t.Max, out rec);
+            }
+
+            public abstract bool Hit(Ray r, Scene scene, double min, double max, out HitRecord rec);
         }
 
         protected class Scene
@@ -454,13 +459,55 @@ namespace Scrblr.Rtx
                 _velocity = velocity;
             }
 
-            public override bool Hit(Ray r, Scene scene, Interval ray_t, out HitRecord rec)
+            //public override bool Hit(Ray r, Scene scene, Interval ray_t, out HitRecord rec)
+            //{
+            //    rec = new HitRecord();
+
+            //    var center = _velocity != null ? Center + (_velocity.Value * r.Time) : Center;
+
+            //    if(_velocity != null)
+            //    {
+            //        var t = 0;
+            //    }
+
+            //    Vector3d oc = center - r.Origin;
+
+            //    var a = r.Direction.LengthSquared();
+            //    var h = Vector3d.Dot(r.Direction, oc);
+            //    var c = oc.LengthSquared() - Radius * Radius;
+
+            //    var discriminant = h * h - a * c;
+
+            //    if (discriminant < 0)
+            //        return false;
+
+            //    var sqrtd = Math.Sqrt(discriminant);
+
+            //    // Find the nearest root that lies in the acceptable range.
+            //    var root = (h - sqrtd) / a;
+            //    if (!ray_t.Surrounds(root))
+            //    {
+            //        root = (h + sqrtd) / a;
+            //        if (!ray_t.Surrounds(root))
+            //            return false;
+            //    }
+
+            //    rec.T = root;
+            //    rec.P = r.At(rec.T);
+            //    Vector3d outward_normal = (rec.P - center) / Radius;
+            //    rec.set_face_normal(r, outward_normal);
+            //    rec.mat = _mat;
+
+            //    return true;
+            //}
+
+            public override bool Hit(Ray r, Scene scene, double min, double max, out HitRecord rec)
             {
                 rec = new HitRecord();
 
                 var center = _velocity != null ? Center + (_velocity.Value * r.Time) : Center;
 
-                if(_velocity != null)
+                if (_velocity != null)
                 {
                     var t = 0;
                 }
@@ -480,10 +527,10 @@ namespace Scrblr.Rtx
 
                 // Find the nearest root that lies in the acceptable range.
                 var root = (h - sqrtd) / a;
-                if (!ray_t.Surrounds(root))
+                if (!(min < root && root < max))
                 {
                     root = (h + sqrtd) / a;
-                    if (!ray_t.Surrounds(root))
+                    if (!(min < root && root < max))
                         return false;
                 }
 
@@ -499,34 +546,30 @@ namespace Scrblr.Rtx
 
         protected struct Ray
         {
-            private Vector3d _orig;
-            private Vector3d _dir;
+            public Vector3d Origin;
+            public Vector3d Direction;
 
             public double Time;
 
             // Parameterless constructor (Defaults to 0,0,0 vectors)
             public Ray()
             {
-                _orig = new Vector3d();
-                _dir = new Vector3d();
+                Origin = new Vector3d();
+                Direction = new Vector3d();
             }
 
             // Main constructor
             public Ray(Vector3d origin, Vector3d direction, double time = 0.0)
             {
-                _orig = origin;
-                _dir = direction;
+                Origin = origin;
+                Direction = direction;
                 Time = time;
             }
-
-            // Getters matching your original origin() and direction()
-            public readonly Vector3d Origin => _orig;
-            public readonly Vector3d Direction => _dir;
 
             // Linear interpolation along the ray: orig + t * dir
             public readonly Vector3d At(double t)
             {
-                return _orig + (t * _dir);
+                return Origin + Direction * t;
             }
         }
 

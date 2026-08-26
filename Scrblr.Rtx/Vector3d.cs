@@ -17,6 +17,8 @@ namespace Scrblr.Rtx
         public double Z { get; init; }
 
         // Constructors
+        public Vector3d(double v) => (X, Y, Z) = (v, v, v);
+
         public Vector3d(double x, double y, double z) => (X, Y, Z) = (x, y, z);
 
         // Indexer (Read-only now)
@@ -123,6 +125,16 @@ namespace Scrblr.Rtx
                 if (p.LengthSquared() < 1)
                     return p;
             }
+        }
+
+        internal static Vector3d Min(Vector3d a, Vector3d b)
+        {
+            return new Vector3d(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Min(a.Z, b.Z));
+        }
+
+        internal static Vector3d Max(Vector3d a, Vector3d b)
+        {
+            return new Vector3d(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z));
         }
 
         //// 2. Use 'in' for vector arguments to pass by reference without copying
