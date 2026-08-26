@@ -435,17 +435,17 @@ namespace Scrblr.Rtx
 
         protected class Sphere : Hittable
         {
-            Point3 _center;
+            public Point3 Center;
             Vector3d? _velocity;
-            double _radius;
+            public double Radius;
             Material _mat;
 
 
 
             public Sphere(Point3 center, double radius, Material mat)
             {
-                _center = center;
-                _radius = radius;
+                Center = center;
+                Radius = radius;
                 _mat = mat;
             }
 
@@ -458,7 +458,7 @@ namespace Scrblr.Rtx
             {
                 rec = new HitRecord();
 
-                var center = _velocity != null ? _center + (_velocity.Value * r.Time) : _center;
+                var center = _velocity != null ? Center + (_velocity.Value * r.Time) : Center;
 
                 if(_velocity != null)
                 {
@@ -469,7 +469,7 @@ namespace Scrblr.Rtx
 
                 var a = r.Direction.LengthSquared();
                 var h = Vector3d.Dot(r.Direction, oc);
-                var c = oc.LengthSquared() - _radius * _radius;
+                var c = oc.LengthSquared() - Radius * Radius;
 
                 var discriminant = h * h - a * c;
 
@@ -489,7 +489,7 @@ namespace Scrblr.Rtx
 
                 rec.T = root;
                 rec.P = r.At(rec.T);
-                Vector3d outward_normal = (rec.P - center) / _radius;
+                Vector3d outward_normal = (rec.P - center) / Radius;
                 rec.set_face_normal(r, outward_normal);
                 rec.mat = _mat;
 
