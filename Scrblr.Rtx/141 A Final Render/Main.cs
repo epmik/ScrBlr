@@ -174,7 +174,7 @@ namespace Scrblr.Rtx
                 if (depth <= 0)
                     return new Color(0, 0, 0);
 
-                if (world.ProcessHit(r, new Interval(0.001, double.PositiveInfinity), out HitRecord rec))
+                if (world.Hit(r, world, 0.001, double.PositiveInfinity, out HitRecord rec))
                 {
                     Ray scattered;
                     Color attenuation;
@@ -198,6 +198,110 @@ namespace Scrblr.Rtx
 
             return 0;
         }
+
+        protected class Aabb
+        {
+            public Vector3d Min { get; set; } = new Vector3d(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
+            public Vector3d Max { get; set; } = new Vector3d(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
+
+            public Aabb()
+            {
+
+            }
+
+            public Aabb(Aabb a, Aabb b)
+            {
+                Min = new Vector3d(Math.Min(a.Min.X, b.Min.X), Math.Min(a.Min.Y, b.Min.Y), Math.Min(a.Min.Z, b.Min.Z));
+                Max = new Vector3d(Math.Max(a.Max.X, b.Max.X), Math.Max(a.Max.Y, b.Max.Y), Math.Max(a.Max.Z, b.Max.Z));
+            }
+
+            public Aabb(Vector3d min, Vector3d max)
+            {
+                Min = new Vector3d(Math.Min(min.X, max.X), Math.Min(min.Y, max.Y), Math.Min(min.Z, max.Z));
+                Max = new Vector3d(Math.Max(min.X, max.X), Math.Max(min.Y, max.Y), Math.Max(min.Z, max.Z));
+            }
+
+            public void Clamp(Vector3d point)
+            {
+                Min = Vector3d.Min(Min, point);
+                Max = Vector3d.Max(Max, point);
+            }
+
+            public void Grow(Vector3d point)
+            {
+                //Min = new Vector3d(Min.X - point.X, Min.Y - point.Y, Min.Z - point.Z);
+                //Max = new Vector3d(Max.X + point.X, Max.Y + point.Y, Max.Z + point.Z);
+                Min -= point;
+                Max += point;
+            }
+
+            public void Grow(Aabb aabb)
+            {
+                Min = Vector3d.Min(Min, aabb.Min);
+                Max = Vector3d.Max(Max, aabb.Max);
+            }
+
+            public void Grow(Sphere s)
+            {
+                Min = Vector3d.Min(Min, s.Center - new Vector3d(s.Radius));
+                Max = Vector3d.Max(Max, s.Center + new Vector3d(s.Radius));
+            }
+
+            public bool Hit(Ray ray, double min, double max)
+            {
+                for (int axis = 0; axis < 3; axis++)
+                {
+                    double invD = 1.0 / ray.Direction[axis];
+                    double t0 = (Min[axis] - ray.Origin[axis]) * invD;
+                    double t1 = (Max[axis] - ray.Origin[axis]) * invD;
+
+                    if (invD < 0.0)
+                    {
+                        (t0, t1) = (t1, t0);
+                    }
+
+                    min = Math.Max(t0, min);
+                    max = Math.Min(t1, max);
+
+                    if (max <= min)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            public static Aabb FromSphere(Sphere sphere)
+            {
+                return new Aabb(
+                    new Vector3d(sphere.Center.X - sphere.Radius, sphere.Center.Y - sphere.Radius, sphere.Center.Z - sphere.Radius),
+                    new Vector3d(sphere.Center.X + sphere.Radius, sphere.Center.Y + sphere.Radius, sphere.Center.Z + sphere.Radius));
+            }
+
+            // High-performance slab test returning near and far intersection distances
+            public static bool IntersectAabb(in Aabb bounds, in Vector3d rayOrigin, in Vector3d invDir, out double tNear, out double tFar)
+            {
+                double tx1 = (bounds.Min.X - rayOrigin.X) * invDir.X;
+                double tx2 = (bounds.Max.X - rayOrigin.X) * invDir.X;
+                tNear = Math.Min(tx1, tx2);
+                tFar = Math.Max(tx1, tx2);
+
+                double ty1 = (bounds.Min.Y - rayOrigin.Y) * invDir.Y;
+                double ty2 = (bounds.Max.Y - rayOrigin.Y) * invDir.Y;
+                tNear = Math.Max(tNear, Math.Min(ty1, ty2));
+                tFar = Math.Min(tFar, Math.Max(ty1, ty2));
+
+                double tz1 = (bounds.Min.Z - rayOrigin.Z) * invDir.Z;
+                double tz2 = (bounds.Max.Z - rayOrigin.Z) * invDir.Z;
+                tNear = Math.Max(tNear, Math.Min(tz1, tz2));
+                tFar = Math.Min(tFar, Math.Max(tz1, tz2));
+
+                return tFar >= Math.Max(0.0, tNear);
+            }
+        }
+
+
+        #region Materials
 
         protected abstract class Material
         {
@@ -317,6 +421,8 @@ namespace Scrblr.Rtx
             }
         }
 
+        #endregion Materials
+
         protected struct Interval
         {
             public double Min { get; set; }
@@ -391,41 +497,57 @@ namespace Scrblr.Rtx
 
         protected abstract class Hittable
         {
+            private Aabb? _aabb;
+
+            public Aabb Aabb 
+            { 
+                get
+                {
+                    if (_aabb == null)
+                        _aabb = ComputeAabb();
+
+                    return _aabb;
+                }
+            }
+
             public virtual bool Hit(Ray r, Scene scene, Interval ray_t, out HitRecord rec)
             {
                 return Hit(r, scene, ray_t.Min, ray_t.Max, out rec);
             }
 
             public abstract bool Hit(Ray r, Scene scene, double min, double max, out HitRecord rec);
+
+            protected abstract Aabb ComputeAabb();
         }
 
-        protected class Scene
+        protected class Scene : Hittable
         {
-            public List<Hittable> Objects { get; set; } = new List<Hittable>();
+            public Sphere[] Objects = new Sphere[0];
             public Camera Camera { get; internal set; }
             public double SceneTime { get; internal set; } = 0.0;
 
             // Methods
             public void Clear()
             {
-                Objects.Clear();
+                Objects = new Sphere[0];
             }
 
-            public void Add(Hittable obj)
+            public void Add(Sphere obj)
             {
-                Objects.Add(obj);
+                Array.Resize(ref Objects, Objects.Length + 1);
+                Objects[Objects.Length - 1] = obj;
             }
 
-            public bool ProcessHit(Ray r, Interval ray_t, out HitRecord rec)
+            public override bool Hit(Ray r, Scene scene, double min, double max, out HitRecord rec)
             {
                 rec = new HitRecord();
                 HitRecord tempRec;
                 bool hitAnything = false;
-                double closestSoFar = ray_t.Max;
+                double closestSoFar = max;
 
                 foreach (Hittable obj in Objects)
                 {
-                    if (obj.Hit(r, this, new Interval(ray_t.Min, closestSoFar), out tempRec))
+                    if (obj.Hit(r, this, new Interval(min, closestSoFar), out tempRec))
                     {
                         hitAnything = true;
                         closestSoFar = tempRec.T;
@@ -435,6 +557,18 @@ namespace Scrblr.Rtx
                 }
 
                 return hitAnything;
+            }
+
+            protected override Aabb ComputeAabb()
+            {
+                var aabb = new Aabb();
+
+                foreach (var item in Objects)
+                {
+                    aabb.Grow(item.Aabb);
+                }
+
+                return aabb;
             }
         }
 
@@ -541,6 +675,11 @@ namespace Scrblr.Rtx
                 rec.mat = _mat;
 
                 return true;
+            }
+
+            protected override Aabb ComputeAabb()
+            {
+                return Aabb.FromSphere(this);
             }
         };
 

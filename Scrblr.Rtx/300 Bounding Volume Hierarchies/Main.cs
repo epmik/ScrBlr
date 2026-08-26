@@ -26,77 +26,10 @@ namespace Scrblr.Rtx
         //    }
         //}
 
-        protected class Aabb
+        public enum SortingMethod
         {
-            public Vector3d Min { get; set; } = new Vector3d(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
-            public Vector3d Max { get; set; } = new Vector3d(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
-
-            public Aabb()
-            {
-                
-            }
-
-            public Aabb(Aabb a, Aabb b)
-            {
-                Min = new Vector3d(Math.Min(a.Min.X, b.Min.X), Math.Min(a.Min.Y, b.Min.Y), Math.Min(a.Min.Z, b.Min.Z));
-                Max = new Vector3d(Math.Max(a.Max.X, b.Max.X), Math.Max(a.Max.Y, b.Max.Y), Math.Max(a.Max.Z, b.Max.Z));
-            }
-
-            public Aabb(Vector3d min, Vector3d max)
-            {
-                Min = new Vector3d(Math.Min(min.X, max.X), Math.Min(min.Y, max.Y), Math.Min(min.Z, max.Z));
-                Max = new Vector3d(Math.Max(min.X, max.X), Math.Max(min.Y, max.Y), Math.Max(min.Z, max.Z));
-            }
-
-            public void Clamp(Vector3d point)
-            {
-                Min = Vector3d.Min(Min, point);
-                Max = Vector3d.Max(Max, point);
-            }
-
-            public void Grow(Vector3d point)
-            {
-                //Min = new Vector3d(Min.X - point.X, Min.Y - point.Y, Min.Z - point.Z);
-                //Max = new Vector3d(Max.X + point.X, Max.Y + point.Y, Max.Z + point.Z);
-                Min -= point;
-                Max += point;
-            }
-            public void Grow(Sphere s)
-            {
-                Min = Vector3d.Min(Min, s.Center - new Vector3d(s.Radius));
-                Max = Vector3d.Max(Max, s.Center + new Vector3d(s.Radius));
-            }
-
-            public bool Hit(Ray ray, double min, double max)
-            {
-                for (int axis = 0; axis < 3; axis++)
-                {
-                    double invD = 1.0 / ray.Direction[axis];
-                    double t0 = (Min[axis] - ray.Origin[axis]) * invD;
-                    double t1 = (Max[axis] - ray.Origin[axis]) * invD;
-                    
-                    if (invD < 0.0)
-                    {
-                        (t0, t1) = (t1, t0);
-                    }
-                    
-                    min = Math.Max(t0, min);
-                    max = Math.Min(t1, max);
-                    
-                    if (max <= min)
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            public static Aabb FromSphere(Sphere sphere)
-            {
-                return new Aabb(
-                    new Vector3d(sphere.Center.X - sphere.Radius, sphere.Center.Y - sphere.Radius, sphere.Center.Z - sphere.Radius),
-                    new Vector3d(sphere.Center.X + sphere.Radius, sphere.Center.Y + sphere.Radius, sphere.Center.Z + sphere.Radius));
-            }
+            RaySign,    // Faster: Uses the sign bit of the ray direction to pick the near child
+            DualSlab    // Precise: Computes actual intersection distances to sort children
         }
 
         //protected class BvhNode : Hittable
@@ -137,13 +70,21 @@ namespace Scrblr.Rtx
             private Sphere[] _spheres;
             private uint _nodesUsed = 1;
 
-            public Bvh(Sphere[] spheres)
+            public void Generate(Sphere[] spheres)
             {
                 _spheres = spheres;
+                
                 SphereIndices = new uint[spheres.Length];
-                for (int i = 0; i < spheres.Length; i++) SphereIndices[i] = (uint)i;
+                
+                for (int i = 0; i < spheres.Length; i++) 
+                    SphereIndices[i] = (uint)i;
+                
                 Nodes = new BvhNode[spheres.Length * 2];
+                Nodes[0].LeftFirst = 0;
+                Nodes[0].SphereCount = (uint)spheres.Length; // <-- the missing piece
+
                 Refit(0, (uint)spheres.Length);
+
                 Subdivide(0);
             }
 
@@ -173,7 +114,8 @@ namespace Scrblr.Rtx
                 Nodes[leftChild].SphereCount = leftCount;
                 Nodes[rightChild].LeftFirst = (uint)i;
                 Nodes[rightChild].SphereCount = node.SphereCount - leftCount;
-                node.LeftFirst = leftChild; node.SphereCount = 0;
+                node.LeftFirst = leftChild; 
+                node.SphereCount = 0;
 
                 Refit(leftChild, leftCount); 
                 Refit(rightChild, node.SphereCount);
@@ -184,8 +126,13 @@ namespace Scrblr.Rtx
             private void Refit(uint nodeIdx, uint count)
             {
                 ref BvhNode node = ref Nodes[nodeIdx];
+                
                 node.Bounds = new Aabb();
-                for (int i = 0; i < count; i++) node.Bounds.Grow(_spheres[SphereIndices[node.LeftFirst + i]]);
+
+                for (int i = 0; i < count; i++)
+                {
+                    node.Bounds.Grow(_spheres[SphereIndices[node.LeftFirst + i]]);
+                }
             }
 
             private double GetCenter(uint idx, int axis) => axis == 0 ? _spheres[idx].Center.X : (axis == 1 ? _spheres[idx].Center.Y : _spheres[idx].Center.Z);
@@ -206,6 +153,10 @@ namespace Scrblr.Rtx
             _randomGenerator = new RandomGeneratorThreadSafe(1024);
 
             CreateScene(new SceneSettings { ImageWidth = 1600, ShutterDuration = 0.25, AddSmallDynamicSpheres = true, AddSmallStaticSpheres = true, AddLargeSpheres = true }, out scene);
+
+            var bhv = new Bvh();
+
+            bhv.Generate(scene.Objects);
 
             stopwatch.Stop();
 

@@ -61,15 +61,11 @@
 
             //new Scrblr.Rtx.Chapter141WithProgress().Main(System.IO.Path.Combine(PathRoot, "chapter141-with-progress.png"));
 
-            await new Scrblr.Rtx.Chapter141WithProgressThreaded().Main(System.IO.Path.Combine(PathRoot, "chapter141-with-progress-threaded.png"));
+            //await new Scrblr.Rtx.Chapter141WithProgressThreaded().Main(System.IO.Path.Combine(PathRoot, "chapter141-with-progress-threaded.png"));
 
-            await new Scrblr.Rtx.Chapter200MotionBlur().Main(System.IO.Path.Combine(PathRoot, "chapter200-motion-blur.png"));
+            //await new Scrblr.Rtx.Chapter200MotionBlur().Main(System.IO.Path.Combine(PathRoot, "chapter200-motion-blur.png"));
 
-            //await new Scrblr.Rtx.Chapter141Threaded().Main(System.IO.Path.Combine(PathRoot, "chapter141-threaded.png"));
-
-            //await new Scrblr.Rtx.Chapter141Threaded2().Main(System.IO.Path.Combine(PathRoot, "chapter141-threaded2.png"));
-
-            //new Scrblr.Rtx.Chapter200().Main(System.IO.Path.Combine(PathRoot, "chapter200.png"));
+            await new Scrblr.Rtx.Chapter300BoundingVolumeHierarchies().Main(System.IO.Path.Combine(PathRoot, "chapter300-bounding-volume-hierarchies.png"));
 
             //new Scrblr.Rtx.Chapter300().Main(System.IO.Path.Combine(PathRoot, "chapter300.png"));
         }
