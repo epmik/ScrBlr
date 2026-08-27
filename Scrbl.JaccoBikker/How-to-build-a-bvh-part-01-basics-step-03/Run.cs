@@ -10,18 +10,18 @@ using static Scrbl.JaccoBikker.Bvh.HowToBuildABvh_Part01_Basics_Step02;
 
 namespace Scrbl.JaccoBikker.Bvh
 {
-    internal class HowToBuildABvh_Part01_Basics_Step02 : HowToBuildABvh_Part01_Basics_Step01
+    internal class HowToBuildABvh_Part01_Basics_Step03_Struct_BvhNode : HowToBuildABvh_Part01_Basics_Step01
     {
-        [StructLayout(LayoutKind.Sequential)]
-        public class BvhNode
+        public struct BvhNode
         {
             public Vector3d Min, Max;
-            public uint LeftNodeIndex;
+            public uint NodeOrPrimitiveIndex;
             public bool IsLeaf => PrimitiveCount > 0;
+            public bool IsNode => PrimitiveCount == 0;
 
-            public uint RightNodeIndex => LeftNodeIndex + 1;
+            //public uint RightNodeIndex => NodeOrPrimitiveIndex + 1;
 
-            public uint PrimitiveIndex, PrimitiveCount;
+            public uint PrimitiveCount;
         };
 
         public class BvhGenerator
@@ -43,32 +43,21 @@ namespace Scrbl.JaccoBikker.Bvh
                     Nodes = new BvhNode[count * 2 - 1],
                 };
 
-                uint rootNodeIdx = 0;
-           
-                // assign all triangles to root node
-                BvhNode root = new BvhNode
-                {
-                    LeftNodeIndex = 0,
-                    PrimitiveIndex = 0,
-                    PrimitiveCount = count
-                };
+                _bhv.Nodes[0].PrimitiveCount = count;
 
-                _bhv.Nodes[0] = root;
-
-                UpdateNodeBounds(root);
+                UpdateNodeBounds(ref _bhv.Nodes[0]);
                 
-                // subdivide recursively
-                SubdivideRecursive(root);
+                SubdivideRecursive(ref _bhv.Nodes[0]);
 
                 return _bhv;
             }
 
-            void UpdateNodeBounds(BvhNode node)
+            void UpdateNodeBounds(ref BvhNode node)
             {
                 node.Min = new Vector3d(double.PositiveInfinity);
                 node.Max = new Vector3d(double.NegativeInfinity);
 
-                for (uint first = node.PrimitiveIndex, i = 0; i < node.PrimitiveCount; i++)
+                for (uint first = node.NodeOrPrimitiveIndex, i = 0; i < node.PrimitiveCount; i++)
                 {
                     uint leafTriIdx = _scene.TriangleIndices[first + i];
                     var leafTri = _scene.Triangles[leafTriIdx];
@@ -83,7 +72,7 @@ namespace Scrbl.JaccoBikker.Bvh
                 }
             }
 
-            void SubdivideRecursive(BvhNode node)
+            void SubdivideRecursive(ref BvhNode node)
             {
                 // terminate recursion
                 if (node.PrimitiveCount <= 2) 
@@ -98,7 +87,7 @@ namespace Scrbl.JaccoBikker.Bvh
                 var splitPos = node.Min[axis] + extent[axis] * 0.5;
 
                 // in-place partition
-                var i = (int)node.PrimitiveIndex;
+                var i = (int)node.NodeOrPrimitiveIndex;
                 var j = (int)(i + node.PrimitiveCount - 1);
 
                 while (i <= j)
@@ -111,42 +100,34 @@ namespace Scrbl.JaccoBikker.Bvh
                     {
                         // https://stackoverflow.com/questions/804706/swap-two-variables-without-using-a-temporary-variable
                         (_scene.TriangleIndices[i], _scene.TriangleIndices[j]) = (_scene.TriangleIndices[j], _scene.TriangleIndices[i]);
-
                         j--;
                     }
                 }
 
                 // abort split if one of the sides is empty
-                var leftCount = (uint)i - node.PrimitiveIndex;
+                var leftCount = (uint)i - node.NodeOrPrimitiveIndex;
 
                 if (leftCount == 0 || leftCount == node.PrimitiveCount) 
                     return;
                 
-                // create child nodes
                 var leftChildIdx = _usedNodeCount++;
                 var rightChildIdx = _usedNodeCount++;
 
-                _bhv.Nodes[leftChildIdx] = new BvhNode
-                {
-                    PrimitiveIndex = node.PrimitiveIndex,
-                    PrimitiveCount = leftCount
-                };
+                _bhv.Nodes[leftChildIdx].NodeOrPrimitiveIndex = node.NodeOrPrimitiveIndex;
+                _bhv.Nodes[leftChildIdx].PrimitiveCount = leftCount;
 
-                _bhv.Nodes[rightChildIdx] = new BvhNode
-                {
-                    PrimitiveIndex = (uint)i,
-                    PrimitiveCount = node.PrimitiveCount - leftCount
-                };
+                _bhv.Nodes[rightChildIdx].NodeOrPrimitiveIndex = (uint)i;
+                _bhv.Nodes[rightChildIdx].PrimitiveCount = node.PrimitiveCount - leftCount;
 
-                node.LeftNodeIndex = leftChildIdx;
+                node.NodeOrPrimitiveIndex = leftChildIdx;
                 node.PrimitiveCount = 0;
 
-                UpdateNodeBounds(_bhv.Nodes[leftChildIdx]);
-                UpdateNodeBounds(_bhv.Nodes[rightChildIdx]);
+                UpdateNodeBounds(ref _bhv.Nodes[leftChildIdx]);
+                UpdateNodeBounds(ref _bhv.Nodes[rightChildIdx]);
 
                 // recurse
-                SubdivideRecursive(_bhv.Nodes[leftChildIdx]);
-                SubdivideRecursive(_bhv.Nodes[rightChildIdx]);
+                SubdivideRecursive(ref _bhv.Nodes[leftChildIdx]);
+                SubdivideRecursive(ref _bhv.Nodes[rightChildIdx]);
             }
 
             private static Vector3d Center(Triangle triangle)
@@ -175,7 +156,7 @@ namespace Scrbl.JaccoBikker.Bvh
                 {
                     for (uint i = 0; i < node.PrimitiveCount; i++)
                     {
-                        if(Scrbl.JaccoBikker.Intersection.Compute(ray, scene.Triangles[scene.TriangleIndices[node.PrimitiveIndex + i]], out var timeResult))
+                        if(Scrbl.JaccoBikker.Intersection.Compute(ray, scene.Triangles[scene.TriangleIndices[node.NodeOrPrimitiveIndex + i]], out var timeResult))
                         {
                             return true;
                         }
@@ -183,10 +164,10 @@ namespace Scrbl.JaccoBikker.Bvh
                 }
                 else
                 {
-                    if(IntersectionRecursive(ray, scene, node.LeftNodeIndex))
+                    if(IntersectionRecursive(ray, scene, node.NodeOrPrimitiveIndex))
                         return true;
 
-                    if(IntersectionRecursive(ray, scene, node.RightNodeIndex))
+                    if(IntersectionRecursive(ray, scene, node.NodeOrPrimitiveIndex + 1))
                         return true;
                 }
 
@@ -202,7 +183,7 @@ namespace Scrbl.JaccoBikker.Bvh
             Console.WriteLine($"// ------------------------ //");
             Console.WriteLine($"");
 
-            Console.WriteLine("Rendering How-to-build-a-bvh-part-01-basics-step-02...");
+            Console.WriteLine("Rendering How-to-build-a-bvh-part-01-basics-step-03...");
             Console.WriteLine("Setup...");
 
             var scene = CreateScene(settings, RandomGenerator);
@@ -251,16 +232,6 @@ namespace Scrbl.JaccoBikker.Bvh
                     ray.T = double.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
-
-                    //for (int i = 0; i < scene.TriangleCount; i++)
-                    //{
-                    //    if (Intersection.Compute(ray, scene.Triangles[i], out var timeResult))
-                    //    {
-                    //        pixel = new Color(1, 1, 1);
-
-                    //        break;
-                    //    }
-                    //}
 
                     if(bvh.Intersection(ray, scene))
                     {

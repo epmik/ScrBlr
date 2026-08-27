@@ -45,6 +45,24 @@
             return true;
         }
 
+        public static bool IntersectAABB(Ray ray, Vector3f min, Vector3f max)
+        {
+            var tx1 = (float)((min.x - ray.O.x) / ray.D.x);
+            var tx2 = (float)((max.x - ray.O.x) / ray.D.x);
+            var tmin = MathF.Min(tx1, tx2);
+            var tmax = MathF.Max(tx1, tx2);
+            var ty1 = (float)((min.y - ray.O.y) / ray.D.y);
+            var ty2 = (float)((max.y - ray.O.y) / ray.D.y);
+            tmin = MathF.Max(tmin, MathF.Min(ty1, ty2));
+            tmax = MathF.Min(tmax, MathF.Max(ty1, ty2));
+            var tz1 = (float)((min.z - ray.O.z) / ray.D.z);
+            var tz2 = (float)((max.z - ray.O.z) / ray.D.z);
+            tmin = MathF.Max(tmin, MathF.Min(tz1, tz2));
+            tmax = MathF.Min(tmax, MathF.Max(tz1, tz2));
+
+            return tmax >= tmin && tmin < ray.t && tmax > 0;
+        }
+
         public static bool IntersectAABB(Ray ray, Vector3d min, Vector3d max)
         {
             var tx1 = (min.x - ray.O.x) / ray.D.x;

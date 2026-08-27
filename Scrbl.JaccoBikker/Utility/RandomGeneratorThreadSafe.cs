@@ -11,14 +11,14 @@ namespace Scrbl.JaccoBikker
 
         private readonly object _syncLock = new object();
 
+        public RandomGeneratorThreadSafe()
+            : this(Guid.NewGuid().GetHashCode())
+        {
+        }
+
         public RandomGeneratorThreadSafe(int seed)
         {
             _random = new Random(seed);
-        }
-
-        public RandomGeneratorThreadSafe()
-        {
-            _random = new Random();
         }
 
 

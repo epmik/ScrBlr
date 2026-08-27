@@ -19,7 +19,7 @@ namespace Scrbl.JaccoBikker.Bvh
             public string ImageSavePath { get; set; }
         }
 
-        protected IRandomGenerator RandomGenerator { get; set; } = new RandomGenerator(4048);
+        protected IRandomGenerator RandomGenerator { get; set; } = new RandomGenerator();
 
         public void Run(RayTraceSettings settings)
         {

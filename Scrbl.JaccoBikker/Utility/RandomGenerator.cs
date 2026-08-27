@@ -10,8 +10,8 @@
         }
 
         public RandomGenerator()
+            : this(Guid.NewGuid().GetHashCode())
         {
-            _random = new Random();
         }
 
         public int Int32()
