@@ -1,5 +1,4 @@
-﻿
-namespace Scrbl.JaccoBikker
+﻿namespace Scrbl.JaccoBikker
 {
     using System;
 

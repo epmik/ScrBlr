@@ -6,7 +6,27 @@ namespace Scrbl.JaccoBikker
     {
         static void Main(string[] args)
         {
-            new HowToBuildABvh_Part01_Basics().Main();
+            const string ImageSavePath = @"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output";
+
+            const int TriangleCount = 512;
+
+            new HowToBuildABvh_Part01_Basics_Step01().Run(
+                new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings 
+                { 
+                    TriangleCount = TriangleCount,
+                    ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step01.png") 
+                });
+
+            new HowToBuildABvh_Part01_Basics_Step02().Run(
+                new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
+                {
+                    TriangleCount = TriangleCount,
+                    ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step02.png")
+                });
+
+            Console.WriteLine($"Press a key to exit...");
+
+            Console.ReadKey();
         }
     }
 }

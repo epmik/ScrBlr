@@ -16,6 +16,10 @@ namespace Scrbl.JaccoBikker
         public double Y { get; init; }
         public double Z { get; init; }
 
+        public double x { get { return X; } init { X = value; } }
+        public double y { get { return Y; } init { Y = value; } }
+        public double z { get { return Z; } init { Z = value; } }
+
         // Constructors
         public Vector3d(double v) => (X, Y, Z) = (v, v, v);
 
@@ -54,7 +58,7 @@ namespace Scrbl.JaccoBikker
             (u.X * v.Y) - (u.Y * v.X)
         );
 
-        public static Vector3d UnitVector(Vector3d v) => v / v.Length();
+        public static Vector3d Normalize(Vector3d v) => v / v.Length();
 
         // Fix: Use standard string formatting or interpolation
         public override string ToString() => $"{X} {Y} {Z}";
@@ -84,48 +88,48 @@ namespace Scrbl.JaccoBikker
             return rOutPerp + rOutParallel;
         }
 
-        public static Vector3d random()
-        {
-            return new Vector3d(Utility.RandomDouble(), Utility.RandomDouble(), Utility.RandomDouble());
-        }
+        //public static Vector3d random()
+        //{
+        //    return new Vector3d(Utility.RandomDouble(), Utility.RandomDouble(), Utility.RandomDouble());
+        //}
 
-        public static Vector3d random(double min, double max)
-        {
-            return new Vector3d(Utility.RandomDouble(min, max), Utility.RandomDouble(min, max), Utility.RandomDouble(min, max));
-        }
+        //public static Vector3d random(double min, double max)
+        //{
+        //    return new Vector3d(Utility.RandomDouble(min, max), Utility.RandomDouble(min, max), Utility.RandomDouble(min, max));
+        //}
 
-        public static Vector3d random_unit_vector()
-        {
-            while (true)
-            {
-                var p = random(-1, 1);
+        //public static Vector3d random_unit_vector()
+        //{
+        //    while (true)
+        //    {
+        //        var p = random(-1, 1);
 
-                var lensq = p.LengthSquared();
+        //        var lensq = p.LengthSquared();
 
-                if (1e-160 < lensq && lensq <= 1)
-                    return p / Math.Sqrt(lensq);
-            }
-        }
+        //        if (1e-160 < lensq && lensq <= 1)
+        //            return p / Math.Sqrt(lensq);
+        //    }
+        //}
 
-        public static Vector3d random_on_hemisphere(Vector3d normal)
-        {
-            var on_unit_sphere = random_unit_vector();
+        //public static Vector3d random_on_hemisphere(Vector3d normal)
+        //{
+        //    var on_unit_sphere = random_unit_vector();
 
-            if (Vector3d.Dot(on_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
-                return on_unit_sphere;
-            else
-                return -on_unit_sphere;
-        }
+        //    if (Vector3d.Dot(on_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        //        return on_unit_sphere;
+        //    else
+        //        return -on_unit_sphere;
+        //}
 
-        public static Vector3d random_in_unit_disk()
-        {
-            while (true)
-            {
-                var p = new Vector3d(Utility.RandomDouble(-1, 1), Utility.RandomDouble(-1, 1), 0);
-                if (p.LengthSquared() < 1)
-                    return p;
-            }
-        }
+        //public static Vector3d random_in_unit_disk()
+        //{
+        //    while (true)
+        //    {
+        //        var p = new Vector3d(Utility.RandomDouble(-1, 1), Utility.RandomDouble(-1, 1), 0);
+        //        if (p.LengthSquared() < 1)
+        //            return p;
+        //    }
+        //}
 
         internal static Vector3d Min(Vector3d a, Vector3d b)
         {

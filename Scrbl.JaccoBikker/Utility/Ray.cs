@@ -1,5 +1,4 @@
-﻿
-namespace Scrbl.JaccoBikker
+﻿namespace Scrbl.JaccoBikker
 {
     using System;
 
@@ -8,6 +7,7 @@ namespace Scrbl.JaccoBikker
         public Vector3d Origin { get { return O; } set { O = value; } }
         public Vector3d Direction { get { return D; } set { D = value; } }
         public double Time { get { return T; } set { T = value; } }
+        public double t { get { return T; } set { T = value; } }
         public Vector3d O;
         public Vector3d D;
         public double T;

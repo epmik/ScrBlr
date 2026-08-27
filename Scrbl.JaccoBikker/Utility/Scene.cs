@@ -1,5 +1,4 @@
-﻿
-namespace Scrbl.JaccoBikker
+﻿namespace Scrbl.JaccoBikker
 {
     using System;
 
@@ -9,5 +8,7 @@ namespace Scrbl.JaccoBikker
         public int TriangleCount { get; set; }
 
         public Triangle[] Triangles { get; set; }
+
+        public uint[] TriangleIndices { get; set; }
     }
 }
