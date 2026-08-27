@@ -99,14 +99,27 @@ namespace Scrblr.Rtx
                 double split = node.Bounds.Min[axis] + size[axis] * 0.5;
 
                 // Partition spheres
-                int i = (int)node.LeftFirst, j = i + (int)node.SphereCount - 1;
+                int i = (int)node.LeftFirst;
+                int j = i + (int)node.SphereCount - 1;
+
                 while (i <= j)
                 {
-                    if (GetCenter(SphereIndices[i], axis) < split) i++;
-                    else { uint t = SphereIndices[i]; SphereIndices[i] = SphereIndices[j]; SphereIndices[j] = t; j--; }
+                    if (GetCenter(SphereIndices[i], axis) < split)
+                    {
+                        i++;
+                    }
+                    else 
+                    { 
+                        uint t = SphereIndices[i]; 
+                        SphereIndices[i] = SphereIndices[j]; 
+                        SphereIndices[j] = t; 
+                        j--; 
+                    }
                 }
                 uint leftCount = (uint)i - node.LeftFirst;
                 if (leftCount == 0 || leftCount == node.SphereCount) return;
+
+                uint rightCount = node.SphereCount - leftCount;
 
                 // Create children
                 uint leftChild = _nodesUsed++, rightChild = _nodesUsed++;
@@ -120,7 +133,8 @@ namespace Scrblr.Rtx
                 Refit(leftChild, leftCount); 
                 Refit(rightChild, node.SphereCount);
 
-                Subdivide(leftChild); Subdivide(rightChild);
+                Subdivide(leftChild); 
+                Subdivide(rightChild);
             }
 
             private void Refit(uint nodeIdx, uint count)
@@ -135,7 +149,7 @@ namespace Scrblr.Rtx
                 }
             }
 
-            private double GetCenter(uint idx, int axis) => axis == 0 ? _spheres[idx].Center.X : (axis == 1 ? _spheres[idx].Center.Y : _spheres[idx].Center.Z);
+            private double GetCenter(uint idx, int axis) => _spheres[idx].Center()[axis];
         }
 
         public override async Task Main(string path)

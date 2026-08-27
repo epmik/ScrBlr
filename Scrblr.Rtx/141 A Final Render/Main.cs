@@ -243,8 +243,8 @@ namespace Scrblr.Rtx
 
             public void Grow(Sphere s)
             {
-                Min = Vector3d.Min(Min, s.Center - new Vector3d(s.Radius));
-                Max = Vector3d.Max(Max, s.Center + new Vector3d(s.Radius));
+                Min = Vector3d.Min(Min, s.Center() - new Vector3d(s.Radius));
+                Max = Vector3d.Max(Max, s.Center() + new Vector3d(s.Radius));
             }
 
             public bool Hit(Ray ray, double min, double max)
@@ -274,8 +274,8 @@ namespace Scrblr.Rtx
             public static Aabb FromSphere(Sphere sphere)
             {
                 return new Aabb(
-                    new Vector3d(sphere.Center.X - sphere.Radius, sphere.Center.Y - sphere.Radius, sphere.Center.Z - sphere.Radius),
-                    new Vector3d(sphere.Center.X + sphere.Radius, sphere.Center.Y + sphere.Radius, sphere.Center.Z + sphere.Radius));
+                    new Vector3d(sphere.Center().X - sphere.Radius, sphere.Center().Y - sphere.Radius, sphere.Center().Z - sphere.Radius),
+                    new Vector3d(sphere.Center().X + sphere.Radius, sphere.Center().Y + sphere.Radius, sphere.Center().Z + sphere.Radius));
             }
 
             // High-performance slab test returning near and far intersection distances
@@ -518,10 +518,15 @@ namespace Scrblr.Rtx
             public abstract bool Hit(Ray r, Scene scene, double min, double max, out HitRecord rec);
 
             protected abstract Aabb ComputeAabb();
+
+            public abstract Vector3d Center();
+
         }
 
         protected class Scene : Hittable
         {
+            public Vector3d Position { get; set; } = new Vector3d(0.0, 0.0, 0.0);
+
             public Sphere[] Objects = new Sphere[0];
             public Camera Camera { get; internal set; }
             public double SceneTime { get; internal set; } = 0.0;
@@ -536,6 +541,11 @@ namespace Scrblr.Rtx
             {
                 Array.Resize(ref Objects, Objects.Length + 1);
                 Objects[Objects.Length - 1] = obj;
+            }
+
+            override public Vector3d Center()
+            {
+                return Position;
             }
 
             public override bool Hit(Ray r, Scene scene, double min, double max, out HitRecord rec)
@@ -574,18 +584,23 @@ namespace Scrblr.Rtx
 
         protected class Sphere : Hittable
         {
-            public Point3 Center;
+            public Point3 Position;
             Vector3d? _velocity;
             public double Radius;
             Material _mat;
 
 
 
-            public Sphere(Point3 center, double radius, Material mat)
+            public Sphere(Point3 position, double radius, Material mat)
             {
-                Center = center;
+                Position = position;
                 Radius = radius;
                 _mat = mat;
+            }
+            
+            public override Vector3d Center()
+            {
+                return Position;
             }
 
             public void Velocity(Vector3d velocity)
@@ -639,7 +654,7 @@ namespace Scrblr.Rtx
             {
                 rec = new HitRecord();
 
-                var center = _velocity != null ? Center + (_velocity.Value * r.Time) : Center;
+                var center = _velocity != null ? Center() + (_velocity.Value * r.Time) : Center();
 
                 if (_velocity != null)
                 {
