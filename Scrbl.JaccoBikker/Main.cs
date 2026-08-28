@@ -6,7 +6,8 @@ namespace Scrbl.JaccoBikker
     {
         static void Main(string[] args)
         {
-            const string ImageSavePath = @"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output";
+            //const string ImageSavePath = @"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output";
+            const string ImageSavePath = @"";
 
             const int TriangleCount = 4048;
             const int ImageWidth = 1024;

@@ -160,7 +160,7 @@ namespace Scrbl.JaccoBikker.Bvh
             /// AVX acceleration.Keep it at 64 if your BVH traversal works on pairs of nodes (like wide BVH trees) or if 
             /// you want to aggressively optimize for CPU cache line boundaries.
             /// </summary>
-            private const nuint MemmoryAlignment = 64;
+            private const nuint MemmoryAlignment = 32;
 
             public unsafe Span<BvhNode> Nodes
             {
@@ -311,7 +311,9 @@ namespace Scrbl.JaccoBikker.Bvh
 
         public void RenderScene(Scene scene, Bvh bvh, RayTraceSettings settings)
         {
-            var buffer = new Vector3d[settings.ImageWidth * settings.ImageHeight];
+            var saveImage = !string.IsNullOrEmpty(settings.ImageSavePath);
+
+            var buffer = saveImage ? new Vector3d[settings.ImageWidth * settings.ImageHeight] : null;
 
             var index = 0;
 
@@ -335,11 +337,12 @@ namespace Scrbl.JaccoBikker.Bvh
                         pixel = new Color(1, 1, 1);
                     }
 
-                    buffer[index++] = pixel;
+                    buffer?[index++] = pixel;
                 }
             }
 
-            Png.Save(settings.ImageSavePath, settings.ImageWidth, settings.ImageHeight, buffer);
+            if(buffer != null)
+                Png.Save(settings.ImageSavePath, settings.ImageWidth, settings.ImageHeight, buffer);
         }
     }
 }
