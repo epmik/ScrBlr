@@ -4,7 +4,9 @@ global using Point3f = Scrbl.JaccoBikker.Vector3f;
 namespace Scrbl.JaccoBikker
 {
     using System;
+    using System.Runtime.InteropServices;
 
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public readonly struct Vector3f : IEquatable<Vector3f>
     {
         // Fix: Static properties prevent modification and use default/cached values
@@ -12,13 +14,13 @@ namespace Scrbl.JaccoBikker
         public static Vector3f One => new(1.0f, 1.0f, 1.0);
 
         // Fix: Init-only properties make the struct safely immutable
-        public float X { get; init; }
-        public float Y { get; init; }
-        public float Z { get; init; }
+        public readonly float X;
+        public readonly float Y;
+        public readonly float Z;
 
-        public float x { get { return X; } init { X = value; } }
-        public float y { get { return Y; } init { Y = value; } }
-        public float z { get { return Z; } init { Z = value; } }
+        public float x { get { return X; } }
+        public float y { get { return Y; } }
+        public float z { get { return Z; } }
 
         // Constructors
         public Vector3f(double v) => (X, Y, Z) = ((float)v, (float)v, (float)v);

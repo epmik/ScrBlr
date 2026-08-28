@@ -8,7 +8,9 @@ namespace Scrbl.JaccoBikker
         {
             const string ImageSavePath = @"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output";
 
-            const int TriangleCount = 512;
+            const int TriangleCount = 4048;
+            const int ImageWidth = 1024;
+            const int ImageHeight = 1024;
 
             //new HowToBuildABvh_Part01_Basics_Step01().Run(
             //    new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings 
@@ -21,6 +23,8 @@ namespace Scrbl.JaccoBikker
                 new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
                 {
                     TriangleCount = TriangleCount,
+                    ImageWidth = ImageWidth,
+                    ImageHeight = ImageHeight,
                     ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step02.png")
                 });
 
@@ -28,6 +32,8 @@ namespace Scrbl.JaccoBikker
                 new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
                 {
                     TriangleCount = TriangleCount,
+                    ImageWidth = ImageWidth,
+                    ImageHeight = ImageHeight,
                     ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step03_Struct_BvhNode.png")
                 });
 
@@ -35,7 +41,18 @@ namespace Scrbl.JaccoBikker
                 new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
                 {
                     TriangleCount = TriangleCount,
-                    ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step04_Struct_BvhNode_Vector3f.png")
+                    ImageWidth = ImageWidth,
+                    ImageHeight = ImageHeight,
+                    ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step04_Vector3f.png")
+                });
+
+            new HowToBuildABvh_Part01_Basics_Step05_AlignedAlloc().Run(
+                new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
+                {
+                    TriangleCount = TriangleCount,
+                    ImageWidth = ImageWidth,
+                    ImageHeight = ImageHeight,
+                    ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step05_AlignedAlloc.png")
                 });
 
             Console.WriteLine($"Press a key to exit...");

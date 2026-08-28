@@ -183,7 +183,7 @@ namespace Scrbl.JaccoBikker.Bvh
             Console.WriteLine($"// ------------------------ //");
             Console.WriteLine($"");
 
-            Console.WriteLine("Rendering How-to-build-a-bvh-part-01-basics-step-04...");
+            Console.WriteLine("Rendering HowToBuildABvh_Part01_Basics_Step04_Vector3f...");
             Console.WriteLine("Setup...");
 
             var scene = CreateScene(settings, RandomGenerator);
