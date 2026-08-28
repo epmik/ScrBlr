@@ -25,6 +25,8 @@ namespace Scrbl.JaccoBikker
         // Constructors
         public Vector3f(double v) => (X, Y, Z) = ((float)v, (float)v, (float)v);
 
+        public Vector3f(Vector3f v) => (X, Y, Z) = (v.X, v.Y, v.Z);
+
         public Vector3f(Vector3d v) => (X, Y, Z) = ((float)v.X, (float)v.Y, (float)v.Z);
 
         public Vector3f(double x, double y, double z) => (X, Y, Z) = ((float)x, (float)y, (float)z);

@@ -12,16 +12,14 @@ namespace Scrbl.JaccoBikker.Bvh
 {
     internal class HowToBuildABvh_Part01_Basics_Step03_Struct_BvhNode : HowToBuildABvh_Part01_Basics_Step01
     {
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct BvhNode
         {
-            public Vector3d Min, Max;
+            public Vector3f Min, Max;
             public uint NodeOrPrimitiveIndex;
+            public uint PrimitiveCount;
             public bool IsLeaf => PrimitiveCount > 0;
             public bool IsNode => PrimitiveCount == 0;
-
-            //public uint RightNodeIndex => NodeOrPrimitiveIndex + 1;
-
-            public uint PrimitiveCount;
         };
 
         public class BvhGenerator
@@ -54,21 +52,21 @@ namespace Scrbl.JaccoBikker.Bvh
 
             void UpdateNodeBounds(ref BvhNode node)
             {
-                node.Min = new Vector3d(double.PositiveInfinity);
-                node.Max = new Vector3d(double.NegativeInfinity);
+                node.Min = new Vector3f(float.PositiveInfinity);
+                node.Max = new Vector3f(float.NegativeInfinity);
 
                 for (uint first = node.NodeOrPrimitiveIndex, i = 0; i < node.PrimitiveCount; i++)
                 {
                     uint leafTriIdx = _scene.TriangleIndices[first + i];
                     var leafTri = _scene.Triangles[leafTriIdx];
 
-                    node.Min = Vector3d.Min(node.Min, leafTri.vertex0);
-                    node.Min = Vector3d.Min(node.Min, leafTri.vertex1);
-                    node.Min = Vector3d.Min(node.Min, leafTri.vertex2);
+                    node.Min = Vector3f.Min(node.Min, leafTri.vertex0);
+                    node.Min = Vector3f.Min(node.Min, leafTri.vertex1);
+                    node.Min = Vector3f.Min(node.Min, leafTri.vertex2);
 
-                    node.Max = Vector3d.Max(node.Max, leafTri.vertex0);
-                    node.Max = Vector3d.Max(node.Max, leafTri.vertex1);
-                    node.Max = Vector3d.Max(node.Max, leafTri.vertex2);
+                    node.Max = Vector3f.Max(node.Max, leafTri.vertex0);
+                    node.Max = Vector3f.Max(node.Max, leafTri.vertex1);
+                    node.Max = Vector3f.Max(node.Max, leafTri.vertex2);
                 }
             }
 
@@ -130,9 +128,9 @@ namespace Scrbl.JaccoBikker.Bvh
                 SubdivideRecursive(ref _bhv.Nodes[rightChildIdx]);
             }
 
-            private static Vector3d Center(Triangle triangle)
+            private static Vector3f Center(Triangle triangle)
             {
-                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333;
+                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333f;
             }
         }
 
@@ -142,32 +140,40 @@ namespace Scrbl.JaccoBikker.Bvh
 
             public bool Intersection(Ray ray, Scene scene)
             {
-                return IntersectionRecursive(ray, scene, 0);
+                return IntersectionRecursive(ray, scene, 0, out float nearest);
             }
 
-            private bool IntersectionRecursive(Ray ray, Scene scene, uint nodeIdx)
+            public bool Intersection(Ray ray, Scene scene, out float nearest)
             {
+                return IntersectionRecursive(ray, scene, 0, out nearest);
+            }
+
+            private bool IntersectionRecursive(Ray ray, Scene scene, uint nodeIdx, out float nearest)
+            {
+                nearest = float.PositiveInfinity;
+
                 var node = Nodes[nodeIdx];
 
-                if (!Scrbl.JaccoBikker.Intersection.IntersectAABB(ray, node.Min, node.Max)) 
-                        return false;
+                if (!Scrbl.JaccoBikker.Intersection.IntersectAABB(ray, node.Min, node.Max))
+                    return false;
 
                 if (node.IsLeaf)
                 {
                     for (uint i = 0; i < node.PrimitiveCount; i++)
                     {
-                        if(Scrbl.JaccoBikker.Intersection.Compute(ray, scene.Triangles[scene.TriangleIndices[node.NodeOrPrimitiveIndex + i]], out var timeResult))
+                        if (Scrbl.JaccoBikker.Intersection.Compute(ray, scene.Triangles[scene.TriangleIndices[node.NodeOrPrimitiveIndex + i]], out var timeResult))
                         {
+                            nearest = Math.Min(nearest, (float)timeResult.Time);
                             return true;
                         }
                     }
                 }
                 else
                 {
-                    if(IntersectionRecursive(ray, scene, node.NodeOrPrimitiveIndex))
+                    if (IntersectionRecursive(ray, scene, node.NodeOrPrimitiveIndex, out nearest))
                         return true;
 
-                    if(IntersectionRecursive(ray, scene, node.NodeOrPrimitiveIndex + 1))
+                    if (IntersectionRecursive(ray, scene, node.NodeOrPrimitiveIndex + 1, out nearest))
                         return true;
                 }
 
@@ -220,23 +226,29 @@ namespace Scrbl.JaccoBikker.Bvh
 
             var index = 0;
 
-            Vector3d p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
+            Vector3f p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
             var ray = new Ray();
+
+            var nearest = float.PositiveInfinity;
+            var furthest  = float.NegativeInfinity;
 
             for (int y = 0; y < settings.ImageHeight; y++)
             {
                 for (int x = 0; x < settings.ImageWidth; x++)
                 {
-                    Vector3d pixelPos = p0 + (p1 - p0) * ((double)x / (double)settings.ImageWidth) + (p2 - p0) * ((double)y / settings.ImageHeight);
+                    Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
                     ray.O = settings.CameraPosition;
-                    ray.D = Vector3d.Normalize(pixelPos - ray.O);
-                    ray.T = double.PositiveInfinity;
+                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
+                    ray.T = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 
-                    if(bvh.Intersection(ray, scene))
+                    if(bvh.Intersection(ray, scene, out float t))
                     {
+                        nearest = Math.Min(nearest, t);
+                        furthest = Math.Max(furthest, t);
+
                         pixel = new Color(1, 1, 1);
                     }
 
@@ -244,7 +256,10 @@ namespace Scrbl.JaccoBikker.Bvh
                 }
             }
 
-            if(buffer != null)
+            Console.WriteLine($"Nearest intersection: {nearest}");
+            Console.WriteLine($"Furthest intersection: {furthest}");
+
+            if (buffer != null)
                 Png.Save(settings.ImageSavePath, settings.ImageWidth, settings.ImageHeight, buffer);
         }
     }

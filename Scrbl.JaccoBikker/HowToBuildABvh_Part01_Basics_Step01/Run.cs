@@ -12,10 +12,10 @@ namespace Scrbl.JaccoBikker.Bvh
     {
         public class RayTraceSettings
         {
-            public int TriangleCount { get; init; } = 64;
+            public uint TriangleCount { get; init; } = 64;
             public int ImageWidth { get; init; } = 640;
             public int ImageHeight { get; init; } = 640;
-            public Vector3d CameraPosition { get; init; } = new Vector3d(0, 0, -18);
+            public Vector3f CameraPosition { get; init; } = new Vector3f(0, 0, -18);
             public string ImageSavePath { get; set; }
         }
 
@@ -60,18 +60,18 @@ namespace Scrbl.JaccoBikker.Bvh
 
             var index = 0;
 
-            Vector3d p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
+            Vector3f p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
             var ray = new Ray();
 
             for (int y = 0; y < settings.ImageHeight; y++)
             {
                 for (int x = 0; x < settings.ImageWidth; x++)
                 {
-                    Vector3d pixelPos = p0 + (p1 - p0) * ((double)x / (double)settings.ImageWidth) + (p2 - p0) * ((double)y / settings.ImageHeight);
+                    Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
                     ray.O = settings.CameraPosition;
-                    ray.D = Vector3d.Normalize(pixelPos - ray.O);
-                    ray.T = double.PositiveInfinity;
+                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
+                    ray.T = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 
@@ -109,13 +109,13 @@ namespace Scrbl.JaccoBikker.Bvh
 
             for (int i = 0; i < scene.TriangleCount; i++)
             {
-                Vector3d r0 = randomGenerator.Vector3d();
-                Vector3d r1 = randomGenerator.Vector3d();
-                Vector3d r2 = randomGenerator.Vector3d();
+                Vector3f r0 = randomGenerator.Vector3f();
+                Vector3f r1 = randomGenerator.Vector3f();
+                Vector3f r2 = randomGenerator.Vector3f();
 
                 scene.Triangles[i] = new Triangle();
 
-                scene.Triangles[i].vertex0 = r0 * 9 - new Vector3d(5);
+                scene.Triangles[i].vertex0 = r0 * 9f - new Vector3f(5f);
                 scene.Triangles[i].vertex1 = scene.Triangles[i].vertex0 + r1;
                 scene.Triangles[i].vertex2 = scene.Triangles[i].vertex0 + r2;
             }

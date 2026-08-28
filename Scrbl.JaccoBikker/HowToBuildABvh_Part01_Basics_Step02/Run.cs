@@ -15,7 +15,7 @@ namespace Scrbl.JaccoBikker.Bvh
         [StructLayout(LayoutKind.Sequential)]
         public class BvhNode
         {
-            public Vector3d Min, Max;
+            public Vector3f Min, Max;
             public uint LeftNodeIndex;
             public bool IsLeaf => PrimitiveCount > 0;
 
@@ -65,21 +65,21 @@ namespace Scrbl.JaccoBikker.Bvh
 
             void UpdateNodeBounds(BvhNode node)
             {
-                node.Min = new Vector3d(double.PositiveInfinity);
-                node.Max = new Vector3d(double.NegativeInfinity);
+                node.Min = new Vector3f(float.PositiveInfinity);
+                node.Max = new Vector3f(float.NegativeInfinity);
 
                 for (uint first = node.PrimitiveIndex, i = 0; i < node.PrimitiveCount; i++)
                 {
                     uint leafTriIdx = _scene.TriangleIndices[first + i];
                     var leafTri = _scene.Triangles[leafTriIdx];
 
-                    node.Min = Vector3d.Min(node.Min, leafTri.vertex0);
-                    node.Min = Vector3d.Min(node.Min, leafTri.vertex1);
-                    node.Min = Vector3d.Min(node.Min, leafTri.vertex2);
+                    node.Min = Vector3f.Min(node.Min, leafTri.vertex0);
+                    node.Min = Vector3f.Min(node.Min, leafTri.vertex1);
+                    node.Min = Vector3f.Min(node.Min, leafTri.vertex2);
 
-                    node.Max = Vector3d.Max(node.Max, leafTri.vertex0);
-                    node.Max = Vector3d.Max(node.Max, leafTri.vertex1);
-                    node.Max = Vector3d.Max(node.Max, leafTri.vertex2);
+                    node.Max = Vector3f.Max(node.Max, leafTri.vertex0);
+                    node.Max = Vector3f.Max(node.Max, leafTri.vertex1);
+                    node.Max = Vector3f.Max(node.Max, leafTri.vertex2);
                 }
             }
 
@@ -149,9 +149,9 @@ namespace Scrbl.JaccoBikker.Bvh
                 SubdivideRecursive(_bhv.Nodes[rightChildIdx]);
             }
 
-            private static Vector3d Center(Triangle triangle)
+            private static Vector3f Center(Triangle triangle)
             {
-                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333;
+                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333f;
             }
         }
 
@@ -239,18 +239,18 @@ namespace Scrbl.JaccoBikker.Bvh
 
             var index = 0;
 
-            Vector3d p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
+            Vector3f p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
             var ray = new Ray();
 
             for (int y = 0; y < settings.ImageHeight; y++)
             {
                 for (int x = 0; x < settings.ImageWidth; x++)
                 {
-                    Vector3d pixelPos = p0 + (p1 - p0) * ((double)x / (double)settings.ImageWidth) + (p2 - p0) * ((double)y / settings.ImageHeight);
+                    Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
                     ray.O = settings.CameraPosition;
-                    ray.D = Vector3d.Normalize(pixelPos - ray.O);
-                    ray.T = double.PositiveInfinity;
+                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
+                    ray.T = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 

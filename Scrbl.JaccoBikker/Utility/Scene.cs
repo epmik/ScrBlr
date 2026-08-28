@@ -5,7 +5,7 @@
     public class Scene
     {
 
-        public int TriangleCount { get; set; }
+        public uint TriangleCount { get; set; }
 
         public Triangle[] Triangles { get; set; }
 

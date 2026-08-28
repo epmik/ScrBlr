@@ -12,6 +12,7 @@ namespace Scrbl.JaccoBikker.Bvh
 {
     internal class HowToBuildABvh_Part01_Basics_Step04_Struct_BvhNode_Vector3f : HowToBuildABvh_Part01_Basics_Step01
     {
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct BvhNode
         {
             public Vector3f Min, Max;
@@ -130,9 +131,9 @@ namespace Scrbl.JaccoBikker.Bvh
                 SubdivideRecursive(ref _bhv.Nodes[rightChildIdx]);
             }
 
-            private static Vector3d Center(Triangle triangle)
+            private static Vector3f Center(Triangle triangle)
             {
-                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333;
+                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333f;
             }
         }
 
@@ -220,18 +221,18 @@ namespace Scrbl.JaccoBikker.Bvh
 
             var index = 0;
 
-            Vector3d p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
+            Vector3f p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
             var ray = new Ray();
 
             for (int y = 0; y < settings.ImageHeight; y++)
             {
                 for (int x = 0; x < settings.ImageWidth; x++)
                 {
-                    Vector3d pixelPos = p0 + (p1 - p0) * ((double)x / (double)settings.ImageWidth) + (p2 - p0) * ((double)y / settings.ImageHeight);
+                    Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
                     ray.O = settings.CameraPosition;
-                    ray.D = Vector3d.Normalize(pixelPos - ray.O);
-                    ray.T = double.PositiveInfinity;
+                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
+                    ray.T = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 

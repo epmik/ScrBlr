@@ -2,7 +2,7 @@
 {
     public class RandomGenerator : IRandomGenerator
     {
-        private Random _random;
+        protected readonly Random _random;
 
         public RandomGenerator(int seed)
         {
@@ -40,9 +40,36 @@
             return Double(0.0, max);
         }
 
-        public double Double(double min, double max)
+        public virtual double Double(double min, double max)
         {
             return min + (max - min) * _random.NextDouble();
+        }
+
+
+        public float Single()
+        {
+            return Single(0.0f, 1.0f);
+        }
+
+        public float Single(float max)
+        {
+            return Single(0.0f, max);
+        }
+
+
+        public virtual float Single(float min, float max)
+        {
+            return min + (max - min) * (float)_random.NextDouble();
+        }
+
+        public float Single(double max)
+        {
+            return Single(0.0, max);
+        }
+
+        public float Single(double min, double max)
+        {
+            return (float)Double(min, max);
         }
 
         public Color Color()
@@ -55,9 +82,24 @@
             return Vector3d(0.0, 1.0);
         }
 
-        public Vector3d Vector3d(double min, double max)
+        public Vector3f Vector3f()
+        {
+            return Vector3f(0.0f, 1.0f);
+        }
+
+        public virtual Vector3d Vector3d(double min, double max)
         {
             return new Vector3d(Double(min, max), Double(min, max), Double(min, max));
+        }
+
+        public virtual Vector3f Vector3f(float min, float max)
+        {
+            return new Vector3f(Single(min, max), Single(min, max), Single(min, max));
+        }
+
+        public virtual Vector3f Vector3f(double min, double max)
+        {
+            return new Vector3f(Single(min, max), Single(min, max), Single(min, max));
         }
 
         public Vector3d UnitVector3d()

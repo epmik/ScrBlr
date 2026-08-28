@@ -1,12 +1,6 @@
-﻿using Scrbl.JaccoBikker;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.NetworkInformation;
+﻿using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Xml.Linq;
-using static Scrbl.JaccoBikker.Bvh.HowToBuildABvh_Part01_Basics_Step02;
 
 namespace Scrbl.JaccoBikker.Bvh
 {
@@ -28,7 +22,6 @@ namespace Scrbl.JaccoBikker.Bvh
 
             private Scene _scene;
 
-            private Bvh _bhv;
             private uint _usedNodeCount = 1;
 
             public Bvh Build(Scene scene)
@@ -37,19 +30,24 @@ namespace Scrbl.JaccoBikker.Bvh
 
                 var count = (uint)_scene.TriangleCount;
 
-                _bhv = new Bvh(count * 2 - 1);
+                var bvh = new Bvh(count * 2 - 1);
 
-                _bhv.Nodes[0].PrimitiveCount = count;
+                ref var node = ref bvh.Nodes[0];
 
-                UpdateNodeBounds(ref _bhv.Nodes[0]);
+                node.NodeOrPrimitiveIndex = 0;
+                node.PrimitiveCount = count;
+
+                UpdateNodeBounds(bvh, 0);
                 
-                SubdivideRecursive(ref _bhv.Nodes[0]);
+                SubdivideRecursive(bvh, 0);
 
-                return _bhv;
+                return bvh;
             }
 
-            void UpdateNodeBounds(ref BvhNode node)
+            void UpdateNodeBounds(Bvh bvh, int nodeIndex)
             {
+                ref var node = ref bvh.Nodes[nodeIndex];
+
                 node.Min = new Vector3f(float.PositiveInfinity);
                 node.Max = new Vector3f(float.NegativeInfinity);
 
@@ -68,8 +66,10 @@ namespace Scrbl.JaccoBikker.Bvh
                 }
             }
 
-            void SubdivideRecursive(ref BvhNode node)
+            void SubdivideRecursive(Bvh bvh, int nodeIndex)
             {
+                ref var node = ref bvh.Nodes[nodeIndex];
+
                 // terminate recursion
                 if (node.PrimitiveCount <= 2) 
                     return;
@@ -109,26 +109,25 @@ namespace Scrbl.JaccoBikker.Bvh
                 var leftChildIdx = (int)(_usedNodeCount++);
                 var rightChildIdx = (int)(_usedNodeCount++);
 
-                _bhv.Nodes[leftChildIdx].NodeOrPrimitiveIndex = node.NodeOrPrimitiveIndex;
-                _bhv.Nodes[leftChildIdx].PrimitiveCount = leftCount;
+                bvh.Nodes[leftChildIdx].NodeOrPrimitiveIndex = node.NodeOrPrimitiveIndex;
+                bvh.Nodes[leftChildIdx].PrimitiveCount = leftCount;
 
-                _bhv.Nodes[rightChildIdx].NodeOrPrimitiveIndex = (uint)i;
-                _bhv.Nodes[rightChildIdx].PrimitiveCount = node.PrimitiveCount - leftCount;
+                bvh.Nodes[rightChildIdx].NodeOrPrimitiveIndex = (uint)i;
+                bvh.Nodes[rightChildIdx].PrimitiveCount = node.PrimitiveCount - leftCount;
 
                 node.NodeOrPrimitiveIndex = (uint)leftChildIdx;
                 node.PrimitiveCount = 0;
 
-                UpdateNodeBounds(ref _bhv.Nodes[leftChildIdx]);
-                UpdateNodeBounds(ref _bhv.Nodes[rightChildIdx]);
+                UpdateNodeBounds(bvh, leftChildIdx);
+                UpdateNodeBounds(bvh, rightChildIdx);
 
-                // recurse
-                SubdivideRecursive(ref _bhv.Nodes[leftChildIdx]);
-                SubdivideRecursive(ref _bhv.Nodes[rightChildIdx]);
+                SubdivideRecursive(bvh, leftChildIdx);
+                SubdivideRecursive(bvh, rightChildIdx);
             }
 
-            private static Vector3d Center(Triangle triangle)
+            private static Vector3f Center(Triangle triangle)
             {
-                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333;
+                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333f;
             }
         }
 
@@ -317,18 +316,18 @@ namespace Scrbl.JaccoBikker.Bvh
 
             var index = 0;
 
-            Vector3d p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
+            Vector3f p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
             var ray = new Ray();
 
             for (int y = 0; y < settings.ImageHeight; y++)
             {
                 for (int x = 0; x < settings.ImageWidth; x++)
                 {
-                    Vector3d pixelPos = p0 + (p1 - p0) * ((double)x / (double)settings.ImageWidth) + (p2 - p0) * ((double)y / settings.ImageHeight);
+                    Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
                     ray.O = settings.CameraPosition;
-                    ray.D = Vector3d.Normalize(pixelPos - ray.O);
-                    ray.T = double.PositiveInfinity;
+                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
+                    ray.T = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 
