@@ -54,7 +54,7 @@ namespace Scrbl.JaccoBikker.Bvh
             Console.WriteLine($"// ------------------------ //");
         }
 
-        public void RenderScene(Scene scene,  RayTraceSettings settings)
+        public void RenderScene(Scene scene, RayTraceSettings settings)
         {
             var buffer = new Vector3d[settings.ImageWidth * settings.ImageHeight];
 
@@ -63,21 +63,23 @@ namespace Scrbl.JaccoBikker.Bvh
             Vector3f p0 = new(-1, 1, -15), p1 = new(1, 1, -15), p2 = new(-1, -1, -15);
             var ray = new Ray();
 
+            var timeResult = new Intersection.TimeResult();
+
             for (int y = 0; y < settings.ImageHeight; y++)
             {
                 for (int x = 0; x < settings.ImageWidth; x++)
                 {
                     Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
-                    ray.O = settings.CameraPosition;
-                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
-                    ray.T = float.PositiveInfinity;
+                    ray.Origin = settings.CameraPosition;
+                    ray.Direction = Vector3f.Normalize(pixelPos - ray.Origin);
+                    ray.Time = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 
                     for (int i = 0; i < scene.TriangleCount; i++)
                     {
-                        if(Intersection.Compute(ray, scene.Triangles[i], out var timeResult))
+                        if(Intersection.Compute(ray, scene.Triangles[i], ref timeResult))
                         {
                             pixel = new Color(1, 1, 1);
 
@@ -113,11 +115,9 @@ namespace Scrbl.JaccoBikker.Bvh
                 Vector3f r1 = randomGenerator.Vector3f();
                 Vector3f r2 = randomGenerator.Vector3f();
 
-                scene.Triangles[i] = new Triangle();
-
-                scene.Triangles[i].vertex0 = r0 * 9f - new Vector3f(5f);
-                scene.Triangles[i].vertex1 = scene.Triangles[i].vertex0 + r1;
-                scene.Triangles[i].vertex2 = scene.Triangles[i].vertex0 + r2;
+                scene.Triangles[i].A = r0 * 9f - new Vector3f(5f);
+                scene.Triangles[i].B = scene.Triangles[i].A + r1;
+                scene.Triangles[i].C = scene.Triangles[i].A + r2;
             }
 
             return scene;

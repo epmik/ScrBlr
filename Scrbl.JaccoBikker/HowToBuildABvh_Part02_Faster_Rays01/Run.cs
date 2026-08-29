@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Timers;
 using System.Xml.Linq;
 using static Scrbl.JaccoBikker.Bvh.HowToBuildABvh_Part01_Basics_Step02;
 
@@ -74,6 +75,7 @@ namespace Scrbl.JaccoBikker.Bvh
 
             var nearest = float.PositiveInfinity;
             var furthest = float.NegativeInfinity;
+            var time = float.PositiveInfinity;
 
             for (int y = 0; y < settings.ImageHeight; y++)
             {
@@ -81,19 +83,20 @@ namespace Scrbl.JaccoBikker.Bvh
                 {
                     Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
-                    ray.O = settings.CameraPosition;
-                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
-                    ray.T = float.PositiveInfinity;
+                    ray.Origin = settings.CameraPosition;
+                    ray.Direction = Vector3f.Normalize(pixelPos - ray.Origin);
+                    ray.Time = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 
+                    time = float.PositiveInfinity;
 
-                    if (bvh.Intersection(ray, scene, out float t))
+                    if (bvh.Intersection(ray, scene, ref time))
                     {
-                        nearest = Math.Min(nearest, t);
-                        furthest = Math.Max(furthest, t);
+                        nearest = Math.Min(nearest, time);
+                        furthest = Math.Max(furthest, time);
 
-                        var c = Utility.Remap(t, 1.2f, 3.4f, 1f, 0f, true);
+                        var c = Utility.Remap(time, 1.2f, 3.4f, 1f, 0f, true);
 
                         pixel = new Color(c, c, c);
                     }
@@ -129,26 +132,17 @@ namespace Scrbl.JaccoBikker.Bvh
                 {
                     line = reader.ReadLine();
 
-                    // Split by spaces, removing any extra empty entries from multiple spaces or trailing \n
                     tokens = line.Split(SplitOptions, StringSplitOptions.RemoveEmptyEntries);
 
-                    // Use InvariantCulture to ensure dots ('.') are correctly parsed as decimals regardless of system language
-                    float a = float.Parse(tokens[0], CultureInfo.InvariantCulture);
-                    float b = float.Parse(tokens[1], CultureInfo.InvariantCulture);
-                    float c = float.Parse(tokens[2], CultureInfo.InvariantCulture);
-                    float d = float.Parse(tokens[3], CultureInfo.InvariantCulture);
-                    float e = float.Parse(tokens[4], CultureInfo.InvariantCulture);
-                    float f = float.Parse(tokens[5], CultureInfo.InvariantCulture);
-                    float g = float.Parse(tokens[6], CultureInfo.InvariantCulture);
-                    float h = float.Parse(tokens[7], CultureInfo.InvariantCulture);
-                    float i = float.Parse(tokens[8], CultureInfo.InvariantCulture);
-
-                    scene.Triangles[t] = new Triangle
-                    {
-                        vertex0 = new Vector3f(a, b, c),
-                        vertex1 = new Vector3f(d, e, f),
-                        vertex2 = new Vector3f(g, h, i)
-                    };
+                    scene.Triangles[t].A.X = float.Parse(tokens[0], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].A.Y = float.Parse(tokens[1], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].A.Z = float.Parse(tokens[2], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].B.X = float.Parse(tokens[3], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].B.Y = float.Parse(tokens[4], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].B.Z = float.Parse(tokens[5], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].C.X = float.Parse(tokens[6], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].C.Y = float.Parse(tokens[7], CultureInfo.InvariantCulture);
+                    scene.Triangles[t].C.Z = float.Parse(tokens[8], CultureInfo.InvariantCulture);
 
                     scene.TriangleIndices[t] = t;
                 }

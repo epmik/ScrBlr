@@ -7,31 +7,29 @@ namespace Scrbl.JaccoBikker
     using System.Runtime.InteropServices;
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Vector3f
+    public struct Vector3f /* : IEquatable<Vector3f> */
     {
-        // Fix: Static properties prevent modification and use default/cached values
-        public static Vector3f Zero => default;
-        public static Vector3f One => new(1.0f, 1.0f, 1.0);
+        //public static Vector3f Zero => default;
+        //public static Vector3f One => new(1.0f, 1.0f, 1.0);
 
         public float X;
         public float Y;
         public float Z;
 
         // Constructors
-        public Vector3f(double v) => (X, Y, Z) = ((float)v, (float)v, (float)v);
+        public Vector3f(in double v) => (X, Y, Z) = ((float)v, (float)v, (float)v);
 
         public Vector3f(in Vector3f v) => (X, Y, Z) = (v.X, v.Y, v.Z);
 
-        public Vector3f(in Vector3d v) => (X, Y, Z) = ((float)v.X, (float)v.Y, (float)v.Z);
+        //public Vector3f(in Vector3d v) => (X, Y, Z) = ((float)v.X, (float)v.Y, (float)v.Z);
 
-        public Vector3f(double x, double y, double z) => (X, Y, Z) = ((float)x, (float)y, (float)z);
+        public Vector3f(in double x, in double y, in double z) => (X, Y, Z) = ((float)x, (float)y, (float)z);
 
-        public Vector3f(float v) => (X, Y, Z) = (v, v, v);
+        public Vector3f(in float v) => (X, Y, Z) = (v, v, v);
 
-        public Vector3f(float x, float y, float z) => (X, Y, Z) = (x, y, z);
+        public Vector3f(in float x, in float y, in float z) => (X, Y, Z) = (x, y, z);
 
-        // Indexer (Read-only now)
-        public float this[int i] => i switch
+        public float this[in int i] => i switch
         {
             0 => X,
             1 => Y,
@@ -39,10 +37,17 @@ namespace Scrbl.JaccoBikker
             _ => throw new ArgumentOutOfRangeException(nameof(i), "Vector index out of bounds!")
         };
 
-        // Unary Operators
-        public static Vector3f operator -(in Vector3f v) => new(-v.X, -v.Y, -v.Z);
+        public static implicit operator Vector3f(float value)
+        {
+            return new Vector3f(value);
+        }
 
-        // Binary Operators
+        public static implicit operator Vector3f(double value)
+        {
+            return new Vector3f(value);
+        }
+
+        public static Vector3f operator -(in Vector3f v) => new(-v.X, -v.Y, -v.Z);
         public static Vector3f operator +(in Vector3f u, in Vector3f v) => new(u.X + v.X, u.Y + v.Y, u.Z + v.Z);
         public static Vector3f operator -(in Vector3f u, in Vector3f v) => new(u.X - v.X, u.Y - v.Y, u.Z - v.Z);
         public static Vector3f operator *(in Vector3f u, in Vector3f v) => new(u.X * v.X, u.Y * v.Y, u.Z * v.Z);
@@ -68,13 +73,12 @@ namespace Scrbl.JaccoBikker
         // Fix: Use standard string formatting or interpolation
         public override string ToString() => $"{X} {Y} {Z}";
 
-        // Fix: Added high-performance Equality overrides
-        public bool Equals(Vector3f other) => X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z);
-        public override bool Equals(object? obj) => obj is Vector3f other && Equals(other);
-        public override int GetHashCode() => HashCode.Combine(X, Y, Z);
+        //public bool Equals(in Vector3f other) => X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z);
+        //public override bool Equals(object? obj) => obj is Vector3f other && Equals(other);
+        //public override int GetHashCode() => HashCode.Combine(X, Y, Z);
 
-        public static bool operator ==(in Vector3f left, in Vector3f right) => left.Equals(right);
-        public static bool operator !=(in Vector3f left, in Vector3f right) => !left.Equals(right);
+        public static bool operator == (in Vector3f left, in Vector3f right) => left.Equals(right);
+        public static bool operator != (in Vector3f left, in Vector3f right) => !left.Equals(right);
 
         // Math Functions
         public static bool NearZero(in Vector3f v)

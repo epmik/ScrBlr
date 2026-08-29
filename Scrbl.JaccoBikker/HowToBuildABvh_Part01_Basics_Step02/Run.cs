@@ -73,13 +73,13 @@ namespace Scrbl.JaccoBikker.Bvh
                     uint leafTriIdx = _scene.TriangleIndices[first + i];
                     var leafTri = _scene.Triangles[leafTriIdx];
 
-                    node.Min = Vector3f.Min(node.Min, leafTri.vertex0);
-                    node.Min = Vector3f.Min(node.Min, leafTri.vertex1);
-                    node.Min = Vector3f.Min(node.Min, leafTri.vertex2);
+                    node.Min = Vector3f.Min(node.Min, leafTri.A);
+                    node.Min = Vector3f.Min(node.Min, leafTri.B);
+                    node.Min = Vector3f.Min(node.Min, leafTri.C);
 
-                    node.Max = Vector3f.Max(node.Max, leafTri.vertex0);
-                    node.Max = Vector3f.Max(node.Max, leafTri.vertex1);
-                    node.Max = Vector3f.Max(node.Max, leafTri.vertex2);
+                    node.Max = Vector3f.Max(node.Max, leafTri.A);
+                    node.Max = Vector3f.Max(node.Max, leafTri.B);
+                    node.Max = Vector3f.Max(node.Max, leafTri.C);
                 }
             }
 
@@ -149,9 +149,9 @@ namespace Scrbl.JaccoBikker.Bvh
                 SubdivideRecursive(_bhv.Nodes[rightChildIdx]);
             }
 
-            private static Vector3f Center(Triangle triangle)
+            private static Vector3f Center(in Triangle triangle)
             {
-                return triangle.vertex0 + triangle.vertex1 + triangle.vertex2 * 0.33333333f;
+                return triangle.A + triangle.B + triangle.C * 0.33333333f;
             }
         }
 
@@ -171,11 +171,13 @@ namespace Scrbl.JaccoBikker.Bvh
                 if (!Scrbl.JaccoBikker.Intersection.IntersectAABB(ray, node.Min, node.Max)) 
                         return false;
 
+                var timeResult = new Intersection.TimeResult();
+
                 if (node.IsLeaf)
                 {
                     for (uint i = 0; i < node.PrimitiveCount; i++)
                     {
-                        if(Scrbl.JaccoBikker.Intersection.Compute(ray, scene.Triangles[scene.TriangleIndices[node.PrimitiveIndex + i]], out var timeResult))
+                        if(Scrbl.JaccoBikker.Intersection.Compute(ray, scene.Triangles[scene.TriangleIndices[node.PrimitiveIndex + i]], ref timeResult))
                         {
                             return true;
                         }
@@ -248,9 +250,9 @@ namespace Scrbl.JaccoBikker.Bvh
                 {
                     Vector3f pixelPos = p0 + (p1 - p0) * ((float)x / (float)settings.ImageWidth) + (p2 - p0) * ((float)y / settings.ImageHeight);
 
-                    ray.O = settings.CameraPosition;
-                    ray.D = Vector3f.Normalize(pixelPos - ray.O);
-                    ray.T = float.PositiveInfinity;
+                    ray.Origin = settings.CameraPosition;
+                    ray.Direction = Vector3f.Normalize(pixelPos - ray.Origin);
+                    ray.Time = float.PositiveInfinity;
 
                     var pixel = new Color(0, 0, 0);
 

@@ -170,8 +170,10 @@ saves
 /Skrbl.FontRendering
 /Skrbl.Threejs.Debug
 /Scrblr.Rtx/.output
-/Scrblr.Rtx/sixlabors.lic
 /Visual Studio 18/Visualizers
-/Scrbl.JaccoBikker/sixlabors.lic
 /Scrbl.JaccoBikker/.output
 /Scrbl.JaccoBikker/.assets
+/.idea
+/Scrbl.Bvh/.assets
+/Scrbl.Bvh/.output
+sixlabors.lic
