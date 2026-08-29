@@ -1,8 +1,7 @@
 ﻿global using Color3f = Scrbl.Bvh.float3;
-global using Point3f = Scrbl.Bvh.float3;
 global using Color4f = Scrbl.Bvh.float4;
+global using Point3f = Scrbl.Bvh.float3;
 global using Point4f = Scrbl.Bvh.float4;
-
 using Scrbl.Bvh;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorProfiles;
@@ -11,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Timers;
 using System.Xml.Linq;
 using static System.Net.WebRequestMethods;
 
@@ -349,105 +349,35 @@ namespace Scrbl.Bvh
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-			// define the corners of the screen in worldspace
-			float3 p0 = new float3( -1, 1, -15 ), p1 = new float3(1, 1, -15), p2 = new float3(-1, -1, -15);
-			Ray ray = new Ray();
+            // define the corners of the screen in worldspace
+            float3 p0 = new float3(-2.5f, 0.8f, -0.5f), p1 = new float3(-0.5f, 0.8f, -0.5f), p2 = new float3(-2.5f, -1.2f, -0.5f);
+            Ray ray = new Ray();
+            ray.O = new float3(-1.5f, -0.2f, -2.5f);
 
-			for (int y = 0; y < SCRHEIGHT; y++) for (int x = 0; x < SCRWIDTH; x++)
+            for (int y = 0; y < SCRHEIGHT; y++) for (int x = 0; x < SCRWIDTH; x++)
 			{
 				// calculate the position of a pixel on the screen in worldspace
 				float3 pixelPos = p0 + (p1 - p0) * (x / (float)SCRWIDTH) + (p2 - p0) * (y / (float)SCRHEIGHT);
 				// define the ray in worldspace
-				ray.O = new float3(0, 0, -18);
 				ray.D = float3.normalize(pixelPos - ray.O);
 				// initially the ray has an 'infinite length'
 				ray.t = 1e30f;
 
 				IntersectBVH(ref ray, rootNodeIdx);
 
-				if(ray.t < 1e30f)
-				{
-                    buffer[bufferIndex++] = new Color4f(1, 1, 1, 1);
-                }
-                else
-				{
-                    buffer[bufferIndex++] = new Color4f(0, 0, 0, 1);
-                }
-            }
+                var c = ray.t < 1e30f ? Utility.Remap(ray.t, 1.2f, 3.4f, 1f, 0f, true) : 0f;
+                var a = ray.t < 1e30f ? 1f : c;
 
-			stopwatch.Stop();
+                buffer[bufferIndex++] = new Color4f(c, c, c, a);
 
-			Console.WriteLine($"Tick duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
-
-            SaveBufferAsImage(buffer, SCRWIDTH, SCRHEIGHT, $@"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output\Tick.{counter}.png");
-        }
-
-        void TickAndSave(int counter)
-        {
-			var buffer = new Color4f[SCRWIDTH * SCRHEIGHT];
-
-			var bufferIndex = 0;
-
-            Stopwatch stopwatch = Stopwatch.StartNew();
-
-            // define the corners of the screen in worldspace
-            float3 p0 = new float3(-2.5f, 0.8f, -0.5f), p1 = new float3(-0.5f, 0.8f, -0.5f), p2 = new float3(-2.5f, -1.2f, -0.5f);
-            Ray ray = new Ray();
-
-            for (int y = 0; y < SCRHEIGHT; y++) for (int x = 0; x < SCRWIDTH; x++)
-            {
-                // calculate the position of a pixel on the screen in worldspace
-                float3 pixelPos = p0 + (p1 - p0) * (x / (float)SCRWIDTH) + (p2 - p0) * (y / (float)SCRHEIGHT);
-                // define the ray in worldspace
-                ray.O = new float3(-1.5f, -0.2f, -2.5f);
-                ray.D = float3.normalize(pixelPos - ray.O);
-                // initially the ray has an 'infinite length'
-                ray.t = 1e30f;
-
-                IntersectBVH(ref ray, rootNodeIdx);
-
-				buffer[bufferIndex++] = ray.t < 1e30f ? new Color4f(1, 1, 1, 1) : new Color4f(0, 0, 0, 1);
+                //buffer[bufferIndex++] = ray.t < 1e30f ? new Color4f(1, 1, 1, 1) : new Color4f(0, 0, 0, 1);
             }
 
             stopwatch.Stop();
 
-            Console.WriteLine($"TickAndSave duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
+			Console.WriteLine($"Tick duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
 
-			SaveBufferAsImage(buffer, SCRWIDTH, SCRHEIGHT, $@"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output\TickAndSave.{counter}.png");
-        }
-
-		unsafe static void SaveBufferAsImage(Color4f[] buffer, int width, int height, string path)
-		{
-			var byteBuffer = new byte[width * height * 3];
-
-            var bufferIndex = 0;
-            var byteBufferIndex = 0;
-
-            for (int j = 0; j < height; j++)
-			{
-				for (int i = 0; i < width; i++)
-				{
-					byteBuffer[byteBufferIndex++] = (byte)(255 * Math.Clamp(buffer[bufferIndex].X, 0.0, 1.0));
-					byteBuffer[byteBufferIndex++] = (byte)(255 * Math.Clamp(buffer[bufferIndex].Y, 0.0, 1.0));
-					byteBuffer[byteBufferIndex++] = (byte)(255 * Math.Clamp(buffer[bufferIndex].Z, 0.0, 1.0));
-					bufferIndex++;
-				}
-			}
-
-            using (var image = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(byteBuffer, width, height))
-            {
-                image.SaveAsPng(path);
-            }
-
-            fixed (void* bufferHandle = &buffer[0])
-            {
-                var byteSpan = new Span<byte>(bufferHandle, width * height * sizeof(Color4f));
-
-                using (var image = SixLabors.ImageSharp.Image.LoadPixelData<RgbaVector>(byteSpan, width, height))
-                {
-                    image.SaveAsPng(path + ".---.png");
-                }
-            }
+            SaveBufferAsImage(buffer, SCRWIDTH, SCRHEIGHT, $@"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output\Tick.{counter}.png");
         }
 
         void TickFast(int counter)
@@ -479,17 +409,53 @@ namespace Scrbl.Bvh
 					ray.rD = new float3(1 / ray.D.X, 1 / ray.D.Y, 1 / ray.D.Z);
 					
 					IntersectBVH(ref ray, 0);
-					//int c = 500 - (int)(ray.t * 42);
-                    //if (ray.t < 1e30f) screen->Plot(x + u, y + v, c * 0x10101);
-                    buffer[bufferIndex++] = ray.t < 1e30f ? new Color4f(1, 1, 1, 1) : new Color4f(0, 0, 0, 1);
+
+                    var c = ray.t < 1e30f ? Utility.Remap(ray.t, 1.2f, 3.4f, 1f, 0f, true) : 0f;
+
+                    buffer[bufferIndex++] = new Color4f(c, c, c, c);
                 }
-			}
+            }
 
 			stopwatch.Stop();
 
 			Console.WriteLine($"TickFast duration: {stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff")}");
 
             SaveBufferAsImage(buffer, SCRWIDTH, SCRHEIGHT, $@"C:\Steven\Atelier\Scrbl\Scrbl.JaccoBikker\.output\TickFast.{counter}.png");
+        }
+
+        unsafe static void SaveBufferAsImage(Color4f[] buffer, int width, int height, string path)
+        {
+            var byteBuffer = new byte[width * height * 4];
+
+            var bufferIndex = 0;
+            var byteBufferIndex = 0;
+
+            for (int j = 0; j < height; j++)
+            {
+                for (int i = 0; i < width; i++)
+                {
+                    byteBuffer[byteBufferIndex++] = (byte)(255 * Math.Clamp(buffer[bufferIndex].X, 0.0, 1.0));
+                    byteBuffer[byteBufferIndex++] = (byte)(255 * Math.Clamp(buffer[bufferIndex].Y, 0.0, 1.0));
+                    byteBuffer[byteBufferIndex++] = (byte)(255 * Math.Clamp(buffer[bufferIndex].Z, 0.0, 1.0));
+                    byteBuffer[byteBufferIndex++] = (byte)(255 * Math.Clamp(buffer[bufferIndex].W, 0.0, 1.0));
+                    bufferIndex++;
+                }
+            }
+
+            using (var image = SixLabors.ImageSharp.Image.LoadPixelData<Rgba32>(byteBuffer, width, height))
+            {
+                image.SaveAsPng(path);
+            }
+
+            fixed (void* bufferHandle = &buffer[0])
+            {
+                var byteSpan = new Span<byte>(bufferHandle, width * height * sizeof(Color4f));
+
+                using (var image = SixLabors.ImageSharp.Image.LoadPixelData<RgbaVector>(byteSpan, width, height))
+                {
+                    image.SaveAsPng(path + ".---.png");
+                }
+            }
         }
 
         public void Run()
@@ -504,11 +470,6 @@ namespace Scrbl.Bvh
             for (var i = 0; i < 10; i++)
             {
                 TickFast(i);
-            }
-
-            for (var i = 0; i < 10; i++)
-            {
-                TickAndSave(i);
             }
         }
     }
