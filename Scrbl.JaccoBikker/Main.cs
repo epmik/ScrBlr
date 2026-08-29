@@ -29,14 +29,14 @@ namespace Scrbl.JaccoBikker
             //        ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step02.png")
             //    });
 
-            //new HowToBuildABvh_Part01_Basics_Step03_Struct_BvhNode().Run(
-            //    new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
-            //    {
-            //        TriangleCount = TriangleCount,
-            //        ImageWidth = ImageWidth,
-            //        ImageHeight = ImageHeight,
-            //        ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step03_Struct_BvhNode.png")
-            //    });
+            new HowToBuildABvh_Part01_Basics_Step03_Struct_BvhNode().Run(
+                new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
+                {
+                    TriangleCount = TriangleCount,
+                    ImageWidth = ImageWidth,
+                    ImageHeight = ImageHeight,
+                    ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step03_Struct_BvhNode.png")
+                });
 
             //new HowToBuildABvh_Part01_Basics_Step04_Struct_BvhNode_Vector3f().Run(
             //    new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
@@ -56,14 +56,14 @@ namespace Scrbl.JaccoBikker
             //        ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part01_Basics_Step05_AlignedAlloc.png")
             //    });
 
-            new HowToBuildABvh_Part02_Faster_Rays01().Run(
-                new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
-                {
-                    CameraPosition = new Vector3f(-1.5f, -0.2f, -2.5f),
-                    ImageWidth = 640,
-                    ImageHeight = 640,
-                    ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part02_Faster_Rays01.png")
-                });
+            //new HowToBuildABvh_Part02_Faster_Rays01().Run(
+            //    new HowToBuildABvh_Part01_Basics_Step01.RayTraceSettings
+            //    {
+            //        CameraPosition = new Vector3f(-1.5f, -0.2f, -2.5f),
+            //        ImageWidth = 640,
+            //        ImageHeight = 640,
+            //        ImageSavePath = System.IO.Path.Combine(ImageSavePath, "HowToBuildABvh_Part02_Faster_Rays01.png")
+            //    });
 
             Console.WriteLine($"Press a key to exit...");
 
