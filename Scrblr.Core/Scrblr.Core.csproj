@@ -32,6 +32,8 @@
 
   <ItemGroup>
     <PackageReference Include="OpenTK" Version="4.9.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="4.0.0" />
+    <PackageReference Include="StbImageSharp" Version="2.30.16" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
   </ItemGroup>
 

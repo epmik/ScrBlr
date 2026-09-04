@@ -8,7 +8,7 @@ namespace Scrblr.Sketches
     {
         static void Main(string[] args)
         {
-            Sketch.Run<Sketch006>();
+            Sketch.Run<Sketch003>();
 
             Console.WriteLine("Closing in 2 seconds...");
 

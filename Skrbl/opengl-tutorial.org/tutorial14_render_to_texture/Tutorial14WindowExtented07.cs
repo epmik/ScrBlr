@@ -314,8 +314,8 @@ namespace OpenGlTutorialOrg
         public Tutorial14WindowExtented07(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         {
             Resources = new Resources([
-                "C:\\Steven\\Atelier\\Scrblr\\Skrbl\\opengl-tutorial.org\\tutorial14_render_to_texture",
-                "C:\\Steven\\Atelier\\Scrblr\\Skrbl"]);
+                "C:\\Steven\\Atelier\\Scrbl\\Skrbl\\opengl-tutorial.org\\tutorial14_render_to_texture",
+                "C:\\Steven\\Atelier\\Scrbl\\Skrbl"]);
 
             //var importer = new Skrbl.Blender.Importer(new Skrbl.Blender.ImporterSettings
             //{
