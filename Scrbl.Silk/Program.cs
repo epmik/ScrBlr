@@ -14,8 +14,11 @@ namespace Scrbl
         {
             //new Scrbl.Tutorials._001_Hello_Window().Run(args);
             //new Scrbl.Tutorials._002_Hello_Quad().Run(args);
-            //new Scrbl.Tutorials._003_Hello_Colored_Quad().Run(args);
-            new Scrbl.Tutorials._005_Hello_Colored_Quad_Non_Interleaved().Run(args);
+            //new Scrbl.Tutorials._003_Hello_Quad_Non_Indexed().Run(args);
+            //new Scrbl.Tutorials._004_Hello_Colored_Quad().Run(args);
+            //new Scrbl.Tutorials._005_Hello_Colored_Quad_Non_Interleaved().Run(args);
+            //new Scrbl.Tutorials._006_Textured_Quad().Run(args);
+            new Scrbl.Tutorials._008_Transformed_Textured_Quad().Run(args);
         }
     }
 

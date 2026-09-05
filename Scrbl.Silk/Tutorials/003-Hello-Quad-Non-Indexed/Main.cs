@@ -11,7 +11,6 @@ class _003_Hello_Quad_Non_Indexed
     private static GL Gl;
 
     private static uint Vbo;
-    private static uint Ebo;
     private static uint Vao;
     private static uint Shader;
 
@@ -41,18 +40,27 @@ class _003_Hello_Quad_Non_Indexed
     private static readonly float[] Vertices =
     {
             //X    Y      Z
+
              0.5f,  0.5f, 0.0f,
              0.5f, -0.5f, 0.0f,
+            -0.5f,  0.5f, 0.5f,
+
+             0.5f, -0.5f, 0.0f,
             -0.5f, -0.5f, 0.0f,
-            -0.5f,  0.5f, 0.5f
+            -0.5f,  0.5f, 0.5f,
+
+            // 0.5f,  0.5f, 0.0f,
+            // 0.5f, -0.5f, 0.0f,
+            //-0.5f, -0.5f, 0.0f,
+            //-0.5f,  0.5f, 0.5f
         };
 
-    //Index data, uploaded to the EBO.
-    private static readonly uint[] Indices =
-    {
-            0, 1, 3,
-            1, 2, 3
-        };
+    ////Index data, uploaded to the EBO.
+    //private static readonly uint[] Indices =
+    //{
+    //        0, 1, 3,
+    //        1, 2, 3
+    //    };
 
 
     public void Run(string[] args)
@@ -95,14 +103,6 @@ class _003_Hello_Quad_Non_Indexed
         fixed (void* v = &Vertices[0])
         {
             Gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(Vertices.Length * sizeof(uint)), v, BufferUsageARB.StaticDraw); //Setting buffer data.
-        }
-
-        //Initializing a element buffer that holds the index data.
-        Ebo = Gl.GenBuffer(); //Creating the buffer.
-        Gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, Ebo); //Binding the buffer.
-        fixed (void* i = &Indices[0])
-        {
-            Gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(Indices.Length * sizeof(uint)), i, BufferUsageARB.StaticDraw); //Setting buffer data.
         }
 
         //Creating a vertex shader.
@@ -163,7 +163,7 @@ class _003_Hello_Quad_Non_Indexed
         Gl.UseProgram(Shader);
 
         //Draw the geometry.
-        Gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, null);
+        Gl.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
 
     private static void OnUpdate(double obj)
@@ -180,7 +180,6 @@ class _003_Hello_Quad_Non_Indexed
     {
         //Remember to delete the buffers.
         Gl.DeleteBuffer(Vbo);
-        Gl.DeleteBuffer(Ebo);
         Gl.DeleteVertexArray(Vao);
         Gl.DeleteProgram(Shader);
     }
