@@ -5,7 +5,7 @@ using Silk.NET.Windowing;
 
 namespace Scrbl.Tutorials;
 
-class _003_Hello_Colored_Quad
+class _004_Hello_Colored_Quad
 {
     private static IWindow window;
     private static GL Gl;

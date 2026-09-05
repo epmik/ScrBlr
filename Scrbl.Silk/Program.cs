@@ -15,7 +15,7 @@ namespace Scrbl
             //new Scrbl.Tutorials._001_Hello_Window().Run(args);
             //new Scrbl.Tutorials._002_Hello_Quad().Run(args);
             //new Scrbl.Tutorials._003_Hello_Colored_Quad().Run(args);
-            new Scrbl.Tutorials._004_Hello_Colored_Quad_Non_Interleaved().Run(args);
+            new Scrbl.Tutorials._005_Hello_Colored_Quad_Non_Interleaved().Run(args);
         }
     }
 

@@ -37,42 +37,9 @@ namespace Scrbl.Tutorials;
 //        _vao = _gl.GenVertexArray();
 //        _gl.BindVertexArray(_vao);
 
-//        // ==========================================
-//        // 3. SET UP POSITION BUFFER
-//        // ==========================================
-//        _positionVbo = _gl.GenBuffer();
-//        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _positionVbo);
-
-//        fixed (void* pData = positions)
-//        {
-//            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(positions.Length * sizeof(float)), pData, BufferUsageARB.StaticDraw);
-//        }
-
-//        // Configure attribute location 0 (Position)
-//        const uint positionLocation = 0;
-//        _gl.EnableVertexAttribArray(positionLocation);
-//        // Stride is 0 (or 3 * sizeof(float)): Tells OpenGL data is tightly packed
-//        // Pointer offset is 0: Starts at the very beginning of this buffer
-//        _gl.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.Float, false, 0, (void*)0);
 
 
-//        // ==========================================
-//        // 4. SET UP COLOR BUFFER
-//        // ==========================================
-//        _colorVbo = _gl.GenBuffer();
-//        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _colorVbo);
 
-//        fixed (void* cData = colors)
-//        {
-//            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(colors.Length * sizeof(float)), cData, BufferUsageARB.StaticDraw);
-//        }
-
-//        // Configure attribute location 1 (Color)
-//        const uint colorLocation = 1;
-//        _gl.EnableVertexAttribArray(colorLocation);
-//        // Stride is 0: Tells OpenGL data is tightly packed
-//        // Pointer offset is 0: Starts at the beginning of THIS newly bound buffer
-//        _gl.VertexAttribPointer(colorLocation, 3, VertexAttribPointerType.Float, false, 0, (void*)0);
 
 
 //        // 5. Unbind to safe-keep state changes
@@ -97,12 +64,13 @@ namespace Scrbl.Tutorials;
 //    }
 //}
 
-class _004_Hello_Colored_Quad_Non_Interleaved
+class _005_Hello_Colored_Quad_Non_Interleaved
 {
     private static IWindow window;
     private static GL Gl;
 
-    private static uint Vbo;
+    private static uint VboPositions;
+    private static uint VboColors;
     private static uint Ebo;
     private static uint Vao;
     private static uint Shader;
@@ -137,13 +105,21 @@ class _004_Hello_Colored_Quad_Non_Interleaved
     private const uint VertexElementCount = 6;  // 6 elements per vertex (3 for position, 3 for color)
 
     //Vertex data, uploaded to the VBO.
-    private static readonly float[] Vertices =
+    private static readonly float[] Positions =
     {
-        //X    Y      Z      R     G     B
-         0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 0.0f,      // top right vertex (black)
-         0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 0.0f,      // bottom right vertex (yellow)
-        -0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f,      // bottom left vertex (white)
-        -0.5f,  0.5f, 0.5f,  1.0f, 0.0f, 0.0f,      // top left vertex (red)
+        //X    Y      Z
+         0.5f,  0.5f, 0.0f,      // top right vertex (black)
+         0.5f, -0.5f, 0.0f,      // bottom right vertex (yellow)
+        -0.5f, -0.5f, 0.0f,      // bottom left vertex (white)
+        -0.5f,  0.5f, 0.5f,      // top left vertex (red)
+    };
+    private static readonly float[] Colors =
+    {
+        //R     G     B
+        1.0f, 1.0f, 1.0f,      // top right vertex (white)
+        1.0f, 1.0f, 0.0f,      // bottom right vertex (yellow)
+        0.0f, 0.0f, 0.0f,      // bottom left vertex (black)
+        1.0f, 0.0f, 0.0f,      // top left vertex (red)
     };
 
     //Index data, uploaded to the EBO.
@@ -189,13 +165,70 @@ class _004_Hello_Colored_Quad_Non_Interleaved
         Vao = Gl.GenVertexArray();
         Gl.BindVertexArray(Vao);
 
+        //        // ==========================================
+        //        // 3. SET UP POSITION BUFFER
+        //        // ==========================================
+        //        _positionVbo = _gl.GenBuffer();
+        //        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _positionVbo);
+
+        //        fixed (void* pData = positions)
+        //        {
+        //            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(positions.Length * sizeof(float)), pData, BufferUsageARB.StaticDraw);
+        //        }
+
+        //        // Configure attribute location 0 (Position)
+        //        const uint positionLocation = 0;
+        //        _gl.EnableVertexAttribArray(positionLocation);
+        //        // Stride is 0 (or 3 * sizeof(float)): Tells OpenGL data is tightly packed
+        //        // Pointer offset is 0: Starts at the very beginning of this buffer
+        //        _gl.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.Float, false, 0, (void*)0);
+
+
+
         //Initializing a vertex buffer that holds the vertex data.
-        Vbo = Gl.GenBuffer(); //Creating the buffer.
-        Gl.BindBuffer(BufferTargetARB.ArrayBuffer, Vbo); //Binding the buffer.
-        fixed (void* v = &Vertices[0])
+        VboPositions = Gl.GenBuffer(); //Creating the buffer.
+        Gl.BindBuffer(BufferTargetARB.ArrayBuffer, VboPositions); //Binding the buffer.
+        fixed (void* v = &Positions[0])
         {
-            Gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(Vertices.Length * sizeof(float)), v, BufferUsageARB.StaticDraw); //Setting buffer data.
+            Gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(Positions.Length * sizeof(float)), v, BufferUsageARB.StaticDraw); //Setting buffer data.
         }
+
+        //Tell opengl how to give the data to the shaders.
+        // Stride is 0 (or 3 * sizeof(float)): Tells OpenGL data is tightly packed
+        Gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
+        Gl.EnableVertexAttribArray(0);
+
+
+        //        // ==========================================
+        //        // 4. SET UP COLOR BUFFER
+        //        // ==========================================
+        //        _colorVbo = _gl.GenBuffer();
+        //        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _colorVbo);
+
+        //        fixed (void* cData = colors)
+        //        {
+        //            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(colors.Length * sizeof(float)), cData, BufferUsageARB.StaticDraw);
+        //        }
+
+        //        // Configure attribute location 1 (Color)
+        //        const uint colorLocation = 1;
+        //        _gl.EnableVertexAttribArray(colorLocation);
+        //        // Stride is 0: Tells OpenGL data is tightly packed
+        //        // Pointer offset is 0: Starts at the beginning of THIS newly bound buffer
+        //        _gl.VertexAttribPointer(colorLocation, 3, VertexAttribPointerType.Float, false, 0, (void*)0);
+
+        VboColors = Gl.GenBuffer(); //Creating the buffer.
+        Gl.BindBuffer(BufferTargetARB.ArrayBuffer, VboColors); //Binding the buffer.
+        fixed (void* c = &Colors[0])
+        {
+            Gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(Colors.Length * sizeof(float)), c, BufferUsageARB.StaticDraw); //Setting buffer data.
+        }
+
+        //Tell opengl how to give the data to the shaders.
+        // Stride is 0 (or 3 * sizeof(float)): Tells OpenGL data is tightly packed
+        Gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
+        Gl.EnableVertexAttribArray(1);
+
 
         //Initializing a element buffer that holds the index data.
         Ebo = Gl.GenBuffer(); //Creating the buffer.
@@ -247,13 +280,6 @@ class _004_Hello_Colored_Quad_Non_Interleaved
         Gl.DetachShader(Shader, fragmentShader);
         Gl.DeleteShader(vertexShader);
         Gl.DeleteShader(fragmentShader);
-
-        //Tell opengl how to give the data to the shaders.
-        Gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, VertexElementCount * sizeof(float), null);
-        Gl.EnableVertexAttribArray(0);
-
-        Gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, VertexElementCount * sizeof(float), (void*)(3 * sizeof(float)));
-        Gl.EnableVertexAttribArray(1);
     }
 
     private static unsafe void OnRender(double obj) //Method needs to be unsafe due to draw elements.
@@ -282,7 +308,8 @@ class _004_Hello_Colored_Quad_Non_Interleaved
     private static void OnClose()
     {
         //Remember to delete the buffers.
-        Gl.DeleteBuffer(Vbo);
+        Gl.DeleteBuffer(VboPositions);
+        Gl.DeleteBuffer(VboColors);
         Gl.DeleteBuffer(Ebo);
         Gl.DeleteVertexArray(Vao);
         Gl.DeleteProgram(Shader);
