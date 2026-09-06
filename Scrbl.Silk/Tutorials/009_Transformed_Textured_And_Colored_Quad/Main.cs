@@ -12,7 +12,7 @@ using Color = System.Drawing.Color;
 
 namespace Scrbl.Tutorials;
 
-class _008_Transformed_Textured_Quad
+class _009_Transformed_Textured_And_Colored_Quad
 {
     private static IWindow _window;
     private static GL _gl;
@@ -37,7 +37,7 @@ class _008_Transformed_Textured_Quad
     {
         WindowOptions options = WindowOptions.Default;
         options.Size = new Vector2D<int>(800, 600);
-        options.Title = "1.3 - Textures";
+        options.Title = "_009_Transformed_Textured_And_Colored_Quad";
 
         _window = Window.Create(options);
 
@@ -72,11 +72,11 @@ class _008_Transformed_Textured_Quad
         // of the texture to use for each vertex.
         float[] vertices =
         {
-            // aPosition--------   aTexCoords
-             0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
-             0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
-            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
-            -0.5f,  0.5f, 0.0f,  0.0f, 1.0f
+             // X Y Z                U V             R G B
+             0.5f,  0.5f, 0.0f,     1.0f, 1.0f,    0.0f, 0.0f, 0.0f,  // top right vertex (black)
+             0.5f, -0.5f, 0.0f,     1.0f, 0.0f,    1.0f, 1.0f, 0.0f,  // bottom right vertex (yellow)
+            -0.5f, -0.5f, 0.0f,     0.0f, 0.0f,    1.0f, 1.0f, 1.0f,  // bottom left vertex (white)
+            -0.5f,  0.5f, 0.0f,     0.0f, 1.0f,    1.0f, 0.0f, 0.0f,  // top left vertex (red)
         };
 
         // Create the VBO.
@@ -100,22 +100,26 @@ class _008_Transformed_Textured_Quad
     #version 330 core
 layout (location = 0) in vec3 vPos;
 layout (location = 1) in vec2 vUv;
+layout (location = 2) in vec3 vColor;
 
 uniform mat4 uModel;
 
 out vec2 fUv;
+out vec3 fColor;
 
 void main()
 {
     //Multiplying our uniform with the vertex position, the multiplication order here does matter.
     gl_Position =  uModel * vec4(vPos, 1.0);
     fUv = vUv;
+    fColor = vColor;
 }";
 
         // The fragment shader code.
         const string fragmentCode = @"
     #version 330 core
 in vec2 fUv;
+in vec3 fColor;
 
 uniform sampler2D uTexture0;
 
@@ -123,7 +127,7 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = texture(uTexture0, fUv);
+    FragColor = texture(uTexture0, fUv) * vec4(fColor, 1.0);
 }";
 
         // Create our vertex shader, and give it our vertex shader source code.
@@ -173,7 +177,7 @@ void main()
 
         // Our stride constant. The stride must be in bytes, so we take the first attribute (a vec3), multiply it
         // by the size in bytes of a float, and then take our second attribute (a vec2), and do the same.
-        const uint stride = (3 * sizeof(float)) + (2 * sizeof(float));
+        const uint stride = ((3 * sizeof(float))) + (2 * sizeof(float) + (3 * sizeof(float)));
 
         // Enable the "aPosition" attribute in our vertex array, providing its size and stride too.
         const uint positionLoc = 0;
@@ -187,10 +191,20 @@ void main()
         _gl.EnableVertexAttribArray(textureLoc);
         _gl.VertexAttribPointer(textureLoc, 2, VertexAttribPointerType.Float, false, stride, (void*)(3 * sizeof(float)));
 
+        // Now we need to enable our texture coordinates! We've defined that as location 1 so that's what we'll use
+        // here. The code is very similar to above, but you must make sure you set its offset to the **size in bytes**
+        // of the attribute before.
+        const uint colorLoc = 2;
+        _gl.EnableVertexAttribArray(colorLoc);
+        _gl.VertexAttribPointer(colorLoc, 3, VertexAttribPointerType.Float, false, stride, (void*)(5 * sizeof(float)));
+
+
+
         // Unbind everything as we don't need it.
         _gl.BindVertexArray(0);
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
         _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
+
 
         // Now we begin the process of creating our texture!
         // First, we create the texture handle. Then, we must set an active texture unit. Each texture unit is a

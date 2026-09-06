@@ -1,10 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.Windowing;
 using Silk.NET.OpenGL;
+using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
+using System.IO;
 using Color = System.Drawing.Color;
 
 namespace Scrbl.Tutorials;
@@ -41,6 +42,12 @@ class _006_Textured_Quad
 
     private static unsafe void OnLoad()
     {
+        IInputContext input = _window.CreateInput();
+        for (int i = 0; i < input.Keyboards.Count; i++)
+        {
+            input.Keyboards[i].KeyDown += KeyDown;
+        }
+
         _gl = _window.CreateOpenGL();
 
         _gl.ClearColor(Color.CornflowerBlue);
@@ -321,5 +328,23 @@ class _006_Textured_Quad
     private static void OnFramebufferResize(Vector2D<int> newSize)
     {
         _gl.Viewport(newSize);
+    }
+
+    private static void OnClose()
+    {
+        //Remember to delete the buffers.
+        _gl.DeleteBuffer(_vbo);
+        _gl.DeleteBuffer(_ebo);
+        _gl.DeleteVertexArray(_vao);
+        _gl.DeleteProgram(_program);
+        _gl.DeleteTexture(_texture);
+    }
+
+    private static void KeyDown(IKeyboard arg1, Key arg2, int arg3)
+    {
+        if (arg2 == Key.Escape)
+        {
+            _window.Close();
+        }
     }
 }

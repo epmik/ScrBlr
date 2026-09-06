@@ -18,7 +18,9 @@ namespace Scrbl
             //new Scrbl.Tutorials._004_Hello_Colored_Quad().Run(args);
             //new Scrbl.Tutorials._005_Hello_Colored_Quad_Non_Interleaved().Run(args);
             //new Scrbl.Tutorials._006_Textured_Quad().Run(args);
-            new Scrbl.Tutorials._008_Transformed_Textured_Quad().Run(args);
+            //new Scrbl.Tutorials._008_Transformed_Textured_Quad().Run(args);
+            //new Scrbl.Tutorials._009_Transformed_Textured_And_Colored_Quad().Run(args);
+            new Scrbl.Tutorials._010_Dynamic_Vertex_Buffer_Writes().Run(args);
         }
     }
 

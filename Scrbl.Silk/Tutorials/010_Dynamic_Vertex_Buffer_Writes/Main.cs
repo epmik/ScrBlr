@@ -5,14 +5,16 @@ using Silk.NET.Windowing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Numerics;
 using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using Color = System.Drawing.Color;
 
 namespace Scrbl.Tutorials;
 
-class _008_Transformed_Textured_Quad
+class _010_Dynamic_Vertex_Buffer_Writes
 {
     private static IWindow _window;
     private static GL _gl;
@@ -31,13 +33,18 @@ class _008_Transformed_Textured_Quad
         1, 2, 3
     };
 
-    private static Transform[] Transforms = new Transform[4];
+    private Random _random = new Random();
+
+    private static Transform[] Transforms = new Transform[1];
+
+    private double NextSpawnDelta = 0;
+    private double NextSpawnSpeed = 1.0;    // 1 second
 
     public void Run(string[] args)
     {
         WindowOptions options = WindowOptions.Default;
         options.Size = new Vector2D<int>(800, 600);
-        options.Title = "1.3 - Textures";
+        options.Title = "010_Dynamic_Vertex_Buffer_Writes";
 
         _window = Window.Create(options);
 
@@ -72,11 +79,11 @@ class _008_Transformed_Textured_Quad
         // of the texture to use for each vertex.
         float[] vertices =
         {
-            // aPosition--------   aTexCoords
-             0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
-             0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
-            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
-            -0.5f,  0.5f, 0.0f,  0.0f, 1.0f
+             // X Y Z                U V             R G B
+             0.5f,  0.5f, 0.0f,     1.0f, 1.0f,    0.0f, 0.0f, 0.0f,  // top right vertex (black)
+             0.5f, -0.5f, 0.0f,     1.0f, 0.0f,    1.0f, 1.0f, 0.0f,  // bottom right vertex (yellow)
+            -0.5f, -0.5f, 0.0f,     0.0f, 0.0f,    1.0f, 1.0f, 1.0f,  // bottom left vertex (white)
+            -0.5f,  0.5f, 0.0f,     0.0f, 1.0f,    1.0f, 0.0f, 0.0f,  // top left vertex (red)
         };
 
         // Create the VBO.
@@ -84,8 +91,9 @@ class _008_Transformed_Textured_Quad
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
 
         // Upload the vertices data to the VBO.
-        fixed (float* buf = vertices)
-            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), buf, BufferUsageARB.StaticDraw);
+        //fixed (float* buf = vertices)
+        //    _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), buf, BufferUsageARB.StaticDraw);
+        _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), (void*)null, BufferUsageARB.DynamicDraw);
 
         // Create the EBO.
         _ebo = _gl.GenBuffer();
@@ -100,22 +108,26 @@ class _008_Transformed_Textured_Quad
     #version 330 core
 layout (location = 0) in vec3 vPos;
 layout (location = 1) in vec2 vUv;
+layout (location = 2) in vec3 vColor;
 
 uniform mat4 uModel;
 
 out vec2 fUv;
+out vec3 fColor;
 
 void main()
 {
     //Multiplying our uniform with the vertex position, the multiplication order here does matter.
     gl_Position =  uModel * vec4(vPos, 1.0);
     fUv = vUv;
+    fColor = vColor;
 }";
 
         // The fragment shader code.
         const string fragmentCode = @"
     #version 330 core
 in vec2 fUv;
+in vec3 fColor;
 
 uniform sampler2D uTexture0;
 
@@ -123,7 +135,7 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = texture(uTexture0, fUv);
+    FragColor = texture(uTexture0, fUv) * vec4(fColor, 1.0);
 }";
 
         // Create our vertex shader, and give it our vertex shader source code.
@@ -173,7 +185,7 @@ void main()
 
         // Our stride constant. The stride must be in bytes, so we take the first attribute (a vec3), multiply it
         // by the size in bytes of a float, and then take our second attribute (a vec2), and do the same.
-        const uint stride = (3 * sizeof(float)) + (2 * sizeof(float));
+        const uint stride = ((3 * sizeof(float))) + (2 * sizeof(float) + (3 * sizeof(float)));
 
         // Enable the "aPosition" attribute in our vertex array, providing its size and stride too.
         const uint positionLoc = 0;
@@ -187,10 +199,20 @@ void main()
         _gl.EnableVertexAttribArray(textureLoc);
         _gl.VertexAttribPointer(textureLoc, 2, VertexAttribPointerType.Float, false, stride, (void*)(3 * sizeof(float)));
 
+        // Now we need to enable our texture coordinates! We've defined that as location 1 so that's what we'll use
+        // here. The code is very similar to above, but you must make sure you set its offset to the **size in bytes**
+        // of the attribute before.
+        const uint colorLoc = 2;
+        _gl.EnableVertexAttribArray(colorLoc);
+        _gl.VertexAttribPointer(colorLoc, 3, VertexAttribPointerType.Float, false, stride, (void*)(5 * sizeof(float)));
+
+
+
         // Unbind everything as we don't need it.
         _gl.BindVertexArray(0);
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
         _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
+
 
         // Now we begin the process of creating our texture!
         // First, we create the texture handle. Then, we must set an active texture unit. Each texture unit is a
@@ -301,21 +323,65 @@ void main()
         Transforms[0] = new Transform();
         Transforms[0].Position = new Vector3(0.5f, 0.5f, 0f);
         //Rotation.
-        Transforms[1] = new Transform();
-        Transforms[1].Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, 1f);
-        //Scaling.
-        Transforms[2] = new Transform();
-        Transforms[2].Scale = 0.5f;
-        //Mixed transformation.
-        Transforms[3] = new Transform();
-        Transforms[3].Position = new Vector3(-0.5f, 0.5f, 0f);
-        Transforms[3].Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, 1f);
-        Transforms[3].Scale = 0.5f;
+        //Transforms[1] = new Transform();
+        //Transforms[1].Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, 1f);
+        ////Scaling.
+        //Transforms[2] = new Transform();
+        //Transforms[2].Scale = 0.5f;
+        ////Mixed transformation.
+        //Transforms[3] = new Transform();
+        //Transforms[3].Position = new Vector3(-0.5f, 0.5f, 0f);
+        //Transforms[3].Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, 1f);
+        //Transforms[3].Scale = 0.5f;
     }
 
-    private static void OnUpdate(double dt) { }
+    private unsafe void OnUpdate(double dt) 
+    { 
+        if(NextSpawnDelta <= 0) 
+        {
+            _gl.BindVertexArray(_vao);
+            _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
+            _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
 
-    private static unsafe void OnRender(double dt)
+            // The quad vertices data.
+            // You may have noticed an addition - texture coordinates!
+            // Texture coordinates are a value between 0-1 (see more later about this) which tell the GPU which part
+            // of the texture to use for each vertex.
+
+            var top = (float)_random.NextDouble();
+            var bottom = (float)_random.NextDouble() - 1.0f;
+            var right = (float)_random.NextDouble();
+            var left = (float)_random.NextDouble() - 1.0f;
+
+            float[] vertices =
+            {
+                 // X Y Z                U V             R G B
+                 right,  top, 0.0f,     1.0f, 1.0f,    0.0f, 0.0f, 0.0f,  // top right vertex (black)
+                 right, bottom, 0.0f,   1.0f, 0.0f,    1.0f, 1.0f, 0.0f,  // bottom right vertex (yellow)
+                 left, bottom, 0.0f,    0.0f, 0.0f,    1.0f, 1.0f, 1.0f,  // bottom left vertex (white)
+                 left,  top, 0.0f,      0.0f, 1.0f,    1.0f, 0.0f, 0.0f,  // top left vertex (red)
+            };
+
+            // Upload the vertices data to the VBO.
+            fixed (float* buf = vertices)
+                _gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0, (nuint)(vertices.Length * sizeof(float)), buf);
+            //_gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), buf, BufferUsageARB.StaticDraw);
+
+
+            // Unbind everything as we don't need it.
+            _gl.BindVertexArray(0);
+            _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+            _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
+
+            Transforms[0].Position = new Vector3((float)_random.NextDouble(), (float)_random.NextDouble(), 0f);
+
+            NextSpawnDelta += NextSpawnSpeed;
+        }
+
+        NextSpawnDelta += -dt;
+    }
+
+    private unsafe void OnRender(double dt)
     {
         // Clear the window to the color we set earlier.
         _gl.Clear(ClearBufferMask.ColorBufferBit);
